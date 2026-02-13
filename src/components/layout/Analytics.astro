@@ -5,47 +5,167 @@
  * Conditionally loads analytics scripts based on environment variables.
  * Supports Google Analytics (GA4) and Google Tag Manager.
  *
+ * When PUBLIC_CONSENT_ENABLED is true, integrates with Google Consent Mode v2:
+ * - consent_mode_v2: Scripts load normally but with denied defaults (cookieless pings)
+ * - strict: Scripts only load after explicit user consent
+ *
  * Environment variables:
  * - PUBLIC_GA_MEASUREMENT_ID: Google Analytics 4 Measurement ID (e.g., G-XXXXXXXXXX)
  * - PUBLIC_GTM_ID: Google Tag Manager Container ID (e.g., GTM-XXXXXXX)
+ * - PUBLIC_CONSENT_ENABLED: Enable cookie consent integration (boolean)
  */
-import { PUBLIC_GA_MEASUREMENT_ID, PUBLIC_GTM_ID } from 'astro:env/client';
+import { PUBLIC_GA_MEASUREMENT_ID, PUBLIC_GTM_ID, PUBLIC_CONSENT_ENABLED } from 'astro:env/client';
+import consentConfig from '@/config/consent.config';
 
 const gaId = PUBLIC_GA_MEASUREMENT_ID;
 const gtmId = PUBLIC_GTM_ID;
+const consentEnabled = PUBLIC_CONSENT_ENABLED;
+const consentMode = consentConfig.mode;
+const storageKey = consentConfig.storageKey;
+const configVersion = consentConfig.version;
+
+// Build GCM default values from config categories
+const gcmDefaults: Record<string, string> = {};
+for (const [, cat] of Object.entries(consentConfig.categories)) {
+  for (const gcmType of cat.gcmTypes) {
+    gcmDefaults[gcmType] = cat.defaultEnabled ? 'granted' : 'denied';
+  }
+}
+const gcmDefaultsJson = JSON.stringify(gcmDefaults);
 ---
 
-{/* Google Tag Manager - loads first if configured */}
-{
-  gtmId && (
-    <>
-      <script is:inline define:vars={{ gtmId }}>
-        (function (w, d, s, l, i) {
-          w[l] = w[l] || [];
-          w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-          const f = d.getElementsByTagName(s)[0],
-            j = d.createElement(s),
-            dl = l != 'dataLayer' ? '&l=' + l : '';
-          j.async = true;
-          j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-          f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', gtmId);
-      </script>
-    </>
-  )
-}
+{/* --- A) Consent DISABLED: original behavior, scripts load unconditionally --- */}
+{!consentEnabled && gtmId && (
+  <>
+    <script is:inline define:vars={{ gtmId }}>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        const f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', gtmId);
+    </script>
+  </>
+)}
 
-{/* Google Analytics 4 - only loads if GTM is not configured */}
-{
-  gaId && !gtmId && (
-    <>
-      <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
-      <script is:inline define:vars={{ gaId }}>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(...args){dataLayer.push(args);}
-        gtag('js', new Date());
-        gtag('config', gaId);
-      </script>
-    </>
-  )
-}
+{!consentEnabled && gaId && !gtmId && (
+  <>
+    <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
+    <script is:inline define:vars={{ gaId }}>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', gaId);
+    </script>
+  </>
+)}
+
+{/* --- B/C) Consent ENABLED: consent defaults script runs FIRST --- */}
+{consentEnabled && (gaId || gtmId) && (
+  <script is:inline define:vars={{ storageKey, configVersion, gcmDefaultsJson }}>
+    // Initialize dataLayer and gtag before anything else
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    // Read stored consent from localStorage
+    var stored = null;
+    try {
+      var raw = localStorage.getItem(storageKey);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (parsed && parsed.version === configVersion) {
+          stored = parsed;
+        }
+      }
+    } catch(e) {}
+
+    // Build GCM values: use stored preferences if available, otherwise use defaults (all denied)
+    var gcmValues = JSON.parse(gcmDefaultsJson);
+    var decided = false;
+    var categories = { necessary: true, analytics: false, marketing: false, preferences: false };
+
+    if (stored && stored.categories) {
+      decided = true;
+      categories = stored.categories;
+
+      // Map stored categories back to GCM types
+      if (categories.analytics) gcmValues['analytics_storage'] = 'granted';
+      if (categories.marketing) {
+        gcmValues['ad_storage'] = 'granted';
+        gcmValues['ad_user_data'] = 'granted';
+        gcmValues['ad_personalization'] = 'granted';
+      }
+      if (categories.preferences) {
+        gcmValues['functionality_storage'] = 'granted';
+        gcmValues['personalization_storage'] = 'granted';
+      }
+    }
+
+    // Set consent defaults — MUST happen before gtag.js/GTM loads
+    gtag('consent', 'default', gcmValues);
+
+    // Expose state for ConsentBanner to read
+    window.__consentState = { decided: decided, categories: categories };
+  </script>
+)}
+
+{/* --- B) consent_mode_v2: analytics scripts load normally (Google handles denied state) --- */}
+{consentEnabled && consentMode === 'consent_mode_v2' && gtmId && (
+  <script is:inline define:vars={{ gtmId }}>
+    (function (w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      var f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', gtmId);
+  </script>
+)}
+
+{consentEnabled && consentMode === 'consent_mode_v2' && gaId && !gtmId && (
+  <>
+    <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
+    <script is:inline define:vars={{ gaId }}>
+      gtag('js', new Date());
+      gtag('config', gaId);
+    </script>
+  </>
+)}
+
+{/* --- C) strict mode: only load analytics if user previously consented --- */}
+{consentEnabled && consentMode === 'strict' && gtmId && (
+  <script is:inline define:vars={{ gtmId }}>
+    if (window.__consentState && window.__consentState.decided && window.__consentState.categories.analytics) {
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', gtmId);
+    }
+  </script>
+)}
+
+{consentEnabled && consentMode === 'strict' && gaId && !gtmId && (
+  <script is:inline define:vars={{ gaId }}>
+    if (window.__consentState && window.__consentState.decided && window.__consentState.categories.analytics) {
+      var s = document.createElement('script');
+      s.async = true;
+      s.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+      document.head.appendChild(s);
+      gtag('js', new Date());
+      gtag('config', gaId);
+    }
+  </script>
+)}

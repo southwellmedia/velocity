@@ -1,0 +1,859 @@
+---
+/**
+ * ConsentBanner Component
+ *
+ * Cookie consent UI with Google Consent Mode v2 integration.
+ * Shows a bottom bar banner with Accept/Decline + Customize settings panel.
+ * Only renders when PUBLIC_CONSENT_ENABLED is true.
+ */
+import { PUBLIC_CONSENT_ENABLED } from 'astro:env/client';
+import consentConfig from '@/config/consent.config';
+
+const consentEnabled = PUBLIC_CONSENT_ENABLED;
+
+// Serialize config for client-side use via define:vars
+const configJson = JSON.stringify(consentConfig);
+---
+
+{consentEnabled && (
+  <>
+    {/* ─── Bottom Bar Banner ─── */}
+    <div
+      id="consent-banner"
+      class="consent-banner"
+      role="dialog"
+      aria-modal="false"
+      aria-label="Cookie consent"
+    >
+      <div class="consent-banner-inner">
+        <div class="consent-banner-content">
+          <p class="consent-banner-heading" id="consent-banner-heading">
+            {consentConfig.ui.heading}
+          </p>
+          <p class="consent-banner-description">
+            {consentConfig.ui.description}
+          </p>
+        </div>
+        <div class="consent-banner-actions">
+          <button
+            type="button"
+            id="consent-accept-all"
+            class="consent-btn consent-btn-primary"
+          >
+            {consentConfig.ui.acceptAll}
+          </button>
+          <button
+            type="button"
+            id="consent-decline-all"
+            class="consent-btn consent-btn-secondary"
+          >
+            {consentConfig.ui.declineAll}
+          </button>
+          <button
+            type="button"
+            id="consent-customize"
+            class="consent-btn-link"
+          >
+            {consentConfig.ui.customize}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* ─── Settings Panel Overlay ─── */}
+    <div
+      id="consent-settings"
+      class="consent-settings-overlay"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="consent-settings-heading"
+    >
+      <div class="consent-settings-backdrop" aria-hidden="true"></div>
+      <div class="consent-settings-container">
+        <div class="consent-settings-panel" id="consent-settings-panel">
+          <div class="consent-settings-header">
+            <h2 id="consent-settings-heading" class="consent-settings-title">
+              {consentConfig.ui.settingsHeading}
+            </h2>
+            <button
+              type="button"
+              id="consent-settings-close"
+              class="consent-settings-close-btn"
+              aria-label="Close privacy settings"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M18 6 6 18"></path>
+                <path d="m6 6 12 12"></path>
+              </svg>
+            </button>
+          </div>
+
+          <div class="consent-settings-body">
+            {Object.entries(consentConfig.categories).map(([key, cat]) => (
+              <div class="consent-category" data-category={key}>
+                <div class="consent-category-info">
+                  <span class="consent-category-label">{cat.label}</span>
+                  {cat.required && (
+                    <span class="consent-category-badge">Always on</span>
+                  )}
+                  <p class="consent-category-description">{cat.description}</p>
+                </div>
+                <label class="consent-toggle" data-consent-toggle={key}>
+                  <input
+                    type="checkbox"
+                    class="sr-only peer"
+                    checked={cat.required || cat.defaultEnabled}
+                    disabled={cat.required}
+                    data-consent-checkbox={key}
+                    role="switch"
+                    aria-checked={cat.required || cat.defaultEnabled ? 'true' : 'false'}
+                    aria-label={`${cat.label} cookies`}
+                  />
+                  <div class="consent-toggle-track">
+                    <div class="consent-toggle-thumb" data-thumb></div>
+                  </div>
+                </label>
+              </div>
+            ))}
+          </div>
+
+          <div class="consent-settings-footer">
+            <button
+              type="button"
+              id="consent-save-preferences"
+              class="consent-btn consent-btn-primary consent-btn-full"
+            >
+              {consentConfig.ui.savePreferences}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {/* ─── Reopener Button (shown after consent given) ─── */}
+    <button
+      type="button"
+      id="consent-reopener"
+      class="consent-reopener"
+      aria-label="Open cookie settings"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+    </button>
+
+    {/* ─── Inline Script ─── */}
+    <script is:inline define:vars={{ configJson }}>
+      (function() {
+        var config = JSON.parse(configJson);
+        var STORAGE_KEY = config.storageKey;
+        var VERSION = config.version;
+        var MODE = config.mode;
+        var DELAY = config.showDelay;
+
+        // ── Storage helpers ──
+        function getStored() {
+          try {
+            var raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return null;
+            var data = JSON.parse(raw);
+            if (data && data.version === VERSION) return data;
+            return null;
+          } catch(e) { return null; }
+        }
+
+        function saveConsent(categories) {
+          var prefs = {
+            version: VERSION,
+            timestamp: new Date().toISOString(),
+            categories: categories
+          };
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch(e) {}
+          return prefs;
+        }
+
+        // ── GCM update ──
+        function updateGCM(categories) {
+          if (typeof window.gtag !== 'function') {
+            // gtag may not exist yet — define a minimal version
+            window.dataLayer = window.dataLayer || [];
+            if (typeof window.gtag !== 'function') {
+              window.gtag = function() { window.dataLayer.push(arguments); };
+            }
+          }
+
+          var gcm = { security_storage: 'granted' };
+          gcm.analytics_storage = categories.analytics ? 'granted' : 'denied';
+          gcm.ad_storage = categories.marketing ? 'granted' : 'denied';
+          gcm.ad_user_data = categories.marketing ? 'granted' : 'denied';
+          gcm.ad_personalization = categories.marketing ? 'granted' : 'denied';
+          gcm.functionality_storage = categories.preferences ? 'granted' : 'denied';
+          gcm.personalization_storage = categories.preferences ? 'granted' : 'denied';
+
+          window.gtag('consent', 'update', gcm);
+        }
+
+        // ── Strict mode: dynamically inject analytics ──
+        function injectAnalyticsStrict(categories) {
+          if (MODE !== 'strict') return;
+          if (!categories.analytics) return;
+          if (window.__consentAnalyticsInjected) return;
+          window.__consentAnalyticsInjected = true;
+
+          // Check for GTM or GA IDs from the consent state
+          var gtmMeta = document.querySelector('meta[name="gtm-id"]');
+          var gaMeta = document.querySelector('meta[name="ga-id"]');
+          var gtmId = gtmMeta ? gtmMeta.getAttribute('content') : null;
+          var gaId = gaMeta ? gaMeta.getAttribute('content') : null;
+
+          if (gtmId) {
+            window.dataLayer = window.dataLayer || [];
+            window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtm.js?id=' + gtmId;
+            document.head.appendChild(s);
+          } else if (gaId) {
+            var s = document.createElement('script');
+            s.async = true;
+            s.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+            document.head.appendChild(s);
+            window.gtag('js', new Date());
+            window.gtag('config', gaId);
+          }
+        }
+
+        // ── Apply consent ──
+        function applyConsent(categories) {
+          saveConsent(categories);
+          updateGCM(categories);
+          injectAnalyticsStrict(categories);
+
+          // Update global state
+          window.__consentState = { decided: true, categories: categories };
+
+          // Dispatch event for other scripts
+          window.dispatchEvent(new CustomEvent('consent-updated', { detail: { categories: categories } }));
+
+          hideBanner();
+          closeSettings();
+          showReopener();
+        }
+
+        // ── Banner show/hide ──
+        function showBanner() {
+          var banner = document.getElementById('consent-banner');
+          if (!banner) return;
+          banner.removeAttribute('hidden');
+          banner.classList.add('consent-banner--visible');
+        }
+
+        function hideBanner() {
+          var banner = document.getElementById('consent-banner');
+          if (!banner) return;
+          banner.classList.remove('consent-banner--visible');
+          setTimeout(function() { banner.setAttribute('hidden', ''); }, 300);
+        }
+
+        // ── Reopener ──
+        function showReopener() {
+          var btn = document.getElementById('consent-reopener');
+          if (btn) btn.classList.add('consent-reopener--visible');
+        }
+
+        function hideReopener() {
+          var btn = document.getElementById('consent-reopener');
+          if (btn) btn.classList.remove('consent-reopener--visible');
+        }
+
+        // ── Settings panel ──
+        var previousActiveElement = null;
+
+        function openSettings() {
+          var overlay = document.getElementById('consent-settings');
+          if (!overlay) return;
+
+          previousActiveElement = document.activeElement;
+
+          // Sync toggles with current stored state
+          var stored = getStored();
+          Object.keys(config.categories).forEach(function(key) {
+            var cb = document.querySelector('[data-consent-checkbox="' + key + '"]');
+            if (cb && !config.categories[key].required) {
+              cb.checked = stored ? !!stored.categories[key] : config.categories[key].defaultEnabled;
+              cb.setAttribute('aria-checked', cb.checked ? 'true' : 'false');
+            }
+          });
+
+          overlay.removeAttribute('hidden');
+          document.body.style.overflow = 'hidden';
+
+          requestAnimationFrame(function() {
+            overlay.classList.add('consent-settings--visible');
+            // Focus first interactive element
+            var closeBtn = document.getElementById('consent-settings-close');
+            if (closeBtn) closeBtn.focus();
+          });
+
+          document.addEventListener('keydown', settingsKeyHandler);
+        }
+
+        function closeSettings() {
+          var overlay = document.getElementById('consent-settings');
+          if (!overlay) return;
+
+          overlay.classList.remove('consent-settings--visible');
+          document.body.style.overflow = '';
+          document.removeEventListener('keydown', settingsKeyHandler);
+
+          setTimeout(function() {
+            overlay.setAttribute('hidden', '');
+            if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
+              previousActiveElement.focus();
+            }
+          }, 200);
+        }
+
+        function settingsKeyHandler(e) {
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            closeSettings();
+            return;
+          }
+
+          // Focus trap
+          if (e.key === 'Tab') {
+            var panel = document.getElementById('consent-settings-panel');
+            if (!panel) return;
+
+            var focusable = Array.from(
+              panel.querySelectorAll('button, input:not([disabled]), [tabindex]:not([tabindex="-1"])')
+            ).filter(function(el) { return !el.hasAttribute('disabled') && el.offsetParent !== null; });
+
+            if (focusable.length === 0) return;
+
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+
+            if (e.shiftKey) {
+              if (document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+              }
+            } else {
+              if (document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+              }
+            }
+          }
+        }
+
+        // ── Global API ──
+        window.openConsentSettings = openSettings;
+
+        // ── Build categories from toggles ──
+        function getCategoriesFromToggles() {
+          var cats = {};
+          Object.keys(config.categories).forEach(function(key) {
+            if (config.categories[key].required) {
+              cats[key] = true;
+            } else {
+              var cb = document.querySelector('[data-consent-checkbox="' + key + '"]');
+              cats[key] = cb ? cb.checked : false;
+            }
+          });
+          return cats;
+        }
+
+        function buildAllGranted() {
+          var cats = {};
+          Object.keys(config.categories).forEach(function(key) { cats[key] = true; });
+          return cats;
+        }
+
+        function buildAllDenied() {
+          var cats = {};
+          Object.keys(config.categories).forEach(function(key) {
+            cats[key] = config.categories[key].required;
+          });
+          return cats;
+        }
+
+        // ── Initialize ──
+        function init() {
+          var banner = document.getElementById('consent-banner');
+          var settings = document.getElementById('consent-settings');
+
+          if (!banner) return;
+
+          // Set initial hidden state
+          banner.setAttribute('hidden', '');
+          if (settings) settings.setAttribute('hidden', '');
+
+          // Check if consent already decided
+          var state = window.__consentState;
+          if (state && state.decided) {
+            showReopener();
+            return;
+          }
+
+          // Show banner after delay
+          setTimeout(showBanner, DELAY);
+        }
+
+        // ── Bind event listeners ──
+        function bindEvents() {
+          var acceptBtn = document.getElementById('consent-accept-all');
+          var declineBtn = document.getElementById('consent-decline-all');
+          var customizeBtn = document.getElementById('consent-customize');
+          var closeBtn = document.getElementById('consent-settings-close');
+          var saveBtn = document.getElementById('consent-save-preferences');
+          var reopenerBtn = document.getElementById('consent-reopener');
+          var backdrop = document.querySelector('.consent-settings-backdrop');
+
+          if (acceptBtn) acceptBtn.addEventListener('click', function() {
+            applyConsent(buildAllGranted());
+          });
+
+          if (declineBtn) declineBtn.addEventListener('click', function() {
+            applyConsent(buildAllDenied());
+          });
+
+          if (customizeBtn) customizeBtn.addEventListener('click', function() {
+            hideBanner();
+            openSettings();
+          });
+
+          if (closeBtn) closeBtn.addEventListener('click', closeSettings);
+
+          if (backdrop) backdrop.addEventListener('click', closeSettings);
+
+          if (saveBtn) saveBtn.addEventListener('click', function() {
+            applyConsent(getCategoriesFromToggles());
+          });
+
+          if (reopenerBtn) reopenerBtn.addEventListener('click', function() {
+            hideReopener();
+            openSettings();
+          });
+
+          // Update aria-checked on toggle change
+          document.querySelectorAll('[data-consent-checkbox]').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+              this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
+            });
+          });
+        }
+
+        // Run on page load and view transitions
+        function setup() {
+          init();
+          bindEvents();
+        }
+
+        // Initial setup
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', setup);
+        } else {
+          setup();
+        }
+
+        // Astro view transitions
+        document.addEventListener('astro:page-load', setup);
+      })();
+    </script>
+  </>
+)}
+
+<style>
+  /* ─── Banner ─── */
+  .consent-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    transform: translateY(100%);
+    transition: transform var(--transition-slow) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .consent-banner--visible {
+    transform: translateY(0);
+  }
+
+  .consent-banner-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 1.25rem 1.5rem;
+    background: var(--background-elevated);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .consent-banner-content {
+    flex: 1 1 0%;
+    min-width: 280px;
+  }
+
+  .consent-banner-heading {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+    color: var(--foreground);
+    margin: 0 0 0.25rem 0;
+  }
+
+  .consent-banner-description {
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--foreground-muted);
+    margin: 0;
+  }
+
+  .consent-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex-shrink: 0;
+  }
+
+  /* ─── Buttons ─── */
+  .consent-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.125rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      background-color var(--transition-fast),
+      color var(--transition-fast),
+      box-shadow var(--transition-fast);
+  }
+
+  .consent-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  }
+
+  .consent-btn-primary {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  .consent-btn-primary:hover {
+    background: var(--primary-hover);
+  }
+
+  .consent-btn-secondary {
+    background: var(--muted);
+    color: var(--foreground);
+  }
+
+  .consent-btn-secondary:hover {
+    background: var(--border);
+  }
+
+  .consent-btn-link {
+    background: none;
+    border: none;
+    color: var(--foreground-muted);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.5rem 0.25rem;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color var(--transition-fast);
+  }
+
+  .consent-btn-link:hover {
+    color: var(--foreground);
+  }
+
+  .consent-btn-link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+    border-radius: 0.25rem;
+  }
+
+  .consent-btn-full {
+    width: 100%;
+  }
+
+  /* ─── Settings Overlay ─── */
+  .consent-settings-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 51;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .consent-settings-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+  }
+
+  .consent-settings--visible .consent-settings-backdrop {
+    opacity: 1;
+  }
+
+  .consent-settings-container {
+    position: relative;
+    width: 100%;
+    max-width: 32rem;
+    max-height: calc(100vh - 2rem);
+    display: flex;
+  }
+
+  .consent-settings-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-height: calc(100vh - 2rem);
+    background: var(--background-elevated);
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+    transition:
+      opacity var(--transition-normal),
+      transform var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .consent-settings--visible .consent-settings-panel {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+
+  .consent-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .consent-settings-title {
+    font-weight: 600;
+    font-size: 1.0625rem;
+    color: var(--foreground);
+    margin: 0;
+  }
+
+  .consent-settings-close-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.5rem;
+    border: none;
+    background: none;
+    color: var(--foreground-muted);
+    cursor: pointer;
+    transition: color var(--transition-fast), background-color var(--transition-fast);
+  }
+
+  .consent-settings-close-btn:hover {
+    color: var(--foreground);
+    background: var(--muted);
+  }
+
+  .consent-settings-close-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  }
+
+  .consent-settings-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 0.5rem 1.5rem;
+  }
+
+  .consent-settings-footer {
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* ─── Category rows ─── */
+  .consent-category {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+
+  .consent-category + .consent-category {
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .consent-category-info {
+    flex: 1 1 0%;
+    min-width: 0;
+  }
+
+  .consent-category-label {
+    display: inline;
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--foreground);
+  }
+
+  .consent-category-badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    color: var(--foreground-muted);
+    background: var(--muted);
+    border-radius: 9999px;
+    vertical-align: middle;
+  }
+
+  .consent-category-description {
+    margin: 0.25rem 0 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--foreground-subtle);
+  }
+
+  /* ─── Toggle switch ─── */
+  .consent-toggle {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    margin-top: 0.125rem;
+  }
+
+  .consent-toggle:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .consent-toggle-track {
+    width: 2.75rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background: var(--border-strong);
+    transition: background-color var(--transition-fast);
+    padding: 0.125rem;
+  }
+
+  .consent-toggle:has(input:checked) .consent-toggle-track {
+    background: var(--primary);
+  }
+
+  .consent-toggle:has(input:focus-visible) .consent-toggle-track {
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  }
+
+  .consent-toggle-thumb {
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    background: var(--background);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transform: translateX(0);
+    transition: transform var(--transition-fast);
+  }
+
+  .consent-toggle:has(input:checked) .consent-toggle-thumb {
+    transform: translateX(1.25rem);
+  }
+
+  /* ─── Reopener Button ─── */
+  .consent-reopener {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 49;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border);
+    background: var(--background-elevated);
+    color: var(--foreground-muted);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.8);
+    transition:
+      opacity var(--transition-normal),
+      transform var(--transition-normal),
+      color var(--transition-fast),
+      background-color var(--transition-fast);
+  }
+
+  .consent-reopener--visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+  }
+
+  .consent-reopener:hover {
+    color: var(--foreground);
+    background: var(--muted);
+  }
+
+  .consent-reopener:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 640px) {
+    .consent-banner-inner {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .consent-banner-actions {
+      flex-wrap: wrap;
+    }
+
+    .consent-btn {
+      flex: 1 1 auto;
+    }
+  }
+
+  /* ─── Reduced Motion ─── */
+  @media (prefers-reduced-motion: reduce) {
+    .consent-banner,
+    .consent-settings-backdrop,
+    .consent-settings-panel,
+    .consent-toggle-track,
+    .consent-toggle-thumb,
+    .consent-reopener {
+      transition: none;
+    }
+  }
+</style>

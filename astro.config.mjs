@@ -16,6 +16,7 @@ export default defineConfig({
       NEWSLETTER_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
       GOOGLE_SITE_VERIFICATION: envField.string({ context: 'server', access: 'public', optional: true }),
       BING_SITE_VERIFICATION: envField.string({ context: 'server', access: 'public', optional: true }),
+      PUBLIC_CONSENT_ENABLED: envField.boolean({ context: 'client', access: 'public', optional: true, default: false }),
     },
   },
 
