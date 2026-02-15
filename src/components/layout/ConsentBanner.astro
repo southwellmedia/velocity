@@ -150,6 +150,7 @@ const configJson = JSON.stringify(consentConfig);
         const VERSION = config.version;
         const MODE = config.mode;
         const DELAY = config.showDelay;
+        let isSetupBound = false;
 
         // ── Storage helpers ──
         function getStored() {
@@ -452,15 +453,19 @@ const configJson = JSON.stringify(consentConfig);
           bindEvents();
         }
 
-        // Initial setup
-        if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', setup);
-        } else {
-          setup();
-        }
+        // Initial setup — guard prevents duplicate listener registration on re-execution
+        if (!isSetupBound) {
+          isSetupBound = true;
 
-        // Astro view transitions
-        document.addEventListener('astro:page-load', setup);
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setup);
+          } else {
+            setup();
+          }
+
+          // Astro view transitions
+          document.addEventListener('astro:page-load', setup);
+        }
       })();
     </script>
   </>
