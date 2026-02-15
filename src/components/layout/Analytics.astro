@@ -47,6 +47,15 @@ for (const [key, cat] of Object.entries(consentConfig.categories)) {
 }
 const categoryGcmMapJson = JSON.stringify(categoryGcmMap);
 
+// Derive the category key that maps to analytics_storage (for strict-mode guards)
+let analyticsCategoryKey = 'analytics';
+for (const [key, cat] of Object.entries(consentConfig.categories)) {
+  if (cat.gcmTypes.includes('analytics_storage')) {
+    analyticsCategoryKey = key;
+    break;
+  }
+}
+
 // Rendering flags — keeps template conditions simple and highlighter-friendly
 const hasGtm = !!gtmId;
 const hasGa = !!gaId && !gtmId;
@@ -77,7 +86,7 @@ const isStrict = consentEnabled && consentMode === 'strict';
     <script is:inline define:vars={{ gaId }}>
       window.dataLayer = window.dataLayer || [];
       // eslint-disable-next-line prefer-rest-params
-      function gtag(){dataLayer.push(arguments);}
+      function gtag(){window.dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', gaId);
     </script>
@@ -88,7 +97,7 @@ const isStrict = consentEnabled && consentMode === 'strict';
   <script is:inline define:vars={{ storageKey, configVersion, gcmDefaultsJson, categoryDefaultsJson, categoryGcmMapJson }}>
     window.dataLayer = window.dataLayer || [];
     // eslint-disable-next-line prefer-rest-params
-    function gtag(){dataLayer.push(arguments);}
+    function gtag(){window.dataLayer.push(arguments);}
 
     let stored = null;
     try {
@@ -111,11 +120,10 @@ const isStrict = consentEnabled && consentMode === 'strict';
 
       const categoryGcmMap = JSON.parse(categoryGcmMapJson);
       Object.keys(categoryGcmMap).forEach(function(catKey) {
-        if (categories[catKey]) {
-          categoryGcmMap[catKey].forEach(function(gcmType) {
-            gcmValues[gcmType] = 'granted';
-          });
-        }
+        const granted = !!categories[catKey];
+        categoryGcmMap[catKey].forEach(function(gcmType) {
+          gcmValues[gcmType] = granted ? 'granted' : 'denied';
+        });
       });
     }
 
@@ -160,8 +168,8 @@ const isStrict = consentEnabled && consentMode === 'strict';
 )}
 
 {isStrict && hasGtm && (
-  <script is:inline define:vars={{ gtmId }}>
-    if (window.__consentState && window.__consentState.decided && window.__consentState.categories.analytics) {
+  <script is:inline define:vars={{ gtmId, analyticsCategoryKey }}>
+    if (window.__consentState && window.__consentState.decided && window.__consentState.categories[analyticsCategoryKey]) {
       (function (w, d, s, l, i) {
         w[l] = w[l] || [];
         w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
@@ -177,9 +185,9 @@ const isStrict = consentEnabled && consentMode === 'strict';
 )}
 
 {isStrict && hasGa && (
-  <script is:inline define:vars={{ gaId }}>
+  <script is:inline define:vars={{ gaId, analyticsCategoryKey }}>
     /* global gtag */
-    if (window.__consentState && window.__consentState.decided && window.__consentState.categories.analytics) {
+    if (window.__consentState && window.__consentState.decided && window.__consentState.categories[analyticsCategoryKey]) {
       const s = document.createElement('script');
       s.async = true;
       s.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;

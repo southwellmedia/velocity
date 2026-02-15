@@ -147,7 +147,7 @@ const configJson = JSON.stringify(consentConfig);
         const VERSION = config.version;
         const MODE = config.mode;
         const DELAY = config.showDelay;
-        let isSetupBound = false;
+        let hideBannerTimeout = null;
 
         // ── Storage helpers ──
         function getStored() {
@@ -193,7 +193,11 @@ const configJson = JSON.stringify(consentConfig);
         // ── Strict mode: dynamically inject analytics ──
         function injectAnalyticsStrict(categories) {
           if (MODE !== 'strict') return;
-          if (!categories.analytics) return;
+          // Find category key that maps to analytics_storage
+          const analyticsGranted = Object.keys(categoryGcmMap).some(function(catKey) {
+            return categoryGcmMap[catKey].indexOf('analytics_storage') !== -1 && categories[catKey];
+          });
+          if (!analyticsGranted) return;
           if (window.__consentAnalyticsInjected) return;
           window.__consentAnalyticsInjected = true;
 
@@ -235,6 +239,10 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── Banner show/hide ──
         function showBanner() {
+          if (hideBannerTimeout) {
+            clearTimeout(hideBannerTimeout);
+            hideBannerTimeout = null;
+          }
           const banner = document.getElementById('consent-banner');
           if (!banner) return;
           banner.removeAttribute('hidden');
@@ -242,10 +250,17 @@ const configJson = JSON.stringify(consentConfig);
         }
 
         function hideBanner() {
+          if (hideBannerTimeout) {
+            clearTimeout(hideBannerTimeout);
+            hideBannerTimeout = null;
+          }
           const banner = document.getElementById('consent-banner');
           if (!banner) return;
           banner.classList.remove('consent-banner--visible');
-          setTimeout(function() { banner.setAttribute('hidden', ''); }, 300);
+          hideBannerTimeout = setTimeout(function() {
+            banner.setAttribute('hidden', '');
+            hideBannerTimeout = null;
+          }, 300);
         }
 
         // ── Reopener ──
@@ -395,8 +410,8 @@ const configJson = JSON.stringify(consentConfig);
         }
 
         // Initial setup — guard prevents duplicate listener registration on re-execution
-        if (!isSetupBound) {
-          isSetupBound = true;
+        if (!window.__consentBannerIsSetupBound) {
+          window.__consentBannerIsSetupBound = true;
 
           if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', setup);
