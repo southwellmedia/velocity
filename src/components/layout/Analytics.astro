@@ -86,13 +86,12 @@ const analyticsDataJson = JSON.stringify({
 {/* ── No consent: load GTM directly ── */}
 {noConsent && hasGtm && (
   <script is:inline>
-    /* analytics: noConsent GTM loader — pin hash in astro.config.mjs */
     (function(){
-      var d = JSON.parse(document.getElementById('analytics-data').textContent);
-      var i = d.gtmId;
+      const d = JSON.parse(document.getElementById('analytics-data').textContent);
+      const i = d.gtmId;
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-      var f = document.getElementsByTagName('script')[0],
+      const f = document.getElementsByTagName('script')[0],
         j = document.createElement('script');
       j.async = true;
       j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
@@ -106,11 +105,10 @@ const analyticsDataJson = JSON.stringify({
   <>
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
     <script is:inline>
-      /* analytics: noConsent GA config — pin hash in astro.config.mjs */
       (function(){
-        var d = JSON.parse(document.getElementById('analytics-data').textContent);
+        const d = JSON.parse(document.getElementById('analytics-data').textContent);
         window.dataLayer = window.dataLayer || [];
-        function gtag(){window.dataLayer.push(arguments);}
+        function gtag(...args){window.dataLayer.push(args);}
         gtag('js', new Date());
         gtag('config', d.gaId);
       })();
@@ -121,41 +119,40 @@ const analyticsDataJson = JSON.stringify({
 {/* ── Consent enabled: set consent defaults BEFORE loading scripts ── */}
 {consentEnabled && hasAnalytics && (
   <script is:inline>
-    /* analytics: consent defaults — pin hash in astro.config.mjs */
     (function(){
-      var d = JSON.parse(document.getElementById('analytics-data').textContent);
+      const d = JSON.parse(document.getElementById('analytics-data').textContent);
       window.dataLayer = window.dataLayer || [];
-      function gtag(){window.dataLayer.push(arguments);}
+      function gtag(...args){window.dataLayer.push(args);}
 
-      var stored = null;
+      let stored = null;
       try {
-        var raw = localStorage.getItem(d.storageKey);
+        const raw = localStorage.getItem(d.storageKey);
         if (raw) {
-          var parsed = JSON.parse(raw);
+          const parsed = JSON.parse(raw);
           if (parsed && parsed.version === d.configVersion) {
             stored = parsed;
           }
         }
-      } catch(e) { /* ignored */ }
+      } catch { /* ignored */ }
 
-      var gcmValues = {};
-      var keys = Object.keys(d.gcmDefaults);
-      for (var k = 0; k < keys.length; k++) { gcmValues[keys[k]] = d.gcmDefaults[keys[k]]; }
-      var decided = false;
-      var categories = {};
-      var catKeys = Object.keys(d.categoryDefaults);
-      for (var c = 0; c < catKeys.length; c++) { categories[catKeys[c]] = d.categoryDefaults[catKeys[c]]; }
+      const gcmValues = {};
+      const keys = Object.keys(d.gcmDefaults);
+      for (let k = 0; k < keys.length; k++) { gcmValues[keys[k]] = d.gcmDefaults[keys[k]]; }
+      let decided = false;
+      let categories = {};
+      const catKeys = Object.keys(d.categoryDefaults);
+      for (let c = 0; c < catKeys.length; c++) { categories[catKeys[c]] = d.categoryDefaults[catKeys[c]]; }
 
       if (stored && stored.categories) {
         decided = true;
         categories = stored.categories;
 
-        var mapKeys = Object.keys(d.categoryGcmMap);
-        for (var m = 0; m < mapKeys.length; m++) {
-          var catKey = mapKeys[m];
-          var granted = !!categories[catKey];
-          var gcmTypes = d.categoryGcmMap[catKey];
-          for (var g = 0; g < gcmTypes.length; g++) {
+        const mapKeys = Object.keys(d.categoryGcmMap);
+        for (let m = 0; m < mapKeys.length; m++) {
+          const catKey = mapKeys[m];
+          const granted = !!categories[catKey];
+          const gcmTypes = d.categoryGcmMap[catKey];
+          for (let g = 0; g < gcmTypes.length; g++) {
             gcmValues[gcmTypes[g]] = granted ? 'granted' : 'denied';
           }
         }
@@ -170,13 +167,12 @@ const analyticsDataJson = JSON.stringify({
 {/* ── V2 mode: load GTM after consent defaults ── */}
 {isV2 && hasGtm && (
   <script is:inline>
-    /* analytics: v2 GTM loader — pin hash in astro.config.mjs */
     (function(){
-      var d = JSON.parse(document.getElementById('analytics-data').textContent);
-      var i = d.gtmId;
+      const d = JSON.parse(document.getElementById('analytics-data').textContent);
+      const i = d.gtmId;
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-      var f = document.getElementsByTagName('script')[0],
+      const f = document.getElementsByTagName('script')[0],
         j = document.createElement('script');
       j.async = true;
       j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
@@ -190,11 +186,10 @@ const analyticsDataJson = JSON.stringify({
   <>
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
     <script is:inline>
-      /* analytics: v2 GA config — pin hash in astro.config.mjs */
       (function(){
-        var d = JSON.parse(document.getElementById('analytics-data').textContent);
+        const d = JSON.parse(document.getElementById('analytics-data').textContent);
         window.dataLayer = window.dataLayer || [];
-        function gtag(){window.dataLayer.push(arguments);}
+        function gtag(...args){window.dataLayer.push(args);}
         gtag('js', new Date());
         gtag('config', d.gaId);
       })();
@@ -213,14 +208,13 @@ const analyticsDataJson = JSON.stringify({
 {/* ── Strict mode: conditionally load GTM if consent already granted ── */}
 {isStrict && hasGtm && (
   <script is:inline>
-    /* analytics: strict GTM loader — pin hash in astro.config.mjs */
     (function(){
-      var d = JSON.parse(document.getElementById('analytics-data').textContent);
+      const d = JSON.parse(document.getElementById('analytics-data').textContent);
       if (window.__consentState && window.__consentState.decided && window.__consentState.categories[d.analyticsCategoryKey]) {
-        var i = d.gtmId;
+        const i = d.gtmId;
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-        var f = document.getElementsByTagName('script')[0],
+        const f = document.getElementsByTagName('script')[0],
           j = document.createElement('script');
         j.async = true;
         j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
@@ -233,16 +227,15 @@ const analyticsDataJson = JSON.stringify({
 {/* ── Strict mode: conditionally load GA if consent already granted ── */}
 {isStrict && hasGa && (
   <script is:inline>
-    /* analytics: strict GA loader — pin hash in astro.config.mjs */
     (function(){
-      var d = JSON.parse(document.getElementById('analytics-data').textContent);
+      const d = JSON.parse(document.getElementById('analytics-data').textContent);
       if (window.__consentState && window.__consentState.decided && window.__consentState.categories[d.analyticsCategoryKey]) {
-        var s = document.createElement('script');
+        const s = document.createElement('script');
         s.async = true;
         s.src = 'https://www.googletagmanager.com/gtag/js?id=' + d.gaId;
         document.head.appendChild(s);
         window.dataLayer = window.dataLayer || [];
-        function gtag(){window.dataLayer.push(arguments);}
+        function gtag(...args){window.dataLayer.push(args);}
         gtag('js', new Date());
         gtag('config', d.gaId);
       }

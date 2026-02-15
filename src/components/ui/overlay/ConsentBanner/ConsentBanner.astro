@@ -143,6 +143,18 @@ const configJson = JSON.stringify(consentConfig);
     <script type="application/json" id="consent-gcm-map-data" set:html={categoryGcmMapJson} />
 
     <script>
+      interface ConsentWindow extends Window {
+        dataLayer: Record<string, unknown>[];
+        gtag: (...args: unknown[]) => void;
+        __consentState: { decided: boolean; categories: Record<string, boolean> } | undefined;
+        __consentAnalyticsInjected: boolean | undefined;
+        __consentBannerIsSetupBound: boolean | undefined;
+        openConsentSettings: (() => void) | undefined;
+        openDialog: ((id: string) => void) | undefined;
+        closeDialog: ((id: string) => void) | undefined;
+      }
+      const w = window as unknown as ConsentWindow;
+
       function initConsentBanner() {
         const configEl = document.getElementById('consent-config-data');
         const gcmMapEl = document.getElementById('consent-gcm-map-data');
@@ -181,10 +193,10 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── GCM update (dynamic mapping) ──
         function updateGCM(categories: Record<string, boolean>) {
-          if (typeof (window as any).gtag !== 'function') {
-            (window as any).dataLayer = (window as any).dataLayer || [];
-            if (typeof (window as any).gtag !== 'function') {
-              (window as any).gtag = function() { (window as any).dataLayer.push(arguments); };
+          if (typeof w.gtag !== 'function') {
+            w.dataLayer = w.dataLayer || [];
+            if (typeof w.gtag !== 'function') {
+              w.gtag = function(...args: unknown[]) { w.dataLayer.push(args as unknown as Record<string, unknown>); };
             }
           }
 
@@ -196,7 +208,7 @@ const configJson = JSON.stringify(consentConfig);
             });
           });
 
-          (window as any).gtag('consent', 'update', gcm);
+          w.gtag('consent', 'update', gcm);
         }
 
         // ── Strict mode: dynamically inject analytics ──
@@ -206,8 +218,8 @@ const configJson = JSON.stringify(consentConfig);
             return categoryGcmMap[catKey].indexOf('analytics_storage') !== -1 && categories[catKey];
           });
           if (!analyticsGranted) return;
-          if ((window as any).__consentAnalyticsInjected) return;
-          (window as any).__consentAnalyticsInjected = true;
+          if (w.__consentAnalyticsInjected) return;
+          w.__consentAnalyticsInjected = true;
 
           const gtmMeta = document.querySelector('meta[name="gtm-id"]');
           const gaMeta = document.querySelector('meta[name="ga-id"]');
@@ -215,8 +227,8 @@ const configJson = JSON.stringify(consentConfig);
           const gaId = gaMeta ? gaMeta.getAttribute('content') : null;
 
           if (gtmId) {
-            (window as any).dataLayer = (window as any).dataLayer || [];
-            (window as any).dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+            w.dataLayer = w.dataLayer || [];
+            w.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
             const gtmScript = document.createElement('script');
             gtmScript.async = true;
             gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=' + gtmId;
@@ -226,8 +238,8 @@ const configJson = JSON.stringify(consentConfig);
             gaScript.async = true;
             gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
             document.head.appendChild(gaScript);
-            (window as any).gtag('js', new Date());
-            (window as any).gtag('config', gaId);
+            w.gtag('js', new Date());
+            w.gtag('config', gaId);
           }
         }
 
@@ -237,7 +249,7 @@ const configJson = JSON.stringify(consentConfig);
           updateGCM(categories);
           injectAnalyticsStrict(categories);
 
-          (window as any).__consentState = { decided: true, categories: categories };
+          w.__consentState = { decided: true, categories: categories };
           window.dispatchEvent(new CustomEvent('consent-updated', { detail: { categories: categories } }));
 
           hideBanner();
@@ -293,19 +305,19 @@ const configJson = JSON.stringify(consentConfig);
             }
           });
 
-          if (typeof (window as any).openDialog === 'function') {
-            (window as any).openDialog('consent-settings');
+          if (typeof w.openDialog === 'function') {
+            w.openDialog('consent-settings');
           }
         }
 
         function closeSettings() {
-          if (typeof (window as any).closeDialog === 'function') {
-            (window as any).closeDialog('consent-settings');
+          if (typeof w.closeDialog === 'function') {
+            w.closeDialog('consent-settings');
           }
         }
 
         // ── Global API ──
-        (window as any).openConsentSettings = openSettings;
+        w.openConsentSettings = openSettings;
 
         // ── Build categories from toggles ──
         function getCategoriesFromToggles() {
@@ -343,13 +355,13 @@ const configJson = JSON.stringify(consentConfig);
           banner.setAttribute('hidden', '');
 
           const stored = getStored();
-          if (stored && stored.categories && (!(window as any).__consentState || !(window as any).__consentState.decided)) {
-            (window as any).__consentState = { decided: true, categories: stored.categories };
+          if (stored && stored.categories && (!w.__consentState || !w.__consentState.decided)) {
+            w.__consentState = { decided: true, categories: stored.categories };
             updateGCM(stored.categories);
             injectAnalyticsStrict(stored.categories);
           }
 
-          const state = (window as any).__consentState;
+          const state = w.__consentState;
           if (state && state.decided) {
             showReopener();
             return;
@@ -372,7 +384,7 @@ const configJson = JSON.stringify(consentConfig);
             mutations.forEach(function(mutation) {
               if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 if (dialogEl.classList.contains('hidden')) {
-                  const state = (window as any).__consentState;
+                  const state = w.__consentState;
                   if (!state || !state.decided) {
                     showBanner();
                   } else {
