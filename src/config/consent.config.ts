@@ -50,6 +50,8 @@ const consentConfig: ConsentConfig = {
     customize: 'Customize',
     savePreferences: 'Save Preferences',
     settingsHeading: 'Privacy Settings',
+    alwaysOnLabel: 'Always on',
+    privacyPolicyLabel: 'Privacy Policy',
   },
 
   /** Milliseconds before banner slides in */

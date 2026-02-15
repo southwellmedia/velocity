@@ -40,6 +40,13 @@ for (const [key, cat] of Object.entries(consentConfig.categories)) {
 }
 const categoryDefaultsJson = JSON.stringify(categoryDefaults);
 
+// Build category → GCM type mapping for dynamic resolution
+const categoryGcmMap: Record<string, string[]> = {};
+for (const [key, cat] of Object.entries(consentConfig.categories)) {
+  categoryGcmMap[key] = cat.gcmTypes;
+}
+const categoryGcmMapJson = JSON.stringify(categoryGcmMap);
+
 // Rendering flags — keeps template conditions simple and highlighter-friendly
 const hasGtm = !!gtmId;
 const hasGa = !!gaId && !gtmId;
@@ -78,7 +85,7 @@ const isStrict = consentEnabled && consentMode === 'strict';
 )}
 
 {consentEnabled && hasAnalytics && (
-  <script is:inline define:vars={{ storageKey, configVersion, gcmDefaultsJson, categoryDefaultsJson }}>
+  <script is:inline define:vars={{ storageKey, configVersion, gcmDefaultsJson, categoryDefaultsJson, categoryGcmMapJson }}>
     window.dataLayer = window.dataLayer || [];
     // eslint-disable-next-line prefer-rest-params
     function gtag(){dataLayer.push(arguments);}
@@ -102,16 +109,14 @@ const isStrict = consentEnabled && consentMode === 'strict';
       decided = true;
       categories = stored.categories;
 
-      if (categories.analytics) gcmValues['analytics_storage'] = 'granted';
-      if (categories.marketing) {
-        gcmValues['ad_storage'] = 'granted';
-        gcmValues['ad_user_data'] = 'granted';
-        gcmValues['ad_personalization'] = 'granted';
-      }
-      if (categories.preferences) {
-        gcmValues['functionality_storage'] = 'granted';
-        gcmValues['personalization_storage'] = 'granted';
-      }
+      const categoryGcmMap = JSON.parse(categoryGcmMapJson);
+      Object.keys(categoryGcmMap).forEach(function(catKey) {
+        if (categories[catKey]) {
+          categoryGcmMap[catKey].forEach(function(gcmType) {
+            gcmValues[gcmType] = 'granted';
+          });
+        }
+      });
     }
 
     // MUST execute before gtag.js / GTM loads
@@ -140,6 +145,7 @@ const isStrict = consentEnabled && consentMode === 'strict';
   <>
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
     <script is:inline define:vars={{ gaId }}>
+      /* global gtag */
       gtag('js', new Date());
       gtag('config', gaId);
     </script>
@@ -172,6 +178,7 @@ const isStrict = consentEnabled && consentMode === 'strict';
 
 {isStrict && hasGa && (
   <script is:inline define:vars={{ gaId }}>
+    /* global gtag */
     if (window.__consentState && window.__consentState.decided && window.__consentState.categories.analytics) {
       const s = document.createElement('script');
       s.async = true;

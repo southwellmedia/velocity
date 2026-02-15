@@ -5,8 +5,11 @@
  * Google Consent Mode v2 type mappings.
  */
 
-/** Consent categories that users can toggle */
-export type ConsentCategory = 'necessary' | 'analytics' | 'marketing' | 'preferences';
+/** Built-in consent categories (provided for reference / convenience) */
+export type DefaultConsentCategory = 'necessary' | 'analytics' | 'marketing' | 'preferences';
+
+/** Consent category key — any string so users can add custom categories */
+export type ConsentCategory = string;
 
 /** Consent enforcement mode */
 export type ConsentModeType = 'consent_mode_v2' | 'strict';
@@ -42,7 +45,7 @@ export interface ConsentPreferences {
   /** ISO timestamp of when consent was given */
   timestamp: string;
   /** Per-category granted/denied state */
-  categories: Record<ConsentCategory, boolean>;
+  categories: Record<string, boolean>;
 }
 
 /** UI text strings for the consent banner */
@@ -54,6 +57,10 @@ export interface ConsentUIText {
   customize: string;
   savePreferences: string;
   settingsHeading: string;
+  /** Label shown on the "always on" badge for required categories */
+  alwaysOnLabel?: string;
+  /** Label for the privacy policy link */
+  privacyPolicyLabel?: string;
 }
 
 /** Full consent manager configuration */
@@ -65,7 +72,7 @@ export interface ConsentConfig {
   /** localStorage key for storing preferences */
   storageKey: string;
   /** Category definitions */
-  categories: Record<ConsentCategory, ConsentCategoryConfig>;
+  categories: Record<string, ConsentCategoryConfig>;
   /** UI text strings */
   ui: ConsentUIText;
   /** Milliseconds before banner appears */

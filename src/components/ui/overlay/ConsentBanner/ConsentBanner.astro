@@ -3,24 +3,59 @@
  * ConsentBanner Component
  *
  * Cookie consent UI with Google Consent Mode v2 integration.
- * Shows a bottom bar banner with Accept/Decline + Customize settings panel.
+ * Shows a banner with Accept/Decline + Customize settings panel using Dialog.
  * Only renders when PUBLIC_CONSENT_ENABLED is true.
  */
-import { PUBLIC_CONSENT_ENABLED } from 'astro:env/client';
+import { PUBLIC_CONSENT_ENABLED, PUBLIC_PRIVACY_POLICY_URL } from 'astro:env/client';
 import consentConfig from '@/config/consent.config';
+import Dialog from '@/components/ui/overlay/Dialog';
+import type { ConsentUIText } from '@/lib/consent.types';
+
+interface Props {
+  position?: 'top' | 'bottom';
+  ui?: Partial<ConsentUIText>;
+  alwaysOnLabel?: string;
+  class?: string;
+}
+
+const {
+  position = 'bottom',
+  ui: uiOverrides,
+  alwaysOnLabel: alwaysOnLabelProp,
+  class: className,
+} = Astro.props;
 
 const consentEnabled = PUBLIC_CONSENT_ENABLED;
+const privacyPolicyUrl = PUBLIC_PRIVACY_POLICY_URL;
 
-// Serialize config for client-side use via define:vars
+// Merge UI text: props override config defaults
+const ui = { ...consentConfig.ui, ...uiOverrides };
+const alwaysOnLabel = alwaysOnLabelProp ?? ui.alwaysOnLabel ?? 'Always on';
+const privacyPolicyLabel = ui.privacyPolicyLabel ?? 'Privacy Policy';
+
+const isTop = position === 'top';
+
+// Build category → GCM type mapping for dynamic GCM updates
+const categoryGcmMap: Record<string, string[]> = {};
+for (const [key, cat] of Object.entries(consentConfig.categories)) {
+  categoryGcmMap[key] = cat.gcmTypes;
+}
+const categoryGcmMapJson = JSON.stringify(categoryGcmMap);
+
+// Serialize config for client-side use
 const configJson = JSON.stringify(consentConfig);
 ---
 
 {consentEnabled && (
   <>
-    <!-- Bottom Bar Banner -->
+    <!-- Bottom/Top Bar Banner -->
     <div
       id="consent-banner"
-      class="consent-banner"
+      class:list={[
+        'consent-banner',
+        isTop ? 'consent-banner--top' : 'consent-banner--bottom',
+        className,
+      ]}
       role="dialog"
       aria-modal="false"
       aria-label="Cookie consent"
@@ -28,10 +63,18 @@ const configJson = JSON.stringify(consentConfig);
       <div class="consent-banner-inner">
         <div class="consent-banner-content">
           <p class="consent-banner-heading" id="consent-banner-heading">
-            {consentConfig.ui.heading}
+            {ui.heading}
           </p>
           <p class="consent-banner-description">
-            {consentConfig.ui.description}
+            {ui.description}
+            {privacyPolicyUrl && (
+              <>
+                {' '}
+                <a href={privacyPolicyUrl} class="consent-privacy-link">
+                  {privacyPolicyLabel}
+                </a>
+              </>
+            )}
           </p>
         </div>
         <div class="consent-banner-actions">
@@ -40,101 +83,76 @@ const configJson = JSON.stringify(consentConfig);
             id="consent-accept-all"
             class="consent-btn consent-btn-primary"
           >
-            {consentConfig.ui.acceptAll}
+            {ui.acceptAll}
           </button>
           <button
             type="button"
             id="consent-decline-all"
             class="consent-btn consent-btn-secondary"
           >
-            {consentConfig.ui.declineAll}
+            {ui.declineAll}
           </button>
           <button
             type="button"
             id="consent-customize"
             class="consent-btn-link"
           >
-            {consentConfig.ui.customize}
+            {ui.customize}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Settings Panel Overlay -->
-    <div
-      id="consent-settings"
-      class="consent-settings-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="consent-settings-heading"
-    >
-      <div class="consent-settings-backdrop" aria-hidden="true"></div>
-      <div class="consent-settings-container">
-        <div class="consent-settings-panel" id="consent-settings-panel">
-          <div class="consent-settings-header">
-            <h2 id="consent-settings-heading" class="consent-settings-title">
-              {consentConfig.ui.settingsHeading}
-            </h2>
-            <button
-              type="button"
-              id="consent-settings-close"
-              class="consent-settings-close-btn"
-              aria-label="Close privacy settings"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M18 6 6 18"></path>
-                <path d="m6 6 12 12"></path>
-              </svg>
-            </button>
-          </div>
-
-          <div class="consent-settings-body">
-            {Object.entries(consentConfig.categories).map(([key, cat]) => (
-              <div class="consent-category" data-category={key}>
-                <div class="consent-category-info">
-                  <span class="consent-category-label">{cat.label}</span>
-                  {cat.required && (
-                    <span class="consent-category-badge">Always on</span>
-                  )}
-                  <p class="consent-category-description">{cat.description}</p>
-                </div>
-                <label class="consent-toggle" data-consent-toggle={key}>
-                  <input
-                    type="checkbox"
-                    class="sr-only peer"
-                    checked={cat.required || cat.defaultEnabled}
-                    disabled={cat.required}
-                    data-consent-checkbox={key}
-                    role="switch"
-                    aria-checked={cat.required || cat.defaultEnabled ? 'true' : 'false'}
-                    aria-label={`${cat.label} cookies`}
-                  />
-                  <div class="consent-toggle-track">
-                    <div class="consent-toggle-thumb" data-thumb></div>
-                  </div>
-                </label>
+    <!-- Settings Panel via Dialog -->
+    <Dialog id="consent-settings" title={ui.settingsHeading} size="md">
+      <div class="consent-settings-body">
+        {Object.entries(consentConfig.categories).map(([key, cat]) => (
+          <div class="consent-category" data-category={key}>
+            <div class="consent-category-info">
+              <span class="consent-category-label">{cat.label}</span>
+              {cat.required && (
+                <span class="consent-category-badge">{alwaysOnLabel}</span>
+              )}
+              <p class="consent-category-description">{cat.description}</p>
+            </div>
+            <label class="consent-toggle" data-consent-toggle={key}>
+              <input
+                type="checkbox"
+                class="sr-only peer"
+                checked={cat.required || cat.defaultEnabled}
+                disabled={cat.required}
+                data-consent-checkbox={key}
+                role="switch"
+                aria-checked={cat.required || cat.defaultEnabled ? 'true' : 'false'}
+                aria-label={`${cat.label} cookies`}
+              />
+              <div class="consent-toggle-track">
+                <div class="consent-toggle-thumb" data-thumb></div>
               </div>
-            ))}
+            </label>
           </div>
-
-          <div class="consent-settings-footer">
-            <button
-              type="button"
-              id="consent-save-preferences"
-              class="consent-btn consent-btn-primary consent-btn-full"
-            >
-              {consentConfig.ui.savePreferences}
-            </button>
-          </div>
-        </div>
+        ))}
       </div>
-    </div>
+
+      <div slot="footer" class="consent-settings-footer">
+        <button
+          type="button"
+          id="consent-save-preferences"
+          class="consent-btn consent-btn-primary consent-btn-full"
+        >
+          {ui.savePreferences}
+        </button>
+      </div>
+    </Dialog>
 
     <!-- Reopener Button -->
     <button
       type="button"
       id="consent-reopener"
-      class="consent-reopener"
+      class:list={[
+        'consent-reopener',
+        isTop ? 'consent-reopener--top' : 'consent-reopener--bottom',
+      ]}
       aria-label="Open cookie settings"
     >
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -143,9 +161,10 @@ const configJson = JSON.stringify(consentConfig);
     </button>
 
     <!-- Inline Script -->
-    <script is:inline define:vars={{ configJson }}>
+    <script is:inline define:vars={{ configJson, categoryGcmMapJson }}>
       (function() {
         const config = JSON.parse(configJson);
+        const categoryGcmMap = JSON.parse(categoryGcmMapJson);
         const STORAGE_KEY = config.storageKey;
         const VERSION = config.version;
         const MODE = config.mode;
@@ -165,18 +184,17 @@ const configJson = JSON.stringify(consentConfig);
 
         function saveConsent(categories) {
           const prefs = {
-      version: VERSION,
-      timestamp: new Date().toISOString(),
-      categories: categories
-    };
+            version: VERSION,
+            timestamp: new Date().toISOString(),
+            categories: categories
+          };
           try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch { /* ignored */ }
           return prefs;
         }
 
-        // ── GCM update ──
+        // ── GCM update (dynamic mapping) ──
         function updateGCM(categories) {
           if (typeof window.gtag !== 'function') {
-            // gtag may not exist yet — define a minimal version
             window.dataLayer = window.dataLayer || [];
             if (typeof window.gtag !== 'function') {
               window.gtag = function() { window.dataLayer.push(arguments); }; // eslint-disable-line prefer-rest-params
@@ -184,12 +202,12 @@ const configJson = JSON.stringify(consentConfig);
           }
 
           const gcm = { security_storage: 'granted' };
-          gcm.analytics_storage = categories.analytics ? 'granted' : 'denied';
-          gcm.ad_storage = categories.marketing ? 'granted' : 'denied';
-          gcm.ad_user_data = categories.marketing ? 'granted' : 'denied';
-          gcm.ad_personalization = categories.marketing ? 'granted' : 'denied';
-          gcm.functionality_storage = categories.preferences ? 'granted' : 'denied';
-          gcm.personalization_storage = categories.preferences ? 'granted' : 'denied';
+          Object.keys(categoryGcmMap).forEach(function(catKey) {
+            const granted = !!categories[catKey];
+            categoryGcmMap[catKey].forEach(function(gcmType) {
+              gcm[gcmType] = granted ? 'granted' : 'denied';
+            });
+          });
 
           window.gtag('consent', 'update', gcm);
         }
@@ -201,7 +219,6 @@ const configJson = JSON.stringify(consentConfig);
           if (window.__consentAnalyticsInjected) return;
           window.__consentAnalyticsInjected = true;
 
-          // Check for GTM or GA IDs from the consent state
           const gtmMeta = document.querySelector('meta[name="gtm-id"]');
           const gaMeta = document.querySelector('meta[name="ga-id"]');
           const gtmId = gtmMeta ? gtmMeta.getAttribute('content') : null;
@@ -230,10 +247,7 @@ const configJson = JSON.stringify(consentConfig);
           updateGCM(categories);
           injectAnalyticsStrict(categories);
 
-          // Update global state
           window.__consentState = { decided: true, categories: categories };
-
-          // Dispatch event for other scripts
           window.dispatchEvent(new CustomEvent('consent-updated', { detail: { categories: categories } }));
 
           hideBanner();
@@ -267,15 +281,8 @@ const configJson = JSON.stringify(consentConfig);
           if (btn) btn.classList.remove('consent-reopener--visible');
         }
 
-        // ── Settings panel ──
-        let previousActiveElement = null;
-
+        // ── Settings panel (via Dialog API) ──
         function openSettings() {
-          const overlay = document.getElementById('consent-settings');
-          if (!overlay) return;
-
-          previousActiveElement = document.activeElement;
-
           // Sync toggles with current stored state
           const stored = getStored();
           Object.keys(config.categories).forEach(function(key) {
@@ -286,67 +293,14 @@ const configJson = JSON.stringify(consentConfig);
             }
           });
 
-          overlay.removeAttribute('hidden');
-          document.body.style.overflow = 'hidden';
-
-          requestAnimationFrame(function() {
-            overlay.classList.add('consent-settings--visible');
-            // Focus first interactive element
-            const closeBtn = document.getElementById('consent-settings-close');
-            if (closeBtn) closeBtn.focus();
-          });
-
-          document.addEventListener('keydown', settingsKeyHandler);
+          if (typeof window.openDialog === 'function') {
+            window.openDialog('consent-settings');
+          }
         }
 
         function closeSettings() {
-          const overlay = document.getElementById('consent-settings');
-          if (!overlay) return;
-
-          overlay.classList.remove('consent-settings--visible');
-          document.body.style.overflow = '';
-          document.removeEventListener('keydown', settingsKeyHandler);
-
-          setTimeout(function() {
-            overlay.setAttribute('hidden', '');
-            if (previousActiveElement && typeof previousActiveElement.focus === 'function') {
-              previousActiveElement.focus();
-            }
-          }, 200);
-        }
-
-        function settingsKeyHandler(e) {
-          if (e.key === 'Escape') {
-            e.preventDefault();
-            closeSettings();
-            return;
-          }
-
-          // Focus trap
-          if (e.key === 'Tab') {
-            const panel = document.getElementById('consent-settings-panel');
-            if (!panel) return;
-
-            const focusable = Array.from(
-        panel.querySelectorAll('button, input:not([disabled]), [tabindex]:not([tabindex="-1"])')
-      ).filter(function(el) { return !el.hasAttribute('disabled') && el.offsetParent !== null; });
-
-            if (focusable.length === 0) return;
-
-            const first = focusable[0];
-            const last = focusable[focusable.length - 1];
-
-            if (e.shiftKey) {
-              if (document.activeElement === first) {
-                e.preventDefault();
-                last.focus();
-              }
-            } else {
-              if (document.activeElement === last) {
-                e.preventDefault();
-                first.focus();
-              }
-            }
+          if (typeof window.closeDialog === 'function') {
+            window.closeDialog('consent-settings');
           }
         }
 
@@ -384,13 +338,10 @@ const configJson = JSON.stringify(consentConfig);
         // ── Initialize ──
         function init() {
           const banner = document.getElementById('consent-banner');
-          const settings = document.getElementById('consent-settings');
-
           if (!banner) return;
 
           // Set initial hidden state
           banner.setAttribute('hidden', '');
-          if (settings) settings.setAttribute('hidden', '');
 
           // Check if consent already decided
           const state = window.__consentState;
@@ -403,15 +354,36 @@ const configJson = JSON.stringify(consentConfig);
           setTimeout(showBanner, DELAY);
         }
 
+        // ── Re-show banner when Dialog closes without saving ──
+        function watchDialogClose() {
+          const dialogEl = document.getElementById('consent-settings');
+          if (!dialogEl) return;
+
+          // Use MutationObserver to detect when Dialog adds 'hidden' class
+          const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+              if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                if (dialogEl.classList.contains('hidden')) {
+                  const state = window.__consentState;
+                  if (!state || !state.decided) {
+                    showBanner();
+                  } else {
+                    showReopener();
+                  }
+                }
+              }
+            });
+          });
+          observer.observe(dialogEl, { attributes: true, attributeFilter: ['class'] });
+        }
+
         // ── Bind event listeners ──
         function bindEvents() {
           const acceptBtn = document.getElementById('consent-accept-all');
           const declineBtn = document.getElementById('consent-decline-all');
           const customizeBtn = document.getElementById('consent-customize');
-          const closeBtn = document.getElementById('consent-settings-close');
           const saveBtn = document.getElementById('consent-save-preferences');
           const reopenerBtn = document.getElementById('consent-reopener');
-          const backdrop = document.querySelector('.consent-settings-backdrop');
 
           if (acceptBtn) acceptBtn.addEventListener('click', function() {
             applyConsent(buildAllGranted());
@@ -425,10 +397,6 @@ const configJson = JSON.stringify(consentConfig);
             hideBanner();
             openSettings();
           });
-
-          if (closeBtn) closeBtn.addEventListener('click', closeSettings);
-
-          if (backdrop) backdrop.addEventListener('click', closeSettings);
 
           if (saveBtn) saveBtn.addEventListener('click', function() {
             applyConsent(getCategoriesFromToggles());
@@ -445,6 +413,8 @@ const configJson = JSON.stringify(consentConfig);
               this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
             });
           });
+
+          watchDialogClose();
         }
 
         // Run on page load and view transitions
@@ -475,15 +445,24 @@ const configJson = JSON.stringify(consentConfig);
   /* ─── Banner ─── */
   .consent-banner {
     position: fixed;
-    bottom: 0;
     left: 0;
     right: 0;
     z-index: 50;
-    transform: translateY(100%);
     transition: transform var(--transition-slow) cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .consent-banner--visible {
+  .consent-banner--bottom {
+    bottom: 0;
+    transform: translateY(100%);
+  }
+
+  .consent-banner--top {
+    top: 0;
+    transform: translateY(-100%);
+  }
+
+  .consent-banner--visible.consent-banner--bottom,
+  .consent-banner--visible.consent-banner--top {
     transform: translateY(0);
   }
 
@@ -496,8 +475,16 @@ const configJson = JSON.stringify(consentConfig);
     margin: 0 auto;
     padding: 1.25rem 1.5rem;
     background: var(--background-elevated);
-    border-top: 1px solid var(--border);
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.08);
+  }
+
+  .consent-banner--bottom .consent-banner-inner {
+    border-top: 1px solid var(--border);
+  }
+
+  .consent-banner--top .consent-banner-inner {
+    border-bottom: 1px solid var(--border);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
   }
 
   .consent-banner-content {
@@ -518,6 +505,18 @@ const configJson = JSON.stringify(consentConfig);
     line-height: 1.5;
     color: var(--foreground-muted);
     margin: 0;
+  }
+
+  .consent-privacy-link {
+    color: var(--primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 500;
+    transition: color var(--transition-fast);
+  }
+
+  .consent-privacy-link:hover {
+    color: var(--primary-hover);
   }
 
   .consent-banner-actions {
@@ -596,109 +595,14 @@ const configJson = JSON.stringify(consentConfig);
     width: 100%;
   }
 
-  /* ─── Settings Overlay ─── */
-  .consent-settings-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 51;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-  }
-
-  .consent-settings-backdrop {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(4px);
-    opacity: 0;
-    transition: opacity var(--transition-normal);
-  }
-
-  .consent-settings--visible .consent-settings-backdrop {
-    opacity: 1;
-  }
-
-  .consent-settings-container {
-    position: relative;
-    width: 100%;
-    max-width: 32rem;
-    max-height: calc(100vh - 2rem);
-    display: flex;
-  }
-
-  .consent-settings-panel {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-height: calc(100vh - 2rem);
-    background: var(--background-elevated);
-    border: 1px solid var(--border);
-    border-radius: 1rem;
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
-    opacity: 0;
-    transform: scale(0.96) translateY(8px);
-    transition:
-      opacity var(--transition-normal),
-      transform var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  .consent-settings--visible .consent-settings-panel {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-
-  .consent-settings-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
-
-  .consent-settings-title {
-    font-weight: 600;
-    font-size: 1.0625rem;
-    color: var(--foreground);
-    margin: 0;
-  }
-
-  .consent-settings-close-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 0.5rem;
-    border: none;
-    background: none;
-    color: var(--foreground-muted);
-    cursor: pointer;
-    transition: color var(--transition-fast), background-color var(--transition-fast);
-  }
-
-  .consent-settings-close-btn:hover {
-    color: var(--foreground);
-    background: var(--muted);
-  }
-
-  .consent-settings-close-btn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
-  }
-
+  /* ─── Settings (inside Dialog) ─── */
   .consent-settings-body {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    padding: 0.5rem 1.5rem;
+    padding: 0;
   }
 
   .consent-settings-footer {
     padding: 1.25rem 1.5rem;
     border-top: 1px solid var(--border);
-    flex-shrink: 0;
   }
 
   /* ─── Category rows ─── */
@@ -794,8 +698,6 @@ const configJson = JSON.stringify(consentConfig);
   /* ─── Reopener Button ─── */
   .consent-reopener {
     position: fixed;
-    bottom: 1rem;
-    left: 1rem;
     z-index: 49;
     display: flex;
     align-items: center;
@@ -816,6 +718,16 @@ const configJson = JSON.stringify(consentConfig);
       transform var(--transition-normal),
       color var(--transition-fast),
       background-color var(--transition-fast);
+  }
+
+  .consent-reopener--bottom {
+    bottom: 1rem;
+    left: 1rem;
+  }
+
+  .consent-reopener--top {
+    top: 1rem;
+    left: 1rem;
   }
 
   .consent-reopener--visible {
@@ -853,8 +765,6 @@ const configJson = JSON.stringify(consentConfig);
   /* ─── Reduced Motion ─── */
   @media (prefers-reduced-motion: reduce) {
     .consent-banner,
-    .consent-settings-backdrop,
-    .consent-settings-panel,
     .consent-toggle-track,
     .consent-toggle-thumb,
     .consent-reopener {
