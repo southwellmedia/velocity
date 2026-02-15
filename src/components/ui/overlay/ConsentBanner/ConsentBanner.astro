@@ -149,6 +149,7 @@ const configJson = JSON.stringify(consentConfig);
         const DELAY = config.showDelay;
         let hideBannerTimeout = null;
         let currentDialogObserver = null;
+        let bindController = null;
 
         // ── Storage helpers ──
         function getStored() {
@@ -342,6 +343,7 @@ const configJson = JSON.stringify(consentConfig);
           if (stored && stored.categories && (!window.__consentState || !window.__consentState.decided)) {
             window.__consentState = { decided: true, categories: stored.categories };
             updateGCM(stored.categories);
+            injectAnalyticsStrict(stored.categories);
           }
 
           // Check if consent already decided
@@ -386,6 +388,13 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── Bind event listeners ──
         function bindEvents() {
+          // Tear down previous listeners
+          if (bindController) {
+            bindController.abort();
+          }
+          bindController = new AbortController();
+          const signal = bindController.signal;
+
           const acceptBtn = document.getElementById('consent-accept-all');
           const declineBtn = document.getElementById('consent-decline-all');
           const customizeBtn = document.getElementById('consent-customize');
@@ -394,25 +403,25 @@ const configJson = JSON.stringify(consentConfig);
 
           if (acceptBtn) acceptBtn.addEventListener('click', function() {
             applyConsent(buildAllGranted());
-          });
+          }, { signal: signal });
 
           if (declineBtn) declineBtn.addEventListener('click', function() {
             applyConsent(buildAllDenied());
-          });
+          }, { signal: signal });
 
           if (customizeBtn) customizeBtn.addEventListener('click', function() {
             hideBanner();
             openSettings();
-          });
+          }, { signal: signal });
 
           if (saveBtn) saveBtn.addEventListener('click', function() {
             applyConsent(getCategoriesFromToggles());
-          });
+          }, { signal: signal });
 
           if (reopenerBtn) reopenerBtn.addEventListener('click', function() {
             hideReopener();
             openSettings();
-          });
+          }, { signal: signal });
 
           watchDialogClose();
         }
