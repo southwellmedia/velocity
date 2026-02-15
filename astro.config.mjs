@@ -39,7 +39,9 @@ export default defineConfig({
           "'self'",
           'https://www.googletagmanager.com',
           'https://www.google-analytics.com',
+          'https://vercel.live',
         ],
+        strictDynamic: true,
       },
       styleDirective: {
         resources: [
@@ -47,8 +49,8 @@ export default defineConfig({
         ],
       },
       directives: [
-        "font-src 'self'",
-        "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com",
+        "font-src 'self' data:",
+        "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://vercel.live",
         "img-src 'self' data: https://www.googletagmanager.com https://i.pravatar.cc https://www.southwellmedia.com",
       ],
     },

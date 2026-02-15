@@ -138,18 +138,25 @@ const configJson = JSON.stringify(consentConfig);
       </svg>
     </button>
 
-    <!-- Inline Script -->
-    <script is:inline define:vars={{ configJson, categoryGcmMapJson }}>
-      (function() {
-        const config = JSON.parse(configJson);
-        const categoryGcmMap = JSON.parse(categoryGcmMapJson);
+    <!-- Config data for client script -->
+    <script type="application/json" id="consent-config-data" set:html={configJson} />
+    <script type="application/json" id="consent-gcm-map-data" set:html={categoryGcmMapJson} />
+
+    <script>
+      function initConsentBanner() {
+        const configEl = document.getElementById('consent-config-data');
+        const gcmMapEl = document.getElementById('consent-gcm-map-data');
+        if (!configEl || !gcmMapEl) return;
+
+        const config = JSON.parse(configEl.textContent!);
+        const categoryGcmMap = JSON.parse(gcmMapEl.textContent!);
         const STORAGE_KEY = config.storageKey;
         const VERSION = config.version;
         const MODE = config.mode;
         const DELAY = config.showDelay;
-        let hideBannerTimeout = null;
-        let currentDialogObserver = null;
-        let bindController = null;
+        let hideBannerTimeout: ReturnType<typeof setTimeout> | null = null;
+        let currentDialogObserver: MutationObserver | null = null;
+        let bindController: AbortController | null = null;
 
         // ── Storage helpers ──
         function getStored() {
@@ -162,7 +169,7 @@ const configJson = JSON.stringify(consentConfig);
           } catch { return null; }
         }
 
-        function saveConsent(categories) {
+        function saveConsent(categories: Record<string, boolean>) {
           const prefs = {
             version: VERSION,
             timestamp: new Date().toISOString(),
@@ -173,35 +180,34 @@ const configJson = JSON.stringify(consentConfig);
         }
 
         // ── GCM update (dynamic mapping) ──
-        function updateGCM(categories) {
-          if (typeof window.gtag !== 'function') {
-            window.dataLayer = window.dataLayer || [];
-            if (typeof window.gtag !== 'function') {
-              window.gtag = function() { window.dataLayer.push(arguments); }; // eslint-disable-line prefer-rest-params
+        function updateGCM(categories: Record<string, boolean>) {
+          if (typeof (window as any).gtag !== 'function') {
+            (window as any).dataLayer = (window as any).dataLayer || [];
+            if (typeof (window as any).gtag !== 'function') {
+              (window as any).gtag = function() { (window as any).dataLayer.push(arguments); };
             }
           }
 
-          const gcm = { security_storage: 'granted' };
+          const gcm: Record<string, string> = { security_storage: 'granted' };
           Object.keys(categoryGcmMap).forEach(function(catKey) {
             const granted = !!categories[catKey];
-            categoryGcmMap[catKey].forEach(function(gcmType) {
+            categoryGcmMap[catKey].forEach(function(gcmType: string) {
               gcm[gcmType] = granted ? 'granted' : 'denied';
             });
           });
 
-          window.gtag('consent', 'update', gcm);
+          (window as any).gtag('consent', 'update', gcm);
         }
 
         // ── Strict mode: dynamically inject analytics ──
-        function injectAnalyticsStrict(categories) {
+        function injectAnalyticsStrict(categories: Record<string, boolean>) {
           if (MODE !== 'strict') return;
-          // Find category key that maps to analytics_storage
           const analyticsGranted = Object.keys(categoryGcmMap).some(function(catKey) {
             return categoryGcmMap[catKey].indexOf('analytics_storage') !== -1 && categories[catKey];
           });
           if (!analyticsGranted) return;
-          if (window.__consentAnalyticsInjected) return;
-          window.__consentAnalyticsInjected = true;
+          if ((window as any).__consentAnalyticsInjected) return;
+          (window as any).__consentAnalyticsInjected = true;
 
           const gtmMeta = document.querySelector('meta[name="gtm-id"]');
           const gaMeta = document.querySelector('meta[name="ga-id"]');
@@ -209,8 +215,8 @@ const configJson = JSON.stringify(consentConfig);
           const gaId = gaMeta ? gaMeta.getAttribute('content') : null;
 
           if (gtmId) {
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+            (window as any).dataLayer = (window as any).dataLayer || [];
+            (window as any).dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
             const gtmScript = document.createElement('script');
             gtmScript.async = true;
             gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=' + gtmId;
@@ -220,18 +226,18 @@ const configJson = JSON.stringify(consentConfig);
             gaScript.async = true;
             gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
             document.head.appendChild(gaScript);
-            window.gtag('js', new Date());
-            window.gtag('config', gaId);
+            (window as any).gtag('js', new Date());
+            (window as any).gtag('config', gaId);
           }
         }
 
         // ── Apply consent ──
-        function applyConsent(categories) {
+        function applyConsent(categories: Record<string, boolean>) {
           saveConsent(categories);
           updateGCM(categories);
           injectAnalyticsStrict(categories);
 
-          window.__consentState = { decided: true, categories: categories };
+          (window as any).__consentState = { decided: true, categories: categories };
           window.dispatchEvent(new CustomEvent('consent-updated', { detail: { categories: categories } }));
 
           hideBanner();
@@ -278,38 +284,37 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── Settings panel (via Dialog API) ──
         function openSettings() {
-          // Sync toggles with current stored state
           const stored = getStored();
-          Object.keys(config.categories).forEach(function(key) {
-            const cb = document.getElementById('consent-' + key);
+          Object.keys(config.categories).forEach(function(key: string) {
+            const cb = document.getElementById('consent-' + key) as HTMLInputElement | null;
             if (cb && !config.categories[key].required) {
               cb.checked = stored ? !!stored.categories[key] : config.categories[key].defaultEnabled;
               cb.setAttribute('aria-checked', cb.checked ? 'true' : 'false');
             }
           });
 
-          if (typeof window.openDialog === 'function') {
-            window.openDialog('consent-settings');
+          if (typeof (window as any).openDialog === 'function') {
+            (window as any).openDialog('consent-settings');
           }
         }
 
         function closeSettings() {
-          if (typeof window.closeDialog === 'function') {
-            window.closeDialog('consent-settings');
+          if (typeof (window as any).closeDialog === 'function') {
+            (window as any).closeDialog('consent-settings');
           }
         }
 
         // ── Global API ──
-        window.openConsentSettings = openSettings;
+        (window as any).openConsentSettings = openSettings;
 
         // ── Build categories from toggles ──
         function getCategoriesFromToggles() {
-          const cats = {};
-          Object.keys(config.categories).forEach(function(key) {
+          const cats: Record<string, boolean> = {};
+          Object.keys(config.categories).forEach(function(key: string) {
             if (config.categories[key].required) {
               cats[key] = true;
             } else {
-              const cb = document.getElementById('consent-' + key);
+              const cb = document.getElementById('consent-' + key) as HTMLInputElement | null;
               cats[key] = cb ? cb.checked : false;
             }
           });
@@ -317,14 +322,14 @@ const configJson = JSON.stringify(consentConfig);
         }
 
         function buildAllGranted() {
-          const cats = {};
-          Object.keys(config.categories).forEach(function(key) { cats[key] = true; });
+          const cats: Record<string, boolean> = {};
+          Object.keys(config.categories).forEach(function(key: string) { cats[key] = true; });
           return cats;
         }
 
         function buildAllDenied() {
-          const cats = {};
-          Object.keys(config.categories).forEach(function(key) {
+          const cats: Record<string, boolean> = {};
+          Object.keys(config.categories).forEach(function(key: string) {
             cats[key] = config.categories[key].required;
           });
           return cats;
@@ -335,25 +340,21 @@ const configJson = JSON.stringify(consentConfig);
           const banner = document.getElementById('consent-banner');
           if (!banner) return;
 
-          // Set initial hidden state
           banner.setAttribute('hidden', '');
 
-          // Restore from persisted data if __consentState not already set
           const stored = getStored();
-          if (stored && stored.categories && (!window.__consentState || !window.__consentState.decided)) {
-            window.__consentState = { decided: true, categories: stored.categories };
+          if (stored && stored.categories && (!(window as any).__consentState || !(window as any).__consentState.decided)) {
+            (window as any).__consentState = { decided: true, categories: stored.categories };
             updateGCM(stored.categories);
             injectAnalyticsStrict(stored.categories);
           }
 
-          // Check if consent already decided
-          const state = window.__consentState;
+          const state = (window as any).__consentState;
           if (state && state.decided) {
             showReopener();
             return;
           }
 
-          // Show banner after delay
           setTimeout(showBanner, DELAY);
         }
 
@@ -362,18 +363,16 @@ const configJson = JSON.stringify(consentConfig);
           const dialogEl = document.getElementById('consent-settings');
           if (!dialogEl) return;
 
-          // Disconnect previous observer to prevent duplicates
           if (currentDialogObserver) {
             currentDialogObserver.disconnect();
             currentDialogObserver = null;
           }
 
-          // Use MutationObserver to detect when Dialog adds 'hidden' class
           currentDialogObserver = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
               if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 if (dialogEl.classList.contains('hidden')) {
-                  const state = window.__consentState;
+                  const state = (window as any).__consentState;
                   if (!state || !state.decided) {
                     showBanner();
                   } else {
@@ -388,7 +387,6 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── Bind event listeners ──
         function bindEvents() {
-          // Tear down previous listeners
           if (bindController) {
             bindController.abort();
           }
@@ -432,20 +430,11 @@ const configJson = JSON.stringify(consentConfig);
           bindEvents();
         }
 
-        // Initial setup — guard prevents duplicate listener registration on re-execution
-        if (!window.__consentBannerIsSetupBound) {
-          window.__consentBannerIsSetupBound = true;
+        setup();
+      }
 
-          if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', setup);
-          } else {
-            setup();
-          }
-
-          // Astro view transitions
-          document.addEventListener('astro:page-load', setup);
-        }
-      })();
+      initConsentBanner();
+      document.addEventListener('astro:page-load', initConsentBanner);
     </script>
   </>
 )}

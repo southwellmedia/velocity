@@ -158,7 +158,7 @@ const sizes = {
           }
         });
 
-        document.body.style.overflow = 'hidden';
+        document.body.classList.add('overflow-hidden');
         document.addEventListener('keydown', trapFocus);
       }
 
@@ -169,7 +169,7 @@ const sizes = {
 
         setTimeout(() => {
           dialog.classList.add('hidden');
-          document.body.style.overflow = '';
+          document.body.classList.remove('overflow-hidden');
           previousActiveElement?.focus();
         }, 200);
 

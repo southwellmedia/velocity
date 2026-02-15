@@ -138,7 +138,7 @@ const menuId = `mobile-menu-${Math.random().toString(36).slice(2, 9)}`;
 const buttonId = `${menuId}-button`;
 ---
 
-<header class={headerClasses} {...attrs}>
+<header class={headerClasses} data-menu-id={menuId} data-button-id={buttonId} {...attrs}>
   <div class={innerClasses}>
     {/* Logo */}
     {
@@ -309,127 +309,115 @@ const buttonId = `${menuId}-button`;
   )
 }
 
-<script define:vars={{ menuId, buttonId }}>
+<script>
   function initMobileMenu() {
-    const button = document.getElementById(buttonId);
-    const menu = document.getElementById(menuId);
-    const backdrop = document.getElementById(`${menuId}-backdrop`);
-    const header = button?.closest('header');
-    const menuIcon = button?.querySelector('.menu-icon');
-    const closeIcon = button?.querySelector('.close-icon');
+    document.querySelectorAll<HTMLElement>('header[data-menu-id]').forEach((header) => {
+      const menuId = header.dataset.menuId!;
+      const buttonId = header.dataset.buttonId!;
 
-    if (!button || !menu || !menuIcon || !closeIcon) return;
+      const button = document.getElementById(buttonId);
+      const menu = document.getElementById(menuId);
+      const backdrop = document.getElementById(`${menuId}-backdrop`);
+      const menuIcon = button?.querySelector('.menu-icon');
+      const closeIcon = button?.querySelector('.close-icon');
 
-    let isOpen = false;
-    let isAnimating = false;
+      if (!button || !menu || !menuIcon || !closeIcon) return;
+      if (button.dataset.menuInit) return;
+      button.dataset.menuInit = 'true';
 
-    function open() {
-      if (isOpen || isAnimating) return;
-      isAnimating = true;
-      isOpen = true;
+      let isOpen = false;
+      let isAnimating = false;
 
-      button.setAttribute('aria-expanded', 'true');
-      menuIcon.classList.add('hidden');
-      closeIcon.classList.remove('hidden');
+      function open() {
+        if (isOpen || isAnimating) return;
+        isAnimating = true;
+        isOpen = true;
 
-      // Add solid background to header
-      if (header) {
+        button!.setAttribute('aria-expanded', 'true');
+        menuIcon!.classList.add('hidden');
+        closeIcon!.classList.remove('hidden');
+
+        // Add solid background to header
         header.classList.add('!bg-background');
-      }
 
-      // Fade out and blur the page content
-      const mainContent = document.querySelector('main');
-      const footer = document.querySelector('footer');
-      if (mainContent) {
-        mainContent.style.transition = 'opacity 200ms, filter 200ms';
-        mainContent.style.opacity = '0.3';
-        mainContent.style.filter = 'blur(4px)';
-      }
-      if (footer) {
-        footer.style.transition = 'opacity 200ms, filter 200ms';
-        footer.style.opacity = '0.3';
-        footer.style.filter = 'blur(4px)';
-      }
+        // Fade out and blur the page content
+        const mainContent = document.querySelector('main');
+        const footer = document.querySelector('footer');
+        if (mainContent) mainContent.classList.add('mobile-menu-blur');
+        if (footer) footer.classList.add('mobile-menu-blur');
 
-      // Show menu and backdrop with animations
-      menu.classList.remove('hidden', 'animate-menu-up', 'opacity-0', 'scale-y-0');
-      menu.classList.add('animate-menu-down');
-      if (backdrop) {
-        backdrop.classList.remove('pointer-events-none', 'animate-backdrop-out');
-        backdrop.classList.add('animate-backdrop');
-      }
-
-      isAnimating = false;
-    }
-
-    function close() {
-      if (!isOpen || isAnimating) return;
-      isAnimating = true;
-
-      button.setAttribute('aria-expanded', 'false');
-      menuIcon.classList.remove('hidden');
-      closeIcon.classList.add('hidden');
-
-      // Start closing animation
-      menu.classList.remove('animate-menu-down');
-      menu.classList.add('animate-menu-up');
-      if (backdrop) {
-        backdrop.classList.remove('animate-backdrop');
-        backdrop.classList.add('animate-backdrop-out');
-      }
-
-      // Restore page content
-      const mainContent = document.querySelector('main');
-      const footer = document.querySelector('footer');
-      if (mainContent) {
-        mainContent.style.opacity = '1';
-        mainContent.style.filter = 'none';
-      }
-      if (footer) {
-        footer.style.opacity = '1';
-        footer.style.filter = 'none';
-      }
-
-      // Wait for animation to complete before hiding
-      setTimeout(() => {
-        menu.classList.add('hidden', 'opacity-0', 'scale-y-0');
+        // Show menu and backdrop with animations
+        menu!.classList.remove('hidden', 'animate-menu-up', 'opacity-0', 'scale-y-0');
+        menu!.classList.add('animate-menu-down');
         if (backdrop) {
-          backdrop.classList.add('pointer-events-none');
+          backdrop.classList.remove('pointer-events-none', 'animate-backdrop-out');
+          backdrop.classList.add('animate-backdrop');
         }
-        // Remove solid background from header
-        if (header) {
-          header.classList.remove('!bg-background');
-        }
-        isOpen = false;
+
         isAnimating = false;
-      }, 200); // Match transition duration
-    }
-
-    function toggle() {
-      if (isOpen) {
-        close();
-      } else {
-        open();
       }
-    }
 
-    button.addEventListener('click', toggle);
+      function close() {
+        if (!isOpen || isAnimating) return;
+        isAnimating = true;
 
-    // Close on backdrop click
-    if (backdrop) {
-      backdrop.addEventListener('click', close);
-    }
+        button!.setAttribute('aria-expanded', 'false');
+        menuIcon!.classList.remove('hidden');
+        closeIcon!.classList.add('hidden');
 
-    // Close on Escape key
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && isOpen) {
-        close();
+        // Start closing animation
+        menu!.classList.remove('animate-menu-down');
+        menu!.classList.add('animate-menu-up');
+        if (backdrop) {
+          backdrop.classList.remove('animate-backdrop');
+          backdrop.classList.add('animate-backdrop-out');
+        }
+
+        // Restore page content
+        const mainContent = document.querySelector('main');
+        const footer = document.querySelector('footer');
+        if (mainContent) mainContent.classList.remove('mobile-menu-blur');
+        if (footer) footer.classList.remove('mobile-menu-blur');
+
+        // Wait for animation to complete before hiding
+        setTimeout(() => {
+          menu!.classList.add('hidden', 'opacity-0', 'scale-y-0');
+          if (backdrop) {
+            backdrop.classList.add('pointer-events-none');
+          }
+          // Remove solid background from header
+          header.classList.remove('!bg-background');
+          isOpen = false;
+          isAnimating = false;
+        }, 200); // Match transition duration
       }
-    });
 
-    // Close when clicking on mobile menu links
-    menu.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', close);
+      function toggle() {
+        if (isOpen) {
+          close();
+        } else {
+          open();
+        }
+      }
+
+      button.addEventListener('click', toggle);
+
+      // Close on backdrop click
+      if (backdrop) {
+        backdrop.addEventListener('click', close);
+      }
+
+      // Close on Escape key
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && isOpen) {
+          close();
+        }
+      });
+
+      // Close when clicking on mobile menu links
+      menu.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', close);
+      });
     });
   }
 
@@ -437,3 +425,11 @@ const buttonId = `${menuId}-button`;
   document.addEventListener('astro:page-load', initMobileMenu);
   document.addEventListener('astro:after-swap', initMobileMenu);
 </script>
+
+<style>
+  .mobile-menu-blur {
+    opacity: 0.3;
+    filter: blur(4px);
+    transition: opacity 200ms, filter 200ms;
+  }
+</style>

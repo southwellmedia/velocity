@@ -143,6 +143,14 @@ const scores: Score[] = [
     }
   }
 
+  .animation-paused {
+    animation-play-state: paused;
+  }
+
+  .animation-running {
+    animation-play-state: running;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .lighthouse-score,
     .lighthouse-progress {
@@ -161,7 +169,7 @@ const scores: Score[] = [
   if (section) {
     const elements = section.querySelectorAll('.lighthouse-score, .lighthouse-progress');
     elements.forEach((el) => {
-      (el as HTMLElement).style.animationPlayState = 'paused';
+      el.classList.add('animation-paused');
     });
 
     const observer = new IntersectionObserver(
@@ -169,7 +177,8 @@ const scores: Score[] = [
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             elements.forEach((el) => {
-              (el as HTMLElement).style.animationPlayState = 'running';
+              el.classList.remove('animation-paused');
+              el.classList.add('animation-running');
             });
             observer.unobserve(entry.target);
           }

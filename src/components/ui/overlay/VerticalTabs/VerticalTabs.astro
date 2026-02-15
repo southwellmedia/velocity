@@ -447,7 +447,7 @@ const defaultTab = tabs.find(t => t.id === defaultValue);
         }
 
         if (chevron) {
-          chevron.style.transform = isOpen ? 'rotate(180deg)' : '';
+          chevron.classList.toggle('chevron-open', isOpen);
         }
 
         if (mobileVariant === 'dropdown') {
@@ -765,6 +765,10 @@ const defaultTab = tabs.find(t => t.id === defaultValue);
 </script>
 
 <style>
+  .chevron-open {
+    transform: rotate(180deg);
+  }
+
   /* Content panel focus styles */
   .vtabs-content-mobile > :global([data-tab-content]),
   .vtabs-content-desktop > :global([data-tab-content]) {

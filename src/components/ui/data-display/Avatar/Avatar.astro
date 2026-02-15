@@ -33,9 +33,9 @@ const initials = fallback || alt
       class="w-full h-full object-cover"
       loading="lazy"
       decoding="async"
-      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+      data-avatar-img
     />
-    <span class="hidden items-center justify-center w-full h-full" aria-hidden="true">
+    <span class="hidden items-center justify-center w-full h-full" aria-hidden="true" data-avatar-fallback>
       {initials || '?'}
     </span>
   ) : (
@@ -43,3 +43,24 @@ const initials = fallback || alt
   )}
   <span class="sr-only">{alt || 'User avatar'}</span>
 </div>
+
+<script>
+  function initAvatarFallbacks() {
+    document.querySelectorAll<HTMLImageElement>('[data-avatar-img]').forEach((img) => {
+      if (img.dataset.avatarInit) return;
+      img.dataset.avatarInit = 'true';
+
+      img.addEventListener('error', () => {
+        img.classList.add('hidden');
+        const fallback = img.nextElementSibling as HTMLElement | null;
+        if (fallback && fallback.hasAttribute('data-avatar-fallback')) {
+          fallback.classList.remove('hidden');
+          fallback.classList.add('flex');
+        }
+      });
+    });
+  }
+
+  initAvatarFallbacks();
+  document.addEventListener('astro:page-load', initAvatarFallbacks);
+</script>
