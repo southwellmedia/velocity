@@ -41,11 +41,11 @@ export default defineConfig({
           'https://www.google-analytics.com',
           'https://vercel.live',
         ],
-        strictDynamic: true,
       },
       styleDirective: {
         resources: [
           "'self'",
+          "'unsafe-inline'",
         ],
       },
       directives: [
