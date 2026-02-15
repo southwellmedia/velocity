@@ -32,27 +32,32 @@ for (const [, cat] of Object.entries(consentConfig.categories)) {
   }
 }
 const gcmDefaultsJson = JSON.stringify(gcmDefaults);
+
+// Rendering flags — keeps template conditions simple and highlighter-friendly
+const hasGtm = !!gtmId;
+const hasGa = !!gaId && !gtmId;
+const hasAnalytics = !!(gaId || gtmId);
+const noConsent = !consentEnabled;
+const isV2 = consentEnabled && consentMode === 'consent_mode_v2';
+const isStrict = consentEnabled && consentMode === 'strict';
 ---
 
-{/* --- A) Consent DISABLED: original behavior, scripts load unconditionally --- */}
-{!consentEnabled && gtmId && (
-  <>
-    <script is:inline define:vars={{ gtmId }}>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-        const f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != 'dataLayer' ? '&l=' + l : '';
-        j.async = true;
-        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(window, document, 'script', 'dataLayer', gtmId);
-    </script>
-  </>
+{noConsent && hasGtm && (
+  <script is:inline define:vars={{ gtmId }}>
+    (function (w, d, s, l, i) {
+      w[l] = w[l] || [];
+      w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+      const f = d.getElementsByTagName(s)[0],
+        j = d.createElement(s),
+        dl = l != 'dataLayer' ? '&l=' + l : '';
+      j.async = true;
+      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+      f.parentNode.insertBefore(j, f);
+    })(window, document, 'script', 'dataLayer', gtmId);
+  </script>
 )}
 
-{!consentEnabled && gaId && !gtmId && (
+{noConsent && hasGa && (
   <>
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
     <script is:inline define:vars={{ gaId }}>
@@ -64,14 +69,11 @@ const gcmDefaultsJson = JSON.stringify(gcmDefaults);
   </>
 )}
 
-{/* --- B/C) Consent ENABLED: consent defaults script runs FIRST --- */}
-{consentEnabled && (gaId || gtmId) && (
+{consentEnabled && hasAnalytics && (
   <script is:inline define:vars={{ storageKey, configVersion, gcmDefaultsJson }}>
-    // Initialize dataLayer and gtag before anything else
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
 
-    // Read stored consent from localStorage
     var stored = null;
     try {
       var raw = localStorage.getItem(storageKey);
@@ -83,7 +85,6 @@ const gcmDefaultsJson = JSON.stringify(gcmDefaults);
       }
     } catch(e) {}
 
-    // Build GCM values: use stored preferences if available, otherwise use defaults (all denied)
     var gcmValues = JSON.parse(gcmDefaultsJson);
     var decided = false;
     var categories = { necessary: true, analytics: false, marketing: false, preferences: false };
@@ -92,7 +93,6 @@ const gcmDefaultsJson = JSON.stringify(gcmDefaults);
       decided = true;
       categories = stored.categories;
 
-      // Map stored categories back to GCM types
       if (categories.analytics) gcmValues['analytics_storage'] = 'granted';
       if (categories.marketing) {
         gcmValues['ad_storage'] = 'granted';
@@ -105,16 +105,14 @@ const gcmDefaultsJson = JSON.stringify(gcmDefaults);
       }
     }
 
-    // Set consent defaults — MUST happen before gtag.js/GTM loads
+    // MUST execute before gtag.js / GTM loads
     gtag('consent', 'default', gcmValues);
 
-    // Expose state for ConsentBanner to read
     window.__consentState = { decided: decided, categories: categories };
   </script>
 )}
 
-{/* --- B) consent_mode_v2: analytics scripts load normally (Google handles denied state) --- */}
-{consentEnabled && consentMode === 'consent_mode_v2' && gtmId && (
+{isV2 && hasGtm && (
   <script is:inline define:vars={{ gtmId }}>
     (function (w, d, s, l, i) {
       w[l] = w[l] || [];
@@ -129,7 +127,7 @@ const gcmDefaultsJson = JSON.stringify(gcmDefaults);
   </script>
 )}
 
-{consentEnabled && consentMode === 'consent_mode_v2' && gaId && !gtmId && (
+{isV2 && hasGa && (
   <>
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
     <script is:inline define:vars={{ gaId }}>
@@ -139,8 +137,7 @@ const gcmDefaultsJson = JSON.stringify(gcmDefaults);
   </>
 )}
 
-{/* --- C) strict mode: only load analytics if user previously consented --- */}
-{consentEnabled && consentMode === 'strict' && gtmId && (
+{isStrict && hasGtm && (
   <script is:inline define:vars={{ gtmId }}>
     if (window.__consentState && window.__consentState.decided && window.__consentState.categories.analytics) {
       (function (w, d, s, l, i) {
@@ -157,7 +154,7 @@ const gcmDefaultsJson = JSON.stringify(gcmDefaults);
   </script>
 )}
 
-{consentEnabled && consentMode === 'strict' && gaId && !gtmId && (
+{isStrict && hasGa && (
   <script is:inline define:vars={{ gaId }}>
     if (window.__consentState && window.__consentState.decided && window.__consentState.categories.analytics) {
       var s = document.createElement('script');

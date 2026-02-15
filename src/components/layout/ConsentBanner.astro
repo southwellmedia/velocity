@@ -17,7 +17,7 @@ const configJson = JSON.stringify(consentConfig);
 
 {consentEnabled && (
   <>
-    {/* ─── Bottom Bar Banner ─── */}
+    <!-- Bottom Bar Banner -->
     <div
       id="consent-banner"
       class="consent-banner"
@@ -60,7 +60,7 @@ const configJson = JSON.stringify(consentConfig);
       </div>
     </div>
 
-    {/* ─── Settings Panel Overlay ─── */}
+    <!-- Settings Panel Overlay -->
     <div
       id="consent-settings"
       class="consent-settings-overlay"
@@ -130,7 +130,7 @@ const configJson = JSON.stringify(consentConfig);
       </div>
     </div>
 
-    {/* ─── Reopener Button (shown after consent given) ─── */}
+    <!-- Reopener Button -->
     <button
       type="button"
       id="consent-reopener"
@@ -142,7 +142,7 @@ const configJson = JSON.stringify(consentConfig);
       </svg>
     </button>
 
-    {/* ─── Inline Script ─── */}
+    <!-- Inline Script -->
     <script is:inline define:vars={{ configJson }}>
       (function() {
         var config = JSON.parse(configJson);
