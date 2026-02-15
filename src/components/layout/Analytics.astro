@@ -95,6 +95,7 @@ const isStrict = consentEnabled && consentMode === 'strict';
 
 {consentEnabled && hasAnalytics && (
   <script is:inline define:vars={{ storageKey, configVersion, gcmDefaultsJson, categoryDefaultsJson, categoryGcmMapJson }}>
+    /* global gtag */
     window.dataLayer = window.dataLayer || [];
     // eslint-disable-next-line prefer-rest-params
     function gtag(){window.dataLayer.push(arguments);}

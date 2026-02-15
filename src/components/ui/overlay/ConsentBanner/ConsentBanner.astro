@@ -148,6 +148,7 @@ const configJson = JSON.stringify(consentConfig);
         const MODE = config.mode;
         const DELAY = config.showDelay;
         let hideBannerTimeout = null;
+        let currentDialogObserver = null;
 
         // ── Storage helpers ──
         function getStored() {
@@ -336,6 +337,13 @@ const configJson = JSON.stringify(consentConfig);
           // Set initial hidden state
           banner.setAttribute('hidden', '');
 
+          // Restore from persisted data if __consentState not already set
+          const stored = getStored();
+          if (stored && stored.categories && (!window.__consentState || !window.__consentState.decided)) {
+            window.__consentState = { decided: true, categories: stored.categories };
+            updateGCM(stored.categories);
+          }
+
           // Check if consent already decided
           const state = window.__consentState;
           if (state && state.decided) {
@@ -352,8 +360,14 @@ const configJson = JSON.stringify(consentConfig);
           const dialogEl = document.getElementById('consent-settings');
           if (!dialogEl) return;
 
+          // Disconnect previous observer to prevent duplicates
+          if (currentDialogObserver) {
+            currentDialogObserver.disconnect();
+            currentDialogObserver = null;
+          }
+
           // Use MutationObserver to detect when Dialog adds 'hidden' class
-          const observer = new MutationObserver(function(mutations) {
+          currentDialogObserver = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
               if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 if (dialogEl.classList.contains('hidden')) {
@@ -367,7 +381,7 @@ const configJson = JSON.stringify(consentConfig);
               }
             });
           });
-          observer.observe(dialogEl, { attributes: true, attributeFilter: ['class'] });
+          currentDialogObserver.observe(dialogEl, { attributes: true, attributeFilter: ['class'] });
         }
 
         // ── Bind event listeners ──
