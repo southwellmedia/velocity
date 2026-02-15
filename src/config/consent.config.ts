@@ -44,7 +44,7 @@ const consentConfig: ConsentConfig = {
 
   ui: {
     heading: 'Cookie Preferences',
-    description: 'We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. Choose your preferences below.',
+    description: 'We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic.',
     acceptAll: 'Accept All',
     declineAll: 'Decline All',
     customize: 'Customize',

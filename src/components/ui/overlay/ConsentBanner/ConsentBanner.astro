@@ -9,6 +9,8 @@
 import { PUBLIC_CONSENT_ENABLED, PUBLIC_PRIVACY_POLICY_URL } from 'astro:env/client';
 import consentConfig from '@/config/consent.config';
 import Dialog from '@/components/ui/overlay/Dialog';
+import Button from '@/components/ui/form/Button';
+import Switch from '@/components/ui/form/Switch';
 import type { ConsentUIText } from '@/lib/consent.types';
 
 interface Props {
@@ -78,27 +80,15 @@ const configJson = JSON.stringify(consentConfig);
           </p>
         </div>
         <div class="consent-banner-actions">
-          <button
-            type="button"
-            id="consent-accept-all"
-            class="consent-btn consent-btn-primary"
-          >
+          <Button variant="primary" size="sm" id="consent-accept-all">
             {ui.acceptAll}
-          </button>
-          <button
-            type="button"
-            id="consent-decline-all"
-            class="consent-btn consent-btn-secondary"
-          >
+          </Button>
+          <Button variant="secondary" size="sm" id="consent-decline-all">
             {ui.declineAll}
-          </button>
-          <button
-            type="button"
-            id="consent-customize"
-            class="consent-btn-link"
-          >
+          </Button>
+          <Button variant="link" size="sm" id="consent-customize">
             {ui.customize}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -115,33 +105,21 @@ const configJson = JSON.stringify(consentConfig);
               )}
               <p class="consent-category-description">{cat.description}</p>
             </div>
-            <label class="consent-toggle" data-consent-toggle={key}>
-              <input
-                type="checkbox"
-                class="sr-only peer"
-                checked={cat.required || cat.defaultEnabled}
-                disabled={cat.required}
-                data-consent-checkbox={key}
-                role="switch"
-                aria-checked={cat.required || cat.defaultEnabled ? 'true' : 'false'}
-                aria-label={`${cat.label} cookies`}
-              />
-              <div class="consent-toggle-track">
-                <div class="consent-toggle-thumb" data-thumb></div>
-              </div>
-            </label>
+            <Switch
+              id={`consent-${key}`}
+              size="sm"
+              checked={cat.required || cat.defaultEnabled}
+              disabled={cat.required}
+              class="shrink-0 mt-0.5"
+            />
           </div>
         ))}
       </div>
 
       <div slot="footer" class="consent-settings-footer">
-        <button
-          type="button"
-          id="consent-save-preferences"
-          class="consent-btn consent-btn-primary consent-btn-full"
-        >
+        <Button variant="primary" size="sm" fullWidth id="consent-save-preferences">
           {ui.savePreferences}
-        </button>
+        </Button>
       </div>
     </Dialog>
 
@@ -286,7 +264,7 @@ const configJson = JSON.stringify(consentConfig);
           // Sync toggles with current stored state
           const stored = getStored();
           Object.keys(config.categories).forEach(function(key) {
-            const cb = document.querySelector('[data-consent-checkbox="' + key + '"]');
+            const cb = document.getElementById('consent-' + key);
             if (cb && !config.categories[key].required) {
               cb.checked = stored ? !!stored.categories[key] : config.categories[key].defaultEnabled;
               cb.setAttribute('aria-checked', cb.checked ? 'true' : 'false');
@@ -314,7 +292,7 @@ const configJson = JSON.stringify(consentConfig);
             if (config.categories[key].required) {
               cats[key] = true;
             } else {
-              const cb = document.querySelector('[data-consent-checkbox="' + key + '"]');
+              const cb = document.getElementById('consent-' + key);
               cats[key] = cb ? cb.checked : false;
             }
           });
@@ -405,13 +383,6 @@ const configJson = JSON.stringify(consentConfig);
           if (reopenerBtn) reopenerBtn.addEventListener('click', function() {
             hideReopener();
             openSettings();
-          });
-
-          // Update aria-checked on toggle change
-          document.querySelectorAll('[data-consent-checkbox]').forEach(function(cb) {
-            cb.addEventListener('change', function() {
-              this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
-            });
           });
 
           watchDialogClose();
@@ -526,75 +497,6 @@ const configJson = JSON.stringify(consentConfig);
     flex-shrink: 0;
   }
 
-  /* ─── Buttons ─── */
-  .consent-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.5rem 1.125rem;
-    font-size: 0.8125rem;
-    font-weight: 500;
-    line-height: 1.4;
-    border-radius: 0.5rem;
-    border: none;
-    cursor: pointer;
-    white-space: nowrap;
-    transition:
-      background-color var(--transition-fast),
-      color var(--transition-fast),
-      box-shadow var(--transition-fast);
-  }
-
-  .consent-btn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
-  }
-
-  .consent-btn-primary {
-    background: var(--primary);
-    color: var(--primary-foreground);
-  }
-
-  .consent-btn-primary:hover {
-    background: var(--primary-hover);
-  }
-
-  .consent-btn-secondary {
-    background: var(--muted);
-    color: var(--foreground);
-  }
-
-  .consent-btn-secondary:hover {
-    background: var(--border);
-  }
-
-  .consent-btn-link {
-    background: none;
-    border: none;
-    color: var(--foreground-muted);
-    font-size: 0.8125rem;
-    font-weight: 500;
-    cursor: pointer;
-    padding: 0.5rem 0.25rem;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    transition: color var(--transition-fast);
-  }
-
-  .consent-btn-link:hover {
-    color: var(--foreground);
-  }
-
-  .consent-btn-link:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
-    border-radius: 0.25rem;
-  }
-
-  .consent-btn-full {
-    width: 100%;
-  }
-
   /* ─── Settings (inside Dialog) ─── */
   .consent-settings-body {
     padding: 0;
@@ -647,52 +549,6 @@ const configJson = JSON.stringify(consentConfig);
     font-size: 0.8125rem;
     line-height: 1.5;
     color: var(--foreground-subtle);
-  }
-
-  /* ─── Toggle switch ─── */
-  .consent-toggle {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    flex-shrink: 0;
-    cursor: pointer;
-    margin-top: 0.125rem;
-  }
-
-  .consent-toggle:has(input:disabled) {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-
-  .consent-toggle-track {
-    width: 2.75rem;
-    height: 1.5rem;
-    border-radius: 9999px;
-    background: var(--border-strong);
-    transition: background-color var(--transition-fast);
-    padding: 0.125rem;
-  }
-
-  .consent-toggle:has(input:checked) .consent-toggle-track {
-    background: var(--primary);
-  }
-
-  .consent-toggle:has(input:focus-visible) .consent-toggle-track {
-    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
-  }
-
-  .consent-toggle-thumb {
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 9999px;
-    background: var(--background);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    transform: translateX(0);
-    transition: transform var(--transition-fast);
-  }
-
-  .consent-toggle:has(input:checked) .consent-toggle-thumb {
-    transform: translateX(1.25rem);
   }
 
   /* ─── Reopener Button ─── */
@@ -756,17 +612,11 @@ const configJson = JSON.stringify(consentConfig);
     .consent-banner-actions {
       flex-wrap: wrap;
     }
-
-    .consent-btn {
-      flex: 1 1 auto;
-    }
   }
 
   /* ─── Reduced Motion ─── */
   @media (prefers-reduced-motion: reduce) {
     .consent-banner,
-    .consent-toggle-track,
-    .consent-toggle-thumb,
     .consent-reopener {
       transition: none;
     }
