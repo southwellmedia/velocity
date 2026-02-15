@@ -62,7 +62,7 @@ const isStrict = consentEnabled && consentMode === 'strict';
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
     <script is:inline define:vars={{ gaId }}>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
+      function gtag(){dataLayer.push(arguments);} // eslint-disable-line prefer-rest-params
       gtag('js', new Date());
       gtag('config', gaId);
     </script>
@@ -72,22 +72,22 @@ const isStrict = consentEnabled && consentMode === 'strict';
 {consentEnabled && hasAnalytics && (
   <script is:inline define:vars={{ storageKey, configVersion, gcmDefaultsJson }}>
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag(){dataLayer.push(arguments);} // eslint-disable-line prefer-rest-params
 
-    var stored = null;
+    let stored = null;
     try {
-      var raw = localStorage.getItem(storageKey);
+      const raw = localStorage.getItem(storageKey);
       if (raw) {
-        var parsed = JSON.parse(raw);
+        const parsed = JSON.parse(raw);
         if (parsed && parsed.version === configVersion) {
           stored = parsed;
         }
       }
-    } catch(e) {}
+    } catch { /* ignored */ }
 
-    var gcmValues = JSON.parse(gcmDefaultsJson);
-    var decided = false;
-    var categories = { necessary: true, analytics: false, marketing: false, preferences: false };
+    const gcmValues = JSON.parse(gcmDefaultsJson);
+    let decided = false;
+    let categories = { necessary: true, analytics: false, marketing: false, preferences: false };
 
     if (stored && stored.categories) {
       decided = true;
@@ -117,9 +117,9 @@ const isStrict = consentEnabled && consentMode === 'strict';
     (function (w, d, s, l, i) {
       w[l] = w[l] || [];
       w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-      var f = d.getElementsByTagName(s)[0],
-        j = d.createElement(s),
-        dl = l != 'dataLayer' ? '&l=' + l : '';
+      const f = d.getElementsByTagName(s)[0],
+    j = d.createElement(s),
+    dl = l != 'dataLayer' ? '&l=' + l : '';
       j.async = true;
       j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
       f.parentNode.insertBefore(j, f);
@@ -143,9 +143,9 @@ const isStrict = consentEnabled && consentMode === 'strict';
       (function (w, d, s, l, i) {
         w[l] = w[l] || [];
         w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l != 'dataLayer' ? '&l=' + l : '';
+        const f = d.getElementsByTagName(s)[0],
+      j = d.createElement(s),
+      dl = l != 'dataLayer' ? '&l=' + l : '';
         j.async = true;
         j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
         f.parentNode.insertBefore(j, f);
@@ -157,7 +157,7 @@ const isStrict = consentEnabled && consentMode === 'strict';
 {isStrict && hasGa && (
   <script is:inline define:vars={{ gaId }}>
     if (window.__consentState && window.__consentState.decided && window.__consentState.categories.analytics) {
-      var s = document.createElement('script');
+      const s = document.createElement('script');
       s.async = true;
       s.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
       document.head.appendChild(s);

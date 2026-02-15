@@ -145,30 +145,30 @@ const configJson = JSON.stringify(consentConfig);
     <!-- Inline Script -->
     <script is:inline define:vars={{ configJson }}>
       (function() {
-        var config = JSON.parse(configJson);
-        var STORAGE_KEY = config.storageKey;
-        var VERSION = config.version;
-        var MODE = config.mode;
-        var DELAY = config.showDelay;
+        const config = JSON.parse(configJson);
+        const STORAGE_KEY = config.storageKey;
+        const VERSION = config.version;
+        const MODE = config.mode;
+        const DELAY = config.showDelay;
 
         // ── Storage helpers ──
         function getStored() {
           try {
-            var raw = localStorage.getItem(STORAGE_KEY);
+            const raw = localStorage.getItem(STORAGE_KEY);
             if (!raw) return null;
-            var data = JSON.parse(raw);
+            const data = JSON.parse(raw);
             if (data && data.version === VERSION) return data;
             return null;
-          } catch(e) { return null; }
+          } catch { return null; }
         }
 
         function saveConsent(categories) {
-          var prefs = {
-            version: VERSION,
-            timestamp: new Date().toISOString(),
-            categories: categories
-          };
-          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch(e) {}
+          const prefs = {
+      version: VERSION,
+      timestamp: new Date().toISOString(),
+      categories: categories
+    };
+          try { localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs)); } catch { /* ignored */ }
           return prefs;
         }
 
@@ -178,11 +178,11 @@ const configJson = JSON.stringify(consentConfig);
             // gtag may not exist yet — define a minimal version
             window.dataLayer = window.dataLayer || [];
             if (typeof window.gtag !== 'function') {
-              window.gtag = function() { window.dataLayer.push(arguments); };
+              window.gtag = function() { window.dataLayer.push(arguments); }; // eslint-disable-line prefer-rest-params
             }
           }
 
-          var gcm = { security_storage: 'granted' };
+          const gcm = { security_storage: 'granted' };
           gcm.analytics_storage = categories.analytics ? 'granted' : 'denied';
           gcm.ad_storage = categories.marketing ? 'granted' : 'denied';
           gcm.ad_user_data = categories.marketing ? 'granted' : 'denied';
@@ -201,23 +201,23 @@ const configJson = JSON.stringify(consentConfig);
           window.__consentAnalyticsInjected = true;
 
           // Check for GTM or GA IDs from the consent state
-          var gtmMeta = document.querySelector('meta[name="gtm-id"]');
-          var gaMeta = document.querySelector('meta[name="ga-id"]');
-          var gtmId = gtmMeta ? gtmMeta.getAttribute('content') : null;
-          var gaId = gaMeta ? gaMeta.getAttribute('content') : null;
+          const gtmMeta = document.querySelector('meta[name="gtm-id"]');
+          const gaMeta = document.querySelector('meta[name="ga-id"]');
+          const gtmId = gtmMeta ? gtmMeta.getAttribute('content') : null;
+          const gaId = gaMeta ? gaMeta.getAttribute('content') : null;
 
           if (gtmId) {
             window.dataLayer = window.dataLayer || [];
             window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-            var s = document.createElement('script');
-            s.async = true;
-            s.src = 'https://www.googletagmanager.com/gtm.js?id=' + gtmId;
-            document.head.appendChild(s);
+            const gtmScript = document.createElement('script');
+            gtmScript.async = true;
+            gtmScript.src = 'https://www.googletagmanager.com/gtm.js?id=' + gtmId;
+            document.head.appendChild(gtmScript);
           } else if (gaId) {
-            var s = document.createElement('script');
-            s.async = true;
-            s.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
-            document.head.appendChild(s);
+            const gaScript = document.createElement('script');
+            gaScript.async = true;
+            gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaId;
+            document.head.appendChild(gaScript);
             window.gtag('js', new Date());
             window.gtag('config', gaId);
           }
@@ -242,14 +242,14 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── Banner show/hide ──
         function showBanner() {
-          var banner = document.getElementById('consent-banner');
+          const banner = document.getElementById('consent-banner');
           if (!banner) return;
           banner.removeAttribute('hidden');
           banner.classList.add('consent-banner--visible');
         }
 
         function hideBanner() {
-          var banner = document.getElementById('consent-banner');
+          const banner = document.getElementById('consent-banner');
           if (!banner) return;
           banner.classList.remove('consent-banner--visible');
           setTimeout(function() { banner.setAttribute('hidden', ''); }, 300);
@@ -257,28 +257,28 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── Reopener ──
         function showReopener() {
-          var btn = document.getElementById('consent-reopener');
+          const btn = document.getElementById('consent-reopener');
           if (btn) btn.classList.add('consent-reopener--visible');
         }
 
         function hideReopener() {
-          var btn = document.getElementById('consent-reopener');
+          const btn = document.getElementById('consent-reopener');
           if (btn) btn.classList.remove('consent-reopener--visible');
         }
 
         // ── Settings panel ──
-        var previousActiveElement = null;
+        let previousActiveElement = null;
 
         function openSettings() {
-          var overlay = document.getElementById('consent-settings');
+          const overlay = document.getElementById('consent-settings');
           if (!overlay) return;
 
           previousActiveElement = document.activeElement;
 
           // Sync toggles with current stored state
-          var stored = getStored();
+          const stored = getStored();
           Object.keys(config.categories).forEach(function(key) {
-            var cb = document.querySelector('[data-consent-checkbox="' + key + '"]');
+            const cb = document.querySelector('[data-consent-checkbox="' + key + '"]');
             if (cb && !config.categories[key].required) {
               cb.checked = stored ? !!stored.categories[key] : config.categories[key].defaultEnabled;
               cb.setAttribute('aria-checked', cb.checked ? 'true' : 'false');
@@ -291,7 +291,7 @@ const configJson = JSON.stringify(consentConfig);
           requestAnimationFrame(function() {
             overlay.classList.add('consent-settings--visible');
             // Focus first interactive element
-            var closeBtn = document.getElementById('consent-settings-close');
+            const closeBtn = document.getElementById('consent-settings-close');
             if (closeBtn) closeBtn.focus();
           });
 
@@ -299,7 +299,7 @@ const configJson = JSON.stringify(consentConfig);
         }
 
         function closeSettings() {
-          var overlay = document.getElementById('consent-settings');
+          const overlay = document.getElementById('consent-settings');
           if (!overlay) return;
 
           overlay.classList.remove('consent-settings--visible');
@@ -323,17 +323,17 @@ const configJson = JSON.stringify(consentConfig);
 
           // Focus trap
           if (e.key === 'Tab') {
-            var panel = document.getElementById('consent-settings-panel');
+            const panel = document.getElementById('consent-settings-panel');
             if (!panel) return;
 
-            var focusable = Array.from(
-              panel.querySelectorAll('button, input:not([disabled]), [tabindex]:not([tabindex="-1"])')
-            ).filter(function(el) { return !el.hasAttribute('disabled') && el.offsetParent !== null; });
+            const focusable = Array.from(
+        panel.querySelectorAll('button, input:not([disabled]), [tabindex]:not([tabindex="-1"])')
+      ).filter(function(el) { return !el.hasAttribute('disabled') && el.offsetParent !== null; });
 
             if (focusable.length === 0) return;
 
-            var first = focusable[0];
-            var last = focusable[focusable.length - 1];
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
 
             if (e.shiftKey) {
               if (document.activeElement === first) {
@@ -354,12 +354,12 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── Build categories from toggles ──
         function getCategoriesFromToggles() {
-          var cats = {};
+          const cats = {};
           Object.keys(config.categories).forEach(function(key) {
             if (config.categories[key].required) {
               cats[key] = true;
             } else {
-              var cb = document.querySelector('[data-consent-checkbox="' + key + '"]');
+              const cb = document.querySelector('[data-consent-checkbox="' + key + '"]');
               cats[key] = cb ? cb.checked : false;
             }
           });
@@ -367,13 +367,13 @@ const configJson = JSON.stringify(consentConfig);
         }
 
         function buildAllGranted() {
-          var cats = {};
+          const cats = {};
           Object.keys(config.categories).forEach(function(key) { cats[key] = true; });
           return cats;
         }
 
         function buildAllDenied() {
-          var cats = {};
+          const cats = {};
           Object.keys(config.categories).forEach(function(key) {
             cats[key] = config.categories[key].required;
           });
@@ -382,8 +382,8 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── Initialize ──
         function init() {
-          var banner = document.getElementById('consent-banner');
-          var settings = document.getElementById('consent-settings');
+          const banner = document.getElementById('consent-banner');
+          const settings = document.getElementById('consent-settings');
 
           if (!banner) return;
 
@@ -392,7 +392,7 @@ const configJson = JSON.stringify(consentConfig);
           if (settings) settings.setAttribute('hidden', '');
 
           // Check if consent already decided
-          var state = window.__consentState;
+          const state = window.__consentState;
           if (state && state.decided) {
             showReopener();
             return;
@@ -404,13 +404,13 @@ const configJson = JSON.stringify(consentConfig);
 
         // ── Bind event listeners ──
         function bindEvents() {
-          var acceptBtn = document.getElementById('consent-accept-all');
-          var declineBtn = document.getElementById('consent-decline-all');
-          var customizeBtn = document.getElementById('consent-customize');
-          var closeBtn = document.getElementById('consent-settings-close');
-          var saveBtn = document.getElementById('consent-save-preferences');
-          var reopenerBtn = document.getElementById('consent-reopener');
-          var backdrop = document.querySelector('.consent-settings-backdrop');
+          const acceptBtn = document.getElementById('consent-accept-all');
+          const declineBtn = document.getElementById('consent-decline-all');
+          const customizeBtn = document.getElementById('consent-customize');
+          const closeBtn = document.getElementById('consent-settings-close');
+          const saveBtn = document.getElementById('consent-save-preferences');
+          const reopenerBtn = document.getElementById('consent-reopener');
+          const backdrop = document.querySelector('.consent-settings-backdrop');
 
           if (acceptBtn) acceptBtn.addEventListener('click', function() {
             applyConsent(buildAllGranted());
