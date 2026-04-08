@@ -81,14 +81,22 @@ if (includeOrgSchema) {
     <!-- Theme script (runs before render to prevent flash) -->
     <script is:inline>
       (function () {
-        const theme = localStorage.getItem('theme');
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        function applyTheme() {
+          const theme = localStorage.getItem('theme');
+          const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-        if (theme === 'dark' || (!theme && systemDark)) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
+          if (theme === 'dark' || (!theme && systemDark)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
         }
+
+        applyTheme();
+
+        // Re-apply theme after Astro View Transition page swaps to prevent
+        // the new page's HTML attributes from removing the 'dark' class
+        document.addEventListener('astro:after-swap', applyTheme);
       })();
     </script>
   </head>
