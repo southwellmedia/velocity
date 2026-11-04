@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -263,6 +263,10 @@
         "src/components/landing/",
         "src/pages/blog/",
         "src/pages/[lang]/"
+      ],
+      "remove": [
+        "src/pages/api/contact.ts",
+        "src/pages/api/newsletter.ts"
       ]
     },
     {
@@ -289,7 +293,7 @@
       "fromVersion": "1.0.0",
       "toVersion": "2.0.0",
       "title": "Move form handlers from /api routes to Astro Actions",
-      "description": "Forms now post to Astro Actions in src/actions/index.ts, which the upgrade added. The form on the 1.x contact page posts to /api/contact, which never ran on static builds, so replace it with <ContactForm />; the E2E contact tests fail until you do. Move any custom logic (email, CRM) from src/pages/api/contact.ts and newsletter.ts into the action handlers, then delete those routes.",
+      "description": "Forms now post to Astro Actions in src/actions/index.ts, which the upgrade added. The upgrade removed src/pages/api/contact.ts and newsletter.ts, which never ran on static builds, and saved them in .velocity-backup/: move any custom logic (email, CRM) into the action handlers. The form on the 1.x contact page posts to /api/contact, so replace it with <ContactForm />; the E2E contact tests fail until you do.",
       "pattern": "/api/(contact|newsletter)",
       "searchPaths": [
         "src/"
