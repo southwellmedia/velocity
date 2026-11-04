@@ -22,6 +22,8 @@ interface Props {
   forceDark?: boolean;
   /** Use full logo instead of logomark */
   variant?: 'logomark' | 'full';
+  /** Hide from screen readers. Use when the site name is shown next to the logo. */
+  decorative?: boolean;
   /** Additional CSS classes */
   class?: string;
 }
@@ -30,6 +32,7 @@ const {
   size = 'md',
   forceDark = false,
   variant = 'logomark',
+  decorative = false,
   class: className,
 } = Astro.props;
 
@@ -45,20 +48,21 @@ const sizeClasses: Record<string, string> = {
 };
 
 const sizeClass = sizeClasses[size] || sizeClasses.md;
+const alt = decorative ? '' : siteConfig.branding.logo.alt;
 ---
 
 <span class:list={['inline-block', className]}>
   {forceDark ? (
     <img
       src={darkLogo.src}
-      alt={siteConfig.branding.logo.alt}
+      alt={alt}
       class:list={[sizeClass]}
     />
   ) : (
     <Fragment>
       <img
         src={lightLogo.src}
-        alt={siteConfig.branding.logo.alt}
+        alt={alt}
         class:list={[sizeClass, 'block dark:hidden']}
       />
       <img

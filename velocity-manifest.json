@@ -1,5 +1,5 @@
 {
-  "version": "2.0.1",
+  "version": "2.0.2",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -458,7 +458,8 @@
           "src/pages/[lang]/[...contact].astro",
           "src/content/blog/en/velocity-2-astro-7.mdx",
           "src/content/faqs/general-en.json",
-          "src/content/authors/team.json"
+          "src/content/authors/team.json",
+          "public/avatars"
         ]
       }
     ],
