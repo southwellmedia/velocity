@@ -46,6 +46,14 @@ for (const path of PAGES) {
   });
 }
 
+test('accordion chevron rotates when an item opens', async ({ page }) => {
+  test.skip(!hasRoute('components'), 'no component showcase in this project');
+  await page.goto('/components');
+  const item = page.locator('details:has(.accordion-icon)').first();
+  await item.evaluate((el: HTMLDetailsElement) => (el.open = true));
+  await expect(item.locator('.accordion-icon')).not.toHaveCSS('transform', 'none');
+});
+
 test('every inline script has a hash in the CSP', async ({ page }) => {
   // Position in the document must not be what lets a script run
   await page.goto('/');

@@ -57,7 +57,8 @@ const groupName = exclusive ? `accordion-${Math.random().toString(36).slice(2, 9
 </div>
 
 <style>
-  details[open] > summary .accordion-icon {
+  /* :global because Icon renders the svg outside this component's style scope */
+  details[open] > summary :global(.accordion-icon) {
     transform: rotate(180deg);
   }
 </style>
