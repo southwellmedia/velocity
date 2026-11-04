@@ -23,7 +23,9 @@
  */
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
-import { getNavItems, type NavItem as NavConfigItem } from '@/config/nav.config';
+import { getNavItems, headerConfig, type NavItem as NavConfigItem } from '@/config/nav.config';
+import { getLocale, isMultilingual, localizePath, localizeRoute, useTranslations } from '@/i18n';
+import LanguageSwitcher from '@/components/layout/LanguageSwitcher.astro';
 import { headerVariants, headerInnerVariants } from './header.variants';
 import Button from '@/components/ui/form/Button/Button.astro';
 import Icon from '@/components/ui/primitives/Icon/Icon.astro';
@@ -32,8 +34,9 @@ import ThemeToggle from '@/components/layout/ThemeToggle.astro';
 import siteConfig from '@/config/site.config';
 
 export interface NavItem {
+  /** Translation key or plain text */
   label: string;
-  href: string;
+  href?: string;
 }
 
 export interface HeaderAction {
@@ -77,7 +80,7 @@ interface Props extends HTMLAttributes<'header'> {
   logoText?: string;
   /** Hide logo entirely */
   hideLogo?: boolean;
-  /** Show language switcher */
+  /** Show language switcher (default: when more than one locale is enabled) */
   showLanguageSwitcher?: boolean;
 }
 
@@ -89,15 +92,16 @@ const {
   colorScheme = 'default',
   shape = 'bar',
   nav,
-  extraNav = [],
+  extraNav = headerConfig.extraNav,
   showCta = false,
-  cta = { label: 'View Docs', href: 'https://docs.deployvelocity.com' },
-  actions = [],
+  cta = headerConfig.cta,
+  actions = headerConfig.actions,
   showThemeToggle = true,
   showMobileMenu = true,
   showActiveState = true,
   logoText,
   hideLogo = false,
+  showLanguageSwitcher = isMultilingual,
   class: className,
   ...attrs
 } = Astro.props;
@@ -106,21 +110,37 @@ const {
 const isFloating = shape === 'floating';
 const isInvert = colorScheme === 'invert';
 
-// Get navigation items
-const defaultNav = getNavItems().map((item: NavConfigItem) => ({
-  label: item.label,
-  href: item.href,
-}));
-const navItems: NavItem[] = nav || [...extraNav, ...defaultNav];
+// Locale-aware labels and links (labels may be translation keys or plain text)
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const homeHref = localizeRoute('home', locale);
 
 // Current path for active state
-const currentPath = Astro.url.pathname;
+const currentPath = Astro.url.pathname.replace(/\/$/, '') || '/';
 
 // Check if we're on the landing page
-const isLandingPage = currentPath === '/';
+const isLandingPage = currentPath === homeHref;
 
-// Process CTA href for landing page anchor links
-const ctaHref = cta.href?.startsWith('#') && !isLandingPage ? `/${cta.href}` : cta.href;
+/** Resolve an href for this locale. Bare #anchors point at the home page unless we're on it. */
+function resolveHref(href: string): string {
+  if (href.startsWith('#')) return isLandingPage ? href : `${homeHref === '/' ? '' : homeHref}/${href}`;
+  return localizePath(href, locale);
+}
+
+type ResolvedNavItem = { label: string; href: string };
+
+function toNavItem(item: NavConfigItem | NavItem): ResolvedNavItem {
+  const route = 'route' in item ? item.route : undefined;
+  const href = route ? localizeRoute(route, locale) : resolveHref(item.href ?? '/');
+  return { label: t(item.label), href };
+}
+
+// Get navigation items
+const navItems: ResolvedNavItem[] = nav ? nav.map(toNavItem) : [...extraNav, ...getNavItems()].map(toNavItem);
+
+const ctaHref = cta?.href ? resolveHref(cta.href) : undefined;
+const ctaLabel = cta?.label ? t(cta.label) : undefined;
+const ctaTarget = ctaHref && /^https?:/.test(ctaHref) ? '_blank' : undefined;
 
 // Check slots
 const hasLogoSlot = Astro.slots.has('logo');
@@ -141,7 +161,8 @@ const innerClasses = headerInnerVariants({ size, shape });
 // Check if a nav item is active
 function isActive(href: string): boolean {
   if (!showActiveState) return false;
-  if (href.startsWith('#')) return false;
+  if (href.includes('#')) return false;
+  if (href === homeHref) return currentPath === homeHref;
   return currentPath === href || currentPath.startsWith(href + '/');
 }
 
@@ -166,7 +187,7 @@ const buttonId = `${menuId}-button`;
         (hasLogoSlot ? (
           <slot name="logo" />
         ) : (
-          <a href="/" class="flex items-center gap-2">
+          <a href={homeHref} class="flex items-center gap-2">
             <Logo size={size === 'lg' ? 'md' : 'sm'} forceDark={isInvert} />
             <span
               class={cn(
@@ -184,14 +205,14 @@ const buttonId = `${menuId}-button`;
     {
       layout !== 'minimal' &&
         (hasNavSlot ? (
-          <nav class="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+          <nav class="hidden items-center gap-1 md:flex" aria-label={t('a11y.mainNav')}>
             <slot name="nav" />
           </nav>
         ) : (
-          <nav class="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+          <nav class="hidden items-center gap-1 md:flex" aria-label={t('a11y.mainNav')}>
             {navItems.map(({ label, href }) => (
               <a
-                href={href.startsWith('#') && !isLandingPage ? `/${href}` : href}
+                href={href}
                 class={cn(
                   'nav-link relative rounded-md px-3 py-2 text-sm',
                   'transition-all duration-(--transition-fast)',
@@ -220,6 +241,10 @@ const buttonId = `${menuId}-button`;
           <slot name="actions" />
         ) : (
           <>
+            {showLanguageSwitcher && (
+              <LanguageSwitcher class={cn('hidden md:block', isFloating ? 'hdr-invert-text' : undefined)} />
+            )}
+
             {showThemeToggle && (
               <ThemeToggle class={isFloating ? 'hdr-invert-text' : undefined} />
             )}
@@ -231,22 +256,22 @@ const buttonId = `${menuId}-button`;
                 icon={action.iconOnly}
                 href={action.href}
                 target={action.target}
-                aria-label={action.label}
+                aria-label={t(action.label)}
                 class={isFloating ? 'hdr-invert-text' : undefined}
               >
                 <Icon name={action.icon} size="sm" />
-                {!action.iconOnly && action.label}
+                {!action.iconOnly && t(action.label)}
               </Button>
             ))}
 
-            {showCta && (
+            {showCta && ctaHref && (
               <Button
                 size="sm"
                 href={ctaHref}
-                target="_blank"
+                target={ctaTarget}
                 class={isFloating ? 'hdr-invert-cta rounded-full' : undefined}
               >
-                {cta.label}
+                {ctaLabel}
               </Button>
             )}
           </>
@@ -269,7 +294,7 @@ const buttonId = `${menuId}-button`;
             )}
             aria-expanded="false"
             aria-controls={menuId}
-            aria-label="Toggle menu"
+            aria-label={t('a11y.toggleMenu')}
           >
             <span class="menu-icon">
               <Icon name="menu" size="md" />
@@ -297,7 +322,7 @@ const buttonId = `${menuId}-button`;
               : 'border-border bg-background border-t'
           )}
           role="navigation"
-          aria-label="Mobile navigation"
+          aria-label={t('a11y.mobileNav')}
         >
           <slot name="mobile-menu" />
         </div>
@@ -311,7 +336,7 @@ const buttonId = `${menuId}-button`;
               : 'border-border bg-background border-t'
           )}
           role="navigation"
-          aria-label="Mobile navigation"
+          aria-label={t('a11y.mobileNav')}
         >
           <div class={cn(
             'space-y-1 py-4',
@@ -319,7 +344,7 @@ const buttonId = `${menuId}-button`;
           )}>
             {navItems.map(({ label, href }) => (
               <a
-                href={href.startsWith('#') && !isLandingPage ? `/${href}` : href}
+                href={href}
                 class={cn(
                   'mobile-nav-link block rounded-md px-3 py-2 text-sm',
                   'transition-all duration-(--transition-fast)',
@@ -333,10 +358,16 @@ const buttonId = `${menuId}-button`;
               </a>
             ))}
 
-            {showCta && (
+            {showLanguageSwitcher && (
               <div class="border-border mt-3 border-t pt-3">
-                <Button fullWidth href={ctaHref} target="_blank">
-                  {cta.label}
+                <LanguageSwitcher variant="list" />
+              </div>
+            )}
+
+            {showCta && ctaHref && (
+              <div class="border-border mt-3 border-t pt-3">
+                <Button fullWidth href={ctaHref} target={ctaTarget}>
+                  {ctaLabel}
                 </Button>
               </div>
             )}

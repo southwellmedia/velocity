@@ -7,6 +7,7 @@ import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
 import ArticleHero from '@/components/blog/ArticleHero.astro';
 import ShareButtons from '@/components/blog/ShareButtons.astro';
 import RelatedPosts from '@/components/blog/RelatedPosts.astro';
+import { getLocale, localizeRoute, useTranslations, type Locale } from '@/i18n';
 
 interface Props {
   title: string;
@@ -18,10 +19,14 @@ interface Props {
   imageAlt?: string;
   tags?: string[];
   slug?: string;
+  readingTime?: number;
+  /** hreflang alternates (translations of this post) */
+  alternates?: { locale: Locale; href: string }[];
 }
 
 const {
   title,
+  readingTime,
   description,
   publishedAt,
   updatedAt,
@@ -30,13 +35,19 @@ const {
   imageAlt,
   tags = [],
   slug = '',
+  alternates,
 } = Astro.props;
 
-const ogImage = image?.src || `/og${Astro.url.pathname}.png`;
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const blogHref = localizeRoute('blog', locale);
+
+// A post image becomes the social preview; otherwise SEO.astro uses the generated /og/<path>.png
+const ogImage = image?.src;
 
 const breadcrumbs = [
-  { label: 'Home', href: '/' },
-  { label: 'Blog', href: '/blog' },
+  { label: t('nav.home'), href: localizeRoute('home', locale) },
+  { label: t('nav.blog'), href: blogHref },
   { label: title },
 ];
 
@@ -49,6 +60,7 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
   description={description}
   image={ogImage}
   imageAlt={imageAlt || title}
+  alternates={alternates}
   article={{
     publishedTime: publishedAt,
     modifiedTime: updatedAt,
@@ -56,24 +68,7 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
     tags,
   }}
 >
-  <Header
-    slot="header"
-    position="fixed"
-    size="lg"
-    showActiveState
-    showCta
-    cta={{ label: 'View Docs', href: 'https://docs.deployvelocity.com' }}
-    extraNav={[{ label: 'Features', href: '#features' }]}
-    actions={[
-      {
-        icon: 'github',
-        href: 'https://github.com/southwellmedia/velocity',
-        label: 'View on GitHub',
-        iconOnly: true,
-        target: '_blank',
-      },
-    ]}
-  />
+  <Header slot="header" position="fixed" size="lg" showActiveState showCta />
 
   <!-- Article Hero -->
   <ArticleHero
@@ -85,6 +80,7 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
     tags={tags}
     image={image}
     imageAlt={imageAlt}
+    readingTime={readingTime}
   />
 
   <article class={`py-12 ${image ? 'pt-24' : ''}`}>
@@ -92,9 +88,11 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
       <!-- Breadcrumbs -->
       <Breadcrumbs items={breadcrumbs} class="mb-8" />
 
-      <!-- Article Content -->
+      <!-- Article Content (indexed by Pagefind) -->
       <div
-        class="prose prose-lg prose-headings:font-display prose-headings:font-bold prose-a:text-brand-600 hover:prose-a:text-brand-500 prose-code:text-brand-600 prose-code:bg-brand-50 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-background-secondary prose-pre:border prose-pre:border-border dark:prose-invert dark:prose-a:text-brand-400 dark:hover:prose-a:text-brand-300 dark:prose-code:text-brand-400 dark:prose-code:bg-brand-900/30 max-w-none"
+        data-pagefind-body
+        data-pagefind-meta={`title:${title}`}
+        class="prose prose-lg prose-headings:font-display prose-headings:font-bold prose-a:text-brand-600 hover:prose-a:text-brand-500 prose-code:before:content-none prose-code:after:content-none [&_:not(pre)>code]:rounded [&_:not(pre)>code]:bg-brand-50 [&_:not(pre)>code]:px-1 [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:font-medium [&_:not(pre)>code]:text-brand-700 prose-pre:border prose-pre:border-border dark:prose-invert dark:prose-a:text-brand-400 dark:hover:prose-a:text-brand-300 dark:[&_:not(pre)>code]:bg-brand-900/30 dark:[&_:not(pre)>code]:text-brand-300 max-w-none"
       >
         <slot />
       </div>
@@ -104,13 +102,14 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
         <div class="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <!-- Back link -->
           <a
-            href="/blog"
+            href={blogHref}
             class="text-brand-600 hover:text-brand-500 dark:text-brand-400 dark:hover:text-brand-300 inline-flex items-center gap-2 text-sm font-medium transition-colors"
           >
             <svg
               class="h-4 w-4"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
+              aria-hidden="true"
               viewBox="0 0 24 24"
               stroke="currentColor"
               stroke-width="2"
@@ -118,7 +117,7 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
               <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"
               ></path>
             </svg>
-            Back to Blog
+            {t('blog.backToBlog')}
           </a>
 
           <!-- Share buttons -->
@@ -132,7 +131,7 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
   {
     tags.length > 0 && (
       <div class="mx-auto max-w-6xl px-6 pb-16">
-        <RelatedPosts currentSlug={slug} tags={tags} locale="en" maxPosts={3} />
+        <RelatedPosts currentSlug={slug} tags={tags} locale={locale} maxPosts={3} />
       </div>
     )
   }

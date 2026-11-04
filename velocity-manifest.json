@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "minCliVersion": "1.8.0",
+  "version": "2.0.0",
+  "minCliVersion": "2.0.0",
   "files": {
     "safe": [
       "src/components/ui/",
@@ -20,7 +20,21 @@
       "vercel.json",
       "netlify.toml",
       "wrangler.toml",
-      "src/config/nav.config.ts"
+      "integrations/",
+      "src/lib/forms.ts",
+      "vitest.config.ts",
+      "playwright.config.ts",
+      ".nvmrc",
+      ".github/workflows/deploy.yml",
+      "src/i18n/ui.ts",
+      "src/i18n/config.ts",
+      "src/i18n/index.ts",
+      "src/i18n/paths.ts",
+      "src/components/layout/LanguageSwitcher.astro",
+      "src/pages/og/",
+      "src/pages/rss.xml.ts",
+      "src/pages/404.astro",
+      "tests/e2e/site.ts"
     ],
     "protected": [
       "astro.config.mjs",
@@ -33,20 +47,59 @@
       "src/components/blog/",
       "src/components/patterns/",
       ".env",
-      ".env.example"
+      ".env.example",
+      "src/actions/",
+      "tests/",
+      "src/config/nav.config.ts",
+      "src/i18n/locales.mjs",
+      "src/i18n/translations/",
+      "src/views/"
     ]
   },
   "dependencies": {
     "update": {
-      "astro": "6.0.0",
-      "@astrojs/mdx": "5.0.0",
-      "@astrojs/react": "5.0.0",
-      "@astrojs/check": "0.9.7",
-      "vitest": "^3.2.0"
+      "astro": "7.4.5",
+      "@astrojs/mdx": "8.1.2",
+      "@astrojs/react": "7.1.2",
+      "@astrojs/sitemap": "^3.7.4",
+      "@astrojs/check": "0.9.12",
+      "@tailwindcss/vite": "^4.3.4",
+      "tailwindcss": "^4.3.4",
+      "vitest": "^5.1.0",
+      "@playwright/test": "^1.64.1",
+      "tailwind-merge": "^3.7.0",
+      "lucide-react": "^1.67.0",
+      "satori": "^0.63.2",
+      "schema-dts": "^2.1.0",
+      "react": "^19.3.1",
+      "react-dom": "^19.3.1",
+      "@fontsource-variable/manrope": "^5.3.0",
+      "@fontsource-variable/outfit": "^5.3.0",
+      "@fontsource-variable/jetbrains-mono": "^5.3.0",
+      "eslint": "^10.14.0",
+      "@eslint/js": "^10.0.1",
+      "eslint-plugin-astro": "^3.2.1",
+      "typescript-eslint": "^8.72.1",
+      "globals": "^17.14.0",
+      "prettier": "^3.9.10",
+      "prettier-plugin-astro": "^1.1.2",
+      "prettier-plugin-tailwindcss": "^0.8.1",
+      "pagefind": "^1.6.0",
+      "@types/react": "^19.3.0",
+      "@types/react-dom": "^19.3.0",
+      "@types/node": "^24.12.0"
     },
-    "remove": ["zod", "astro-seo"],
+    "remove": [
+      "zod",
+      "astro-seo",
+      "@pagefind/default-ui"
+    ],
     "add": {
-      "class-variance-authority": "^0.7.1"
+      "class-variance-authority": "^0.7.1",
+      "@astrojs/node": "11.1.9",
+      "@astrojs/vercel": "11.0.18",
+      "@astrojs/netlify": "8.2.11",
+      "@tailwindcss/typography": "^0.5.20"
     }
   },
   "migrations": [
@@ -54,7 +107,9 @@
       "title": "Update zod imports",
       "description": "Replace `import { z } from 'zod'` with `import { z } from 'astro/zod'` in all files.",
       "pattern": "import.*from ['\"]zod['\"]",
-      "searchPaths": ["src/"],
+      "searchPaths": [
+        "src/"
+      ],
       "toVersion": "0.2.0-beta"
     },
     {
@@ -101,7 +156,9 @@
       "title": "Migrate routes.ts to nav.config.ts",
       "description": "Replace `src/config/routes.ts` with `src/config/nav.config.ts`. Delete routes.ts and update imports.",
       "pattern": "config/routes",
-      "searchPaths": ["src/"],
+      "searchPaths": [
+        "src/"
+      ],
       "toVersion": "0.4.0-beta"
     },
     {
@@ -144,7 +201,9 @@
       "title": "Restore --color-background-deep if used",
       "description": "The CSS variable `--color-background-deep` was removed from global.css, default.css, and midnight.css. If your components reference this token (e.g., Showcase, MarketingFooter), add it back to your theme files: `--color-background-deep: oklch(0.13 0.02 260);`",
       "pattern": "--color-background-deep",
-      "searchPaths": ["src/"],
+      "searchPaths": [
+        "src/"
+      ],
       "fromVersion": "0.5.0-beta",
       "toVersion": "1.0.0"
     },
@@ -152,7 +211,11 @@
       "title": "Restore heading font-size rules if needed",
       "description": "Base `h1`–`h6` font-size rules were removed from global.css. If your pages rely on these global heading sizes rather than Tailwind utility classes, add them back to your own stylesheet.",
       "pattern": "<h[1-6]",
-      "searchPaths": ["src/pages/", "src/components/landing/", "src/content/"],
+      "searchPaths": [
+        "src/pages/",
+        "src/components/landing/",
+        "src/content/"
+      ],
       "fromVersion": "0.5.0-beta",
       "toVersion": "1.0.0"
     },
@@ -160,9 +223,289 @@
       "title": "Header max-width changed from max-w-6xl to max-w-4xl",
       "description": "The floating header variant changed its max-width from `max-w-6xl` to `max-w-4xl`. If your layout depends on the wider header, override this in your Header component or layout.",
       "pattern": "max-w-6xl",
-      "searchPaths": ["src/components/layout/", "src/layouts/"],
+      "searchPaths": [
+        "src/components/layout/",
+        "src/layouts/"
+      ],
       "fromVersion": "0.5.0-beta",
       "toVersion": "1.0.0"
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Upgrade Node.js to 22.23.4 or later",
+      "description": "Astro 7.4 requires Node.js >=22.23.4. Node 24 LTS is recommended (.nvmrc now pins 24). Update your local Node, CI, and hosting settings (e.g. NODE_VERSION on Netlify)."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Keep HTML whitespace behavior (compressHTML)",
+      "description": "Astro 7 defaults `compressHTML` to 'jsx', which removes whitespace between inline elements (\"<a>Docs</a> <a>Blog</a>\" renders as \"DocsBlog\"). Add `compressHTML: true` to astro.config.mjs to keep Astro 6 behavior, or audit your markup and add {' '} where spacing matters.",
+      "pattern": "compressHTML",
+      "searchPaths": [
+        "astro.config.mjs"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Register the Fonts API families in astro.config.mjs",
+      "description": "BaseLayout now renders <Font cssVariable=\"--font-manrope\" /> etc. and global.css no longer imports @fontsource-variable CSS. Copy the `fonts` array, `fontsourceVariable()` helper and LATIN/LATIN_EXT constants from the v2.0.0 astro.config.mjs, or the build fails with FontFamilyNotFound. Custom themes should reference var(--font-manrope) / var(--font-outfit) / var(--font-jetbrains-mono).",
+      "pattern": "fontsource-variable",
+      "searchPaths": [
+        "src/",
+        "astro.config.mjs"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Add a server adapter (deploy target auto-detection)",
+      "description": "Forms now use Astro Actions, which need a server runtime. Add `import { resolveDeployTarget } from './integrations/deploy-target.mjs'`, `const target = await resolveDeployTarget();`, `adapter: target.adapter`, and `cache: { provider: target.cacheProvider ?? memoryCache() }` to astro.config.mjs. Vercel/Netlify are detected automatically; set DEPLOY_TARGET to override. Cloudflare needs `pnpm add @astrojs/cloudflare`.",
+      "pattern": "adapter",
+      "searchPaths": [
+        "astro.config.mjs"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Move form handlers from /api routes to Astro Actions",
+      "description": "src/pages/api/contact.ts and newsletter.ts were removed — they never ran on static builds. Copy src/actions/index.ts from v2.0.0 and port any custom logic (email/CRM calls) into the action handlers. Forms that posted to /api/contact or /api/newsletter should use <ContactForm /> / <NewsletterForm />, which call the actions.",
+      "pattern": "/api/(contact|newsletter)",
+      "searchPaths": [
+        "src/"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Add Pagefind search",
+      "description": "Add `import pagefind from './integrations/pagefind.mjs'` and `pagefind()` to integrations in astro.config.mjs, and copy src/pages/search.astro. Content is indexed only inside `data-pagefind-body` (PageLayout and BlogLayout set this).",
+      "pattern": "pagefind",
+      "searchPaths": [
+        "astro.config.mjs"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Remove nested <main> elements",
+      "description": "BaseLayout already renders <main id=\"main-content\">. PageLayout previously nested a second <main>, which is invalid. If your own layouts or pages render <main>, change it to <div>.",
+      "pattern": "<main",
+      "searchPaths": [
+        "src/pages/",
+        "src/layouts/",
+        "src/components/"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Fix markup rejected by the Rust compiler",
+      "description": "Astro 7 replaces the Go compiler with a stricter Rust compiler: unclosed non-void tags now error and invalid nesting (e.g. <div> inside <p>) is no longer auto-corrected. Run `pnpm build` and fix any reported components."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Install @astrojs/markdown-remark if you use remark/rehype plugins",
+      "description": "Astro 7's default Markdown processor is Sätteri. If astro.config.mjs uses markdown.remarkPlugins / rehypePlugins, run `pnpm add @astrojs/markdown-remark` and set `markdown: { processor: unified({ remarkPlugins: [...] }) }`.",
+      "pattern": "(remark|rehype)Plugins",
+      "searchPaths": [
+        "astro.config.mjs"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Replace removed astro:transitions internals",
+      "description": "TRANSITION_* constants, isTransitionBeforePreparationEvent(), isTransitionBeforeSwapEvent() and createAnimationScope() were removed. Use string event names such as 'astro:after-swap' and compare event.type directly.",
+      "pattern": "TRANSITION_[A-Z_]+|isTransition(BeforePreparation|BeforeSwap)Event|createAnimationScope",
+      "searchPaths": [
+        "src/"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Update getContainerRenderer imports",
+      "description": "Import container renderers from the new entrypoint: `import { getContainerRenderer } from '@astrojs/react/container-renderer'`.",
+      "pattern": "getContainerRenderer",
+      "searchPaths": [
+        "src/",
+        "tests/"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Opt out of sessions (optional)",
+      "description": "Velocity sets `session: false` so adapters do not provision session storage. Remove it if you use Astro.session."
+    },
+    {
+      "title": "ClientRouter replaced by native view transitions",
+      "description": "BaseLayout no longer renders <ClientRouter />. Navigation uses CSS `@view-transition { navigation: auto; }` (in global.css) and `prefetch: { prefetchAll: true, defaultStrategy: 'hover' }` in astro.config.mjs. Add the prefetch block to your config. Scripts that only listen for `astro:page-load` must also run on initial load: call init() directly and listen for `astro:after-swap`. If you use transition:persist, transition:name or navigate(), keep ClientRouter and set `security.csp: false`.",
+      "pattern": "astro:page-load|transition:(persist|name|animate)|navigate(",
+      "searchPaths": [
+        "src/"
+      ],
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0"
+    },
+    {
+      "title": "Content Security Policy enabled",
+      "description": "astro.config.mjs now sets `security.csp` (hash-based script-src, Shiki-compatible style-src-attr). Copy the `csp` block into your config. Inline scripts that use `define:vars` or interpolate values at runtime cannot be hashed. Move dynamic data into `<script type=\"application/json\">` elements (see Analytics.astro). Third-party script hosts need `Astro.csp.insertScriptResource()`. Run `pnpm build && pnpm test:e2e`, which fails on CSP violations.",
+      "pattern": "define:vars|<script[^>]+src=\"https?://",
+      "searchPaths": [
+        "src/"
+      ],
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0"
+    },
+    {
+      "title": "Install new dev dependencies",
+      "description": "Velocity 2.0 adds two devDependencies the CLI cannot add for you: run `pnpm add -D @typescript-eslint/parser@8.72.1 @axe-core/playwright@^4.14.0`. The first lets eslint-plugin-astro type-check <script> blocks under pnpm; the second powers the accessibility tests. Then copy tests/, vitest.config.ts and playwright.config.ts, and run `pnpm exec playwright install chromium`.",
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0"
+    },
+    {
+      "title": "Use an accessible Shiki theme",
+      "description": "Code-block comments in Shiki's `github-dark` theme fail WCAG AA contrast (3.0:1). Velocity 2.0 sets `markdown.shikiConfig.theme: 'github-dark-default'`. Update astro.config.mjs if you kept the old theme.",
+      "pattern": "theme:s*['\"]github-dark['\"]",
+      "searchPaths": [
+        "astro.config.mjs"
+      ],
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0"
+    },
+    {
+      "title": "ESLint 10 and tailwind-merge 3",
+      "description": "ESLint 10 adds no-useless-assignment and preserve-caught-error to the recommended set; fix any new findings in your own code. tailwind-merge 3 understands Tailwind v4 syntax (bg-(--var), duration-(--var), bg-linear-*), so cn() now resolves conflicts that v2 got wrong. If you relied on the old (incorrect) merge results, re-check custom class overrides.",
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0"
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Built-in i18n: locale config and translations",
+      "description": "Velocity 2 is locale-aware in core. Add src/i18n/locales.mjs (export const defaultLocale = 'en'; export const locales = ['en'];) and src/i18n/translations/en.ts (export default an object of your site copy), and add the i18n block to astro.config.mjs: i18n: { defaultLocale, locales: [...locales], routing: { prefixDefaultLocale: false } }. Projects created with the v1 --i18n flag: move src/i18n/translations/{es,fr}.ts content into the new format and list the locales in locales.mjs; delete src/i18n/routes.ts (routes now live in nav.config.ts).",
+      "pattern": "from ['\"]@/i18n/(routes|helpers)['\"]",
+      "searchPaths": [
+        "src/"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "nav.config.ts: routes, header and footer config",
+      "description": "nav.config.ts now exports routes (with optional translated slugs), navItems (label + route or href), headerConfig (CTA, actions, extra nav) and footerConfig. Header/Footer read these defaults, so remove the hardcoded cta/actions/extraNav props from your layouts and pages. This file is now user-owned (protected) and upgrades no longer overwrite it: merge the new shape from the v2.0.0 template by hand.",
+      "pattern": "cta={{|extraNav=|actions={[",
+      "searchPaths": [
+        "src/layouts/",
+        "src/pages/"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Pages render views",
+      "description": "Page content moved to src/views/*View.astro components that take a locale prop; src/pages/*.astro are thin wrappers and src/pages/[lang]/ holds the localized wrappers. Custom pages keep working as-is; to localize one, follow src/views/AboutView.astro + src/pages/[lang]/[...about].astro."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Blog URLs and OG images",
+      "description": "Use the helpers in src/lib/blog.ts (getPosts, getPostUrl, getPostSlug) instead of building /blog/ URLs from post.id. OG images are now generated at /og/<page path>.png; blog posts previously pointed at images that did not exist (/og/blog/<slug>.png vs /og/blog/en/<slug>.png).",
+      "pattern": "post.id.replace(",
+      "searchPaths": [
+        "src/"
+      ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Form validation messages are translation keys",
+      "description": "contactSchema/newsletterSchema in src/lib/forms.ts now return keys such as form.errors.messageTooShort, which ContactForm/NewsletterForm translate. If you show schema errors yourself, translate them with useTranslations(locale)(message)."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.0.0",
+      "title": "Component registry fixes",
+      "description": "React (.tsx) component files, ConsentBanner and GoogleMap were missing from component-registry.json, and several components did not declare their Icon dependency, so partial component installs deleted files that were still imported. If you scaffolded with a subset of components, check that ConsentBanner and any .tsx components you use exist; re-add them from the v2.0.0 template if not."
     }
-  ]
+  ],
+  "scaffold": {
+    "schemaVersion": 1,
+    "minCliVersion": "2.0.0",
+    "node": ">=22.23.4",
+    "variants": [
+      {
+        "id": "i18n",
+        "when": {
+          "i18n": true
+        },
+        "overlay": "variants/i18n",
+        "remove": []
+      },
+      {
+        "id": "demo",
+        "when": {
+          "demo": true
+        },
+        "alwaysInclude": [
+          "*"
+        ]
+      },
+      {
+        "id": "minimal",
+        "when": {
+          "demo": false
+        },
+        "overlay": "variants/minimal",
+        "remove": [
+          "src/components/landing",
+          "src/views/AboutView.astro",
+          "src/views/ContactView.astro",
+          "src/pages/about.astro",
+          "src/pages/contact.astro",
+          "src/pages/components.astro",
+          "src/pages/[lang]/[...about].astro",
+          "src/pages/[lang]/[...contact].astro",
+          "src/content/blog/en/velocity-2-astro-7.mdx",
+          "src/content/faqs/general-en.json",
+          "src/content/authors/team.json"
+        ]
+      }
+    ],
+    "components": {
+      "optionalDirs": [
+        "src/components/ui",
+        "src/components/patterns",
+        "src/components/hero"
+      ],
+      "alwaysInclude": [
+        "badge",
+        "button",
+        "consent-banner",
+        "cta",
+        "hero",
+        "icon",
+        "logo",
+        "newsletter-form",
+        "search-input"
+      ]
+    },
+    "cleanup": [
+      "variants",
+      "scripts/scaffold.mjs",
+      "scripts/scaffold-matrix.mjs",
+      "scripts/check-registry.mjs",
+      "tests/unit/scaffold.test.ts",
+      ".github/workflows/scaffold.yml"
+    ],
+    "cleanupScripts": [
+      "test:scaffold",
+      "check:registry"
+    ]
+  }
 }

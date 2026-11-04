@@ -1,0 +1,79 @@
+---
+/**
+ * About view.
+ * Rendered by src/pages/about.astro (default locale) and
+ * src/pages/[lang]/[...about].astro (other locales).
+ */
+import PageLayout from '@/layouts/PageLayout.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import Card from '@/components/ui/data-display/Card/Card.astro';
+import { Hero } from '@/components/hero';
+import { useTranslations, type Locale } from '@/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const values = [
+  { icon: 'zap', key: 'performance' },
+  { icon: 'box', key: 'simplicity' },
+  { icon: 'github', key: 'openSource' },
+] as const;
+---
+
+<PageLayout title={t('meta.about.title')} description={t('meta.about.description')}>
+  <Hero layout="centered" size="sm" showGrid>
+    <Badge slot="badge" pill pulse>{t('about.hero.badge')}</Badge>
+
+    <h1 slot="title">
+      {t('about.hero.title')} <span class="text-brand-500">{t('about.hero.titleHighlight')}</span>
+    </h1>
+
+    <p slot="description">
+      {t('about.hero.description')}
+    </p>
+  </Hero>
+
+  <!-- Mission Section -->
+  <section class="py-20 bg-surface-invert">
+    <div class="mx-auto max-w-4xl px-6 text-center">
+      <h2 class="font-display text-3xl md:text-4xl font-bold text-on-invert mb-6">
+        {t('about.mission.title')}
+      </h2>
+      <p class="text-lg text-on-invert-secondary max-w-2xl mx-auto leading-relaxed">
+        {t('about.mission.text')}
+      </p>
+    </div>
+  </section>
+
+  <!-- Values Section -->
+  <section class="py-20">
+    <div class="mx-auto max-w-6xl px-6">
+      <h2 class="font-display text-3xl md:text-4xl font-bold text-foreground mb-12 text-center">
+        {t('about.values.title')}
+      </h2>
+
+      <div class="grid gap-8 md:grid-cols-3">
+        {values.map(({ icon, key }) => (
+          <Card hover>
+            <div class="flex items-start gap-4">
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-500/5 flex items-center justify-center text-brand-500 shrink-0">
+                <Icon name={icon} size="md" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-base font-bold text-foreground">{t(`about.values.${key}.title`)}</h3>
+                <p class="text-sm text-foreground-muted leading-relaxed mt-1.5">
+                  {t(`about.values.${key}.text`)}
+                </p>
+              </div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  </section>
+</PageLayout>

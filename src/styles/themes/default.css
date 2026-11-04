@@ -85,12 +85,12 @@
   /* -------------------------------------------------------------------------
      Typography
      ------------------------------------------------------------------------- */
-  --theme-font-sans: 'Manrope Variable', 'Manrope', ui-sans-serif, system-ui,
+  --theme-font-sans: var(--font-manrope), ui-sans-serif, system-ui,
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
-  --theme-font-display: 'Outfit Variable', 'Outfit', var(--theme-font-sans);
-  --theme-font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace,
+  --theme-font-display: var(--font-outfit), var(--theme-font-sans);
+  --theme-font-mono: var(--font-jetbrains-mono), ui-monospace,
     SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
     monospace;
   --theme-heading-weight: 700;

@@ -4,7 +4,9 @@ import { glob } from 'astro/loaders';
 
 // Blog collection with Content Layer API
 const blog = defineCollection({
-  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
+  // deferRender (Astro 7.1): render Markdown/MDX on demand instead of during
+  // content sync — keeps memory flat as the blog grows.
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog', deferRender: true }),
   schema: ({ image }) =>
     z.object({
       title: z.string().max(100),

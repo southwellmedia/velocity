@@ -1,0 +1,94 @@
+---
+/**
+ * LanguageSwitcher
+ *
+ * Links to the current page in every enabled locale, or to that locale's home
+ * page when the page has no translation. No JavaScript: the dropdown is a native
+ * <details> element, so it works under strict CSP and without hydration.
+ *
+ * Rendered automatically by <Header /> when more than one locale is enabled.
+ */
+import { cn } from '@/lib/cn';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import {
+  getAlternates,
+  getLocale,
+  getLocaleTag,
+  localeNames,
+  localizeRoute,
+  locales,
+  useTranslations,
+} from '@/i18n';
+
+interface Props {
+  /** 'dropdown' for the desktop header, 'list' for the mobile menu */
+  variant?: 'dropdown' | 'list';
+  class?: string;
+}
+
+const { variant = 'dropdown', class: className } = Astro.props;
+
+const current = getLocale(Astro);
+const t = useTranslations(current);
+const alternates = getAlternates(Astro.url.pathname);
+
+const options = locales.map((locale) => ({
+  locale,
+  name: localeNames[locale] ?? locale,
+  href: alternates.find((a) => a.locale === locale)?.href ?? localizeRoute('home', locale),
+  active: locale === current,
+}));
+---
+
+{
+  variant === 'list' ? (
+    <nav aria-label={t('a11y.languageSwitcher')} class={cn('flex flex-wrap gap-2', className)}>
+      {options.map((o) => (
+        <a
+          href={o.href}
+          hreflang={getLocaleTag(o.locale)}
+          lang={getLocaleTag(o.locale)}
+          aria-current={o.active ? 'true' : undefined}
+          class={cn(
+            'rounded-md px-3 py-1.5 text-sm transition-colors',
+            o.active
+              ? 'bg-secondary text-foreground font-semibold'
+              : 'text-foreground-muted hover:bg-secondary/70 hover:text-foreground'
+          )}
+        >
+          {o.name}
+        </a>
+      ))}
+    </nav>
+  ) : (
+    <details class={cn('lang-switcher relative', className)}>
+      <summary
+        class="text-foreground-muted hover:text-foreground hover:bg-secondary inline-flex cursor-pointer list-none items-center gap-1.5 rounded-md px-2.5 py-2 text-sm font-medium transition-colors [&::-webkit-details-marker]:hidden"
+        aria-label={t('a11y.languageSwitcher')}
+      >
+        <Icon name="globe" size="sm" />
+        <span class="uppercase">{current}</span>
+        <Icon name="chevron-down" size="xs" />
+      </summary>
+      <ul class="border-border bg-background absolute right-0 z-50 mt-2 min-w-40 rounded-lg border p-1 shadow-lg">
+        {options.map((o) => (
+          <li>
+            <a
+              href={o.href}
+              hreflang={getLocaleTag(o.locale)}
+              lang={getLocaleTag(o.locale)}
+              aria-current={o.active ? 'true' : undefined}
+              class={cn(
+                'flex items-center justify-between gap-4 rounded-md px-3 py-2 text-sm transition-colors',
+                o.active ? 'bg-secondary text-foreground font-semibold' : 'text-foreground-muted hover:bg-secondary hover:text-foreground'
+              )}
+            >
+              {o.name}
+              <span class="text-foreground-subtle text-xs uppercase">{o.locale}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}

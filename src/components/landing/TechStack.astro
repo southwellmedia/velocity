@@ -12,33 +12,36 @@
 import Icon from '@/components/ui/primitives/Icon/Icon.astro';
 import Card from '@/components/ui/data-display/Card/Card.astro';
 import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import { getLocale, useTranslations } from '@/i18n';
+
+const t = useTranslations(getLocale(Astro));
 
 const stack = [
   {
     id: 'astro',
     name: 'Astro',
-    desc: 'Server islands, content layer, zero-JS by default',
+    desc: t('landing.techStack.astro'),
     icon: 'brand-astro' as const,
-    version: 'v6',
+    version: 'v7',
   },
   {
     id: 'tailwind',
     name: 'Tailwind CSS',
-    desc: 'Lightning CSS engine, @theme API, OKLCH colors',
+    desc: t('landing.techStack.tailwind'),
     icon: 'brand-tailwind' as const,
     version: 'v4',
   },
   {
     id: 'typescript',
     name: 'TypeScript',
-    desc: 'Strict mode, path aliases, full type inference',
+    desc: t('landing.techStack.typescript'),
     icon: 'brand-typescript' as const,
     version: '5.8+',
   },
   {
     id: 'react',
     name: 'React',
-    desc: 'Server components, actions, use() hook support',
+    desc: t('landing.techStack.react'),
     icon: 'brand-react' as const,
     version: '19+',
   },

@@ -1,0 +1,42 @@
+---
+/**
+ * Home page (starter). Replace this with your own content.
+ * Rendered by src/pages/index.astro and src/pages/[lang]/index.astro.
+ */
+import PageLayout from '@/layouts/PageLayout.astro';
+import Button from '@/components/ui/form/Button/Button.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import siteConfig from '@/config/site.config';
+import { localizeRoute, useTranslations, type Locale } from '@/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const [before, after] = t('starter.description').split('{file}');
+---
+
+<PageLayout title={t('starter.title')} description={siteConfig.description} searchable={false}>
+  <section class="py-24 md:py-32">
+    <div class="mx-auto max-w-3xl px-6 text-center">
+      <h1 class="font-display text-foreground text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+        {t('starter.heading')} <span class="text-brand-500">{siteConfig.name}</span>
+      </h1>
+      <p class="text-foreground-muted mx-auto mt-6 max-w-2xl text-lg">
+        {before}<code class="bg-secondary text-foreground rounded px-2 py-1 text-sm">src/views/HomeView.astro</code>{after}
+      </p>
+      <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
+        <Button href={localizeRoute('blog', locale)} size="lg">
+          {t('starter.readBlog')}
+          <Icon name="arrow-right" size="sm" />
+        </Button>
+        <Button href="https://docs.astro.build" target="_blank" variant="outline" size="lg">
+          {t('starter.astroDocs')}
+          <Icon name="external-link" size="sm" />
+        </Button>
+      </div>
+    </div>
+  </section>
+</PageLayout>

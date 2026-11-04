@@ -2,41 +2,75 @@ import { useState } from 'react';
 import { Palette, Search, Zap, LayoutGrid, Globe, Copy, Check, Newspaper } from 'lucide-react';
 import { VerticalTabs, type VerticalTab } from '@/components/ui/overlay/VerticalTabs';
 
-interface TabContent {
+type TabId = 'theming' | 'seo' | 'perf' | 'components' | 'i18n' | 'content';
+
+interface TabCopy {
+  label: string;
+  description: string;
   title: string;
   content: string;
 }
 
-const tabContent: Record<string, TabContent> = {
-  theming: {
-    title: 'Design Tokens & Dark Mode',
-    content:
-      "Complete design system using Tailwind v4's CSS-first configuration with built-in dark mode. Semantic color tokens, system preference detection, and localStorage persistence.",
-  },
-  seo: {
-    title: 'Automated SEO Handling',
-    content:
-      'Strictly typed metadata injection for every page with automatic OG image generation. Includes sitemap, robots.txt, and JSON-LD structured data.',
-  },
-  perf: {
-    title: 'Zero JS by Default',
-    content:
-      "Astro's island architecture ensures your pages ship 0kb of JavaScript unless explicitly interactive. Optimized for Core Web Vitals.",
-  },
-  components: {
-    title: 'Type-Safe Components',
-    content:
-      'TypeScript-first UI primitives with full prop validation and IDE autocompletion. Includes buttons, inputs, cards, modals, and more.',
-  },
-  i18n: {
-    title: 'i18n Ready',
-    content:
-      'Add multi-language support with the --i18n flag. Includes type-safe translations, automatic locale detection, and SEO-friendly URL structures.',
-  },
-  content: {
-    title: 'Content & Search',
-    content:
-      'Type-safe content collections with Zod schemas, MDX support, RSS feeds, and Pagefind integration for lightning-fast static search.',
+/** All user-visible copy. Pass a translated version from the page (see HomeView). */
+export interface FeatureTabsCopy {
+  heading: string;
+  headingHighlight: string;
+  intro: string;
+  copy: string;
+  copied: string;
+  tabs: Record<TabId, TabCopy>;
+}
+
+const defaultCopy: FeatureTabsCopy = {
+  heading: 'Everything you need.',
+  headingHighlight: "Nothing you don't.",
+  intro:
+    'We stripped away the bloat and kept the primitives that actually speed up development for agencies and freelancers.',
+  copy: 'Copy',
+  copied: 'Copied',
+  tabs: {
+    theming: {
+      label: 'Theming',
+      description: 'Design tokens & dark mode',
+      title: 'Design Tokens & Dark Mode',
+      content:
+        "Complete design system using Tailwind v4's CSS-first configuration with built-in dark mode. Semantic color tokens, system preference detection, and localStorage persistence.",
+    },
+    seo: {
+      label: 'SEO & Meta',
+      description: 'OG images & structured data',
+      title: 'Automated SEO Handling',
+      content:
+        'Strictly typed metadata injection for every page with automatic OG image generation. Includes sitemap, robots.txt, and JSON-LD structured data.',
+    },
+    perf: {
+      label: 'Performance',
+      description: 'Zero JS by default',
+      title: 'Zero JS by Default',
+      content:
+        "Astro's island architecture ensures your pages ship 0kb of JavaScript unless explicitly interactive. Optimized for Core Web Vitals.",
+    },
+    components: {
+      label: 'Components',
+      description: 'Type-safe UI primitives',
+      title: 'Type-Safe Components',
+      content:
+        'TypeScript-first UI primitives with full prop validation and IDE autocompletion. Includes buttons, inputs, cards, modals, and more.',
+    },
+    i18n: {
+      label: 'i18n Ready',
+      description: 'Optional multi-language',
+      title: 'i18n Ready',
+      content:
+        'Add multi-language support with the --i18n flag. Includes type-safe translations, automatic locale detection, and SEO-friendly URL structures.',
+    },
+    content: {
+      label: 'Content',
+      description: 'Blog, MDX & search',
+      title: 'Content & Search',
+      content:
+        'Type-safe content collections with Zod schemas, MDX support, RSS feeds, and Pagefind integration for lightning-fast static search.',
+    },
   },
 };
 
@@ -222,14 +256,12 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
 
     // Process the line character by character with regex patterns
     while (remaining.length > 0) {
-      let matched = false;
 
       // Comments (// and /* */)
       const commentMatch = remaining.match(/^(\/\/.*|\/\*[\s\S]*?\*\/)/);
       if (commentMatch) {
         addToken(commentMatch[0], 'text-foreground-muted italic');
         remaining = remaining.slice(commentMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -238,7 +270,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
       if (htmlCommentMatch) {
         addToken(htmlCommentMatch[0], 'text-foreground-muted italic');
         remaining = remaining.slice(htmlCommentMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -247,7 +278,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
       if (stringMatch) {
         addToken(stringMatch[0], 'text-green-600 dark:text-green-400');
         remaining = remaining.slice(stringMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -255,7 +285,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
       if (remaining.startsWith('---')) {
         addToken('---', 'text-purple-600 dark:text-purple-400 font-semibold');
         remaining = remaining.slice(3);
-        matched = true;
         continue;
       }
 
@@ -264,7 +293,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
       if (tagMatch) {
         addToken(tagMatch[0], 'text-pink-600 dark:text-pink-400');
         remaining = remaining.slice(tagMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -273,7 +301,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
       if (atRuleMatch) {
         addToken(atRuleMatch[0], 'text-purple-600 dark:text-purple-400 font-semibold');
         remaining = remaining.slice(atRuleMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -284,7 +311,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
       if (keywordMatch) {
         addToken(keywordMatch[0], 'text-purple-600 dark:text-purple-400 font-semibold');
         remaining = remaining.slice(keywordMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -293,7 +319,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
       if (boolMatch) {
         addToken(boolMatch[0], 'text-orange-700 dark:text-orange-300');
         remaining = remaining.slice(boolMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -302,7 +327,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
       if (numberMatch) {
         addToken(numberMatch[0], 'text-orange-700 dark:text-orange-300');
         remaining = remaining.slice(numberMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -312,7 +336,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
         addToken(cssPropMatch[1], 'text-blue-600 dark:text-blue-400');
         addToken(cssPropMatch[2], 'text-foreground-secondary');
         remaining = remaining.slice(cssPropMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -324,7 +347,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
         addToken(cssFuncMatch[1], 'text-amber-700 dark:text-amber-300');
         addToken(cssFuncMatch[2], 'text-foreground-secondary');
         remaining = remaining.slice(cssFuncMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -334,7 +356,6 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
         addToken(funcMatch[1], 'text-amber-700 dark:text-amber-300');
         addToken(funcMatch[2], 'text-foreground-secondary');
         remaining = remaining.slice(funcMatch[0].length);
-        matched = true;
         continue;
       }
 
@@ -344,22 +365,31 @@ function highlightCode(code: string, lang: string): React.ReactNode[] {
         addToken(typeMatch[1], 'text-foreground-secondary');
         addToken(typeMatch[2], 'text-cyan-700 dark:text-cyan-300');
         remaining = remaining.slice(typeMatch[0].length);
-        matched = true;
         continue;
       }
 
       // Default: single character
-      if (!matched) {
-        addToken(remaining[0], 'text-foreground-secondary');
-        remaining = remaining.slice(1);
-      }
+      addToken(remaining[0], 'text-foreground-secondary');
+      remaining = remaining.slice(1);
     }
 
     return tokens.length > 0 ? tokens : [<span key={lineIndex}> </span>];
   });
 }
 
-function CodeBlock({ code, filename, lang }: { code: string; filename: string; lang: string }) {
+function CodeBlock({
+  code,
+  filename,
+  lang,
+  copyLabel,
+  copiedLabel,
+}: {
+  code: string;
+  filename: string;
+  lang: string;
+  copyLabel: string;
+  copiedLabel: string;
+}) {
   const [copied, setCopied] = useState(false);
   const highlightedLines = highlightCode(code.trim(), lang);
 
@@ -390,12 +420,12 @@ function CodeBlock({ code, filename, lang }: { code: string; filename: string; l
           {copied ? (
             <>
               <Check className="h-3 w-3 text-green-600" strokeWidth={2} />
-              <span className="text-green-600">Copied</span>
+              <span className="text-green-600">{copiedLabel}</span>
             </>
           ) : (
             <>
               <Copy className="h-3 w-3" strokeWidth={2} />
-              <span>Copy</span>
+              <span>{copyLabel}</span>
             </>
           )}
         </button>
@@ -418,23 +448,24 @@ function CodeBlock({ code, filename, lang }: { code: string; filename: string; l
   );
 }
 
-// Tab definitions with icons for VerticalTabs
-const tabs: VerticalTab[] = [
-  { id: 'theming', label: 'Theming', description: 'Design tokens & dark mode', icon: Palette },
-  { id: 'seo', label: 'SEO & Meta', description: 'OG images & structured data', icon: Search },
-  { id: 'perf', label: 'Performance', description: 'Zero JS by default', icon: Zap },
-  {
-    id: 'components',
-    label: 'Components',
-    description: 'Type-safe UI primitives',
-    icon: LayoutGrid,
-  },
-  { id: 'i18n', label: 'i18n Ready', description: 'Optional multi-language', icon: Globe },
-  { id: 'content', label: 'Content', description: 'Blog, MDX & search', icon: Newspaper },
+// Tab order and icons (copy comes from FeatureTabsCopy)
+const tabIcons: { id: TabId; icon: VerticalTab['icon'] }[] = [
+  { id: 'theming', icon: Palette },
+  { id: 'seo', icon: Search },
+  { id: 'perf', icon: Zap },
+  { id: 'components', icon: LayoutGrid },
+  { id: 'i18n', icon: Globe },
+  { id: 'content', icon: Newspaper },
 ];
 
-export function FeatureTabs() {
+export function FeatureTabs({ copy = defaultCopy }: { copy?: FeatureTabsCopy }) {
   const [activeTab, setActiveTab] = useState('theming');
+  const tabs: VerticalTab[] = tabIcons.map(({ id, icon }) => ({
+    id,
+    label: copy.tabs[id].label,
+    description: copy.tabs[id].description,
+    icon,
+  }));
 
   return (
     <section id="features" className="bg-background relative overflow-hidden py-[var(--space-section)]">
@@ -463,13 +494,12 @@ export function FeatureTabs() {
         {/* Header */}
         <div className="mb-[var(--space-section-header)]">
           <h2 className="font-display text-foreground text-3xl font-bold md:text-4xl">
-            Everything you need.
+            {copy.heading}
             <br />
-            <span className="text-brand-500">Nothing you don't.</span>
+            <span className="text-brand-500">{copy.headingHighlight}</span>
           </h2>
           <p className="text-foreground-muted mt-4 max-w-2xl text-lg">
-            We stripped away the bloat and kept the primitives that actually speed up development
-            for agencies and freelancers.
+            {copy.intro}
           </p>
         </div>
 
@@ -478,13 +508,15 @@ export function FeatureTabs() {
           {tabs.map((tab) => (
             <div key={tab.id} data-tab-content={tab.id}>
               <div className="mb-[var(--space-heading-gap)]">
-                <h3 className="text-foreground text-xl font-bold">{tabContent[tab.id].title}</h3>
-                <p className="text-foreground-muted mt-2">{tabContent[tab.id].content}</p>
+                <h3 className="text-foreground text-xl font-bold">{copy.tabs[tab.id as TabId].title}</h3>
+                <p className="text-foreground-muted mt-2">{copy.tabs[tab.id as TabId].content}</p>
               </div>
               <CodeBlock
                 code={codeExamples[tab.id].code}
                 filename={codeExamples[tab.id].filename}
                 lang={codeExamples[tab.id].lang}
+                copyLabel={copy.copy}
+                copiedLabel={copy.copied}
               />
             </div>
           ))}

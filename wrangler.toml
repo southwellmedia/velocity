@@ -1,8 +1,18 @@
-# Cloudflare Pages configuration
-# This file is used when deploying to Cloudflare Pages with wrangler
+# Cloudflare Workers configuration (opt-in)
+#
+# Velocity's forms use Astro Actions, which need a server runtime. To deploy on
+# Cloudflare, install the adapter first — it is auto-detected in CI via the
+# CF_PAGES / WORKERS_CI environment variables (or set DEPLOY_TARGET=cloudflare):
+#
+#   pnpm add @astrojs/cloudflare
+#
+# Then follow https://docs.astro.build/en/guides/integrations-guide/cloudflare/
+# for the Worker entrypoint. The [assets] block below serves the prerendered
+# site; replaces the deprecated Workers Sites [site] bucket config.
 
 name = "velocity"
-compatibility_date = "2026-01-31"
+compatibility_date = "2026-11-01"
 
-[site]
-bucket = "./dist"
+[assets]
+directory = "./dist"
+not_found_handling = "404-page"

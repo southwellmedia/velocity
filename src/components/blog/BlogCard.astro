@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { formatDate } from '@/lib/utils';
+import { getLocale, getLocaleTag, useTranslations } from '@/i18n';
 
 interface Props {
   title: string;
@@ -12,6 +13,8 @@ interface Props {
   featured?: boolean;
   author?: string;
   image?: ImageMetadata;
+  /** Minutes to read — pass getReadingTime(post.body). Falls back to a rough estimate. */
+  readingTime?: number;
 }
 
 const {
@@ -23,12 +26,14 @@ const {
   featured = false,
   author,
   image,
+  readingTime: readingTimeProp,
 } = Astro.props;
 
-// Estimate reading time (rough estimate based on average words)
-const wordsPerMinute = 200;
-const estimatedWords = description.split(' ').length * 10; // Rough estimate
-const readingTime = Math.max(1, Math.ceil(estimatedWords / wordsPerMinute));
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const dateLocale = getLocaleTag(locale);
+
+const readingTime = readingTimeProp ?? Math.max(1, Math.ceil((description.split(' ').length * 10) / 200));
 ---
 
 <article
@@ -41,11 +46,11 @@ const readingTime = Math.max(1, Math.ceil(estimatedWords / wordsPerMinute));
 >
   {featured && (
     <div class="absolute -top-3 left-4">
-      <span class="inline-flex items-center gap-1 rounded-full bg-brand-500 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+      <span class="inline-flex items-center gap-1 rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white shadow-sm">
         <svg class="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
         </svg>
-        Featured
+        {t('blog.featured')}
       </span>
     </div>
   )}
@@ -86,14 +91,14 @@ const readingTime = Math.max(1, Math.ceil(estimatedWords / wordsPerMinute));
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
         </svg>
-        {formatDate(publishedAt)}
+        {formatDate(publishedAt, dateLocale)}
       </time>
 
       <span class="flex items-center gap-1">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
-        {readingTime} min read
+        {t('blog.minRead', { minutes: readingTime })}
       </span>
     </div>
 

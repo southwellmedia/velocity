@@ -1,0 +1,155 @@
+---
+/**
+ * Site search powered by Pagefind.
+ *
+ * The index is generated after `astro build` by integrations/pagefind.mjs and
+ * served statically from /pagefind/. Nothing is sent to a search server, and
+ * the ~10 KB client only downloads index chunks that match the query.
+ *
+ * Pages opt in with `data-pagefind-body` (PageLayout and BlogLayout do this).
+ * Pagefind builds one index per <html lang>, so each locale searches its own pages.
+ *
+ * Rendered by src/pages/search.astro and src/pages/[lang]/[...search].astro.
+ */
+import PageLayout from '@/layouts/PageLayout.astro';
+import SearchInput from '@/components/patterns/SearchInput.astro';
+import { localizeRoute, useTranslations, type Locale } from '@/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const messages = JSON.stringify({
+  resultOne: t('search.resultOne'),
+  resultMany: t('search.resultMany'),
+  noResults: t('search.noResults'),
+  unavailable: t('search.unavailable'),
+});
+
+// Pagefind runs its search engine as WebAssembly. Allow WASM compilation on
+// this page only — every other page keeps a stricter script-src.
+Astro.csp?.insertScriptResource("'wasm-unsafe-eval'");
+---
+
+<PageLayout
+  title={t('search.title')}
+  description={t('search.description')}
+  noindex
+  searchable={false}
+>
+  <section class="mx-auto max-w-3xl px-6 py-16">
+    <h1 class="font-display text-4xl font-bold tracking-tight text-foreground">{t('search.title')}</h1>
+
+    <form id="search-form" role="search" class="mt-8" action={localizeRoute('search', locale)} method="get" data-messages={messages}>
+      <label for="search-query" class="sr-only">{t('search.label')}</label>
+      <SearchInput id="search-query" name="q" placeholder={t('search.placeholder')} size="lg" autocomplete="off" />
+    </form>
+
+    <p id="search-status" class="mt-6 text-sm text-foreground-muted" aria-live="polite"></p>
+    <ol id="search-results" class="mt-4 space-y-4"></ol>
+  </section>
+</PageLayout>
+
+<script>
+  type PagefindResult = {
+    url: string;
+    excerpt: string;
+    meta: { title?: string };
+  };
+  type Pagefind = {
+    debouncedSearch: (q: string) => Promise<{ results: { data: () => Promise<PagefindResult> }[] } | null>;
+  };
+
+  let pagefind: Pagefind | null = null;
+
+  async function loadPagefind(): Promise<Pagefind | null> {
+    if (pagefind) return pagefind;
+    try {
+      const url = '/pagefind/pagefind.js';
+      pagefind = (await import(/* @vite-ignore */ url)) as Pagefind;
+      return pagefind;
+    } catch {
+      return null;
+    }
+  }
+
+  function initSearch() {
+    const form = document.getElementById('search-form') as HTMLFormElement | null;
+    const input = document.getElementById('search-query') as HTMLInputElement | null;
+    const status = document.getElementById('search-status');
+    const list = document.getElementById('search-results');
+    if (!form || !input || !status || !list || form.dataset.searchInit) return;
+    form.dataset.searchInit = 'true';
+
+    const msg = JSON.parse(form.dataset.messages ?? '{}') as Record<string, string>;
+    const fill = (text: string, vars: Record<string, string | number>) =>
+      text.replace(/\{(\w+)\}/g, (m, k: string) => (k in vars ? String(vars[k]) : m));
+
+    let runId = 0;
+
+    async function run(query: string) {
+      const id = ++runId;
+      const url = new URL(location.href);
+      if (query) url.searchParams.set('q', query);
+      else url.searchParams.delete('q');
+      history.replaceState(history.state, '', url);
+
+      list!.replaceChildren();
+      if (!query.trim()) {
+        status!.textContent = '';
+        return;
+      }
+
+      const pf = await loadPagefind();
+      if (!pf) {
+        status!.textContent = msg.unavailable;
+        return;
+      }
+
+      const search = await pf.debouncedSearch(query);
+      if (!search || id !== runId) return; // superseded by a newer query
+
+      const results = await Promise.all(search.results.slice(0, 10).map((r) => r.data()));
+      if (id !== runId) return;
+
+      const count = search.results.length;
+      status!.textContent = count
+        ? fill(count === 1 ? msg.resultOne : msg.resultMany, { count, query })
+        : fill(msg.noResults, { query });
+
+      for (const result of results) {
+        const li = document.createElement('li');
+        li.className = 'rounded-lg border border-border p-4 transition-colors hover:bg-background-secondary';
+        const a = document.createElement('a');
+        a.href = result.url;
+        a.className = 'font-display text-lg font-semibold text-foreground hover:text-brand-600';
+        a.textContent = result.meta.title ?? result.url;
+        const p = document.createElement('p');
+        p.className = 'mt-1 text-sm text-foreground-muted [&_mark]:bg-brand-100 [&_mark]:text-foreground dark:[&_mark]:bg-brand-900/50';
+        // Pagefind excerpts are HTML-escaped page text with <mark> highlights.
+        p.innerHTML = result.excerpt;
+        li.append(a, p);
+        list!.append(li);
+      }
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      run(input.value);
+    });
+    input.addEventListener('input', () => run(input.value));
+
+    const initial = new URL(location.href).searchParams.get('q');
+    if (initial) {
+      input.value = initial;
+      run(initial);
+    }
+  }
+
+  initSearch();
+  // Re-run if a project adds <ClientRouter /> back (guarded against double init).
+  document.addEventListener('astro:after-swap', initSearch);
+</script>

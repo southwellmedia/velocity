@@ -7,12 +7,28 @@
 @import 'tailwindcss';
 @import './tokens/colors.css';
 @import './tokens/typography.css';
+
+/* Prose styles for Markdown/MDX content (BlogLayout uses `prose` + modifiers) */
+@plugin '@tailwindcss/typography';
 @import './tokens/spacing.css';
 
-/* Self-hosted fonts via Fontsource (CSP-safe, no external requests) */
-@import '@fontsource-variable/manrope';
-@import '@fontsource-variable/outfit';
-@import '@fontsource-variable/jetbrains-mono';
+/* Fonts are self-hosted via the Astro Fonts API — see `fonts` in astro.config.mjs
+   and <Font /> in BaseLayout. Themes reference --font-manrope / --font-outfit /
+   --font-jetbrains-mono. */
+
+/* Native cross-document view transitions (replaces <ClientRouter />).
+   Zero JavaScript and CSP-compatible: supporting browsers cross-fade between
+   pages, others navigate normally. Opt elements into shared-element morphs
+   with `view-transition-name`. */
+@view-transition {
+  navigation: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}
 
 /* Dark mode variant */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -633,13 +649,17 @@
     }
   }
 
-  /* Reduced motion: disable micro-animations */
+  /* Reduced motion: finish every animation and transition immediately
+     (entrance fades, staggers, micro-interactions) while keeping end states. */
   @media (prefers-reduced-motion: reduce) {
-    .animate-shake,
-    .animate-tab-enter,
-    .animate-toast-in,
-    .animate-tooltip-in {
-      animation: none;
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }
