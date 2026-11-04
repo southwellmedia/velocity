@@ -101,9 +101,8 @@ const en = {
     },
     lighthouse: {
       badge: 'Lighthouse Report',
-      heading: 'Perfect scores. Out of the box.',
+      heading: 'Accessible and search-ready. Out of the box.',
       listLabel: 'Lighthouse scores',
-      performance: 'Performance',
       accessibility: 'Accessibility',
       bestPractices: 'Best Practices',
       seo: 'SEO',

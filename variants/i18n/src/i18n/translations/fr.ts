@@ -98,9 +98,8 @@ const fr: SiteStrings = {
     },
     lighthouse: {
       badge: 'Rapport Lighthouse',
-      heading: 'Des scores parfaits, dès le départ.',
+      heading: 'Accessible et prêt pour les moteurs de recherche, dès le départ.',
       listLabel: 'Scores Lighthouse',
-      performance: 'Performance',
       accessibility: 'Accessibilité',
       bestPractices: 'Bonnes pratiques',
       seo: 'SEO',

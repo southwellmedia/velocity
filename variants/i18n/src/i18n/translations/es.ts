@@ -98,9 +98,8 @@ const es: SiteStrings = {
     },
     lighthouse: {
       badge: 'Informe de Lighthouse',
-      heading: 'Puntuaciones perfectas desde el primer momento.',
+      heading: 'Accesible y lista para los buscadores desde el primer momento.',
       listLabel: 'Puntuaciones de Lighthouse',
-      performance: 'Rendimiento',
       accessibility: 'Accesibilidad',
       bestPractices: 'Buenas prácticas',
       seo: 'SEO',
