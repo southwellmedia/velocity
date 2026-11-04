@@ -19,6 +19,7 @@ interface Props {
   alt?: string;
   /** What belongs here, shown on the placeholder */
   label?: string;
+  /** 'fill' covers the nearest positioned ancestor, so give that ancestor `relative` */
   ratio?: '16/10' | '4/3' | '4/5' | 'fill';
   icon?: string;
   /** Load straight away. Use for the first image on a page. */

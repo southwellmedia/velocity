@@ -52,9 +52,3 @@ export const LOCALIZED_PAGES = Object.entries(routeDefs)
       return `/${parts.filter(Boolean).join('/')}/`.replace('//', '/');
     })
   );
-
-/** The body font: the first family registered in astro.config.mjs. */
-export const bodyFont =
-  fs
-    .readFileSync(path.join(root, 'astro.config.mjs'), 'utf8')
-    .match(/fontsourceVariable\(\{ name: '([^']+)'/)?.[1] ?? '';
