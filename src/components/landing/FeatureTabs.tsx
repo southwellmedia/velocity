@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Palette, Search, Zap, LayoutGrid, Globe, Copy, Check, Newspaper } from 'lucide-react';
+import { Bot, Palette, Search, Zap, LayoutGrid, Globe, Copy, Check, Newspaper } from 'lucide-react';
 import { VerticalTabs, type VerticalTab } from '@/components/ui/overlay/VerticalTabs';
 
-type TabId = 'theming' | 'seo' | 'perf' | 'components' | 'i18n' | 'content';
+type TabId = 'agents' | 'theming' | 'seo' | 'perf' | 'components' | 'i18n' | 'content';
 
 interface TabCopy {
   label: string;
@@ -29,6 +29,13 @@ const defaultCopy: FeatureTabsCopy = {
   copy: 'Copy',
   copied: 'Copied',
   tabs: {
+    agents: {
+      label: 'AI Agents',
+      description: 'Rules & skills built in',
+      title: 'Built for AI Coding Agents',
+      content:
+        'Every project ships with rules and skills for Claude Code, Codex, Cursor and other agents. They know how to add pages and components, and which files upgrades replace.',
+    },
     theming: {
       label: 'Theming',
       description: 'Design tokens & dark mode',
@@ -78,6 +85,18 @@ const codeExamples: Record<
   string,
   { code: string; filename: string; lang: 'css' | 'astro' | 'typescript' | 'javascript' }
 > = {
+  agents: {
+    lang: 'typescript',
+    code: `// You: "Add a Pricing page and put it in the nav."
+// The velocity-add-page skill guides your agent through:
+
+src/views/PricingView.astro          // page content
+src/pages/pricing.astro              // default locale
+src/pages/[lang]/[...pricing].astro  // localized URLs
+src/config/nav.config.ts             // route and menu
+src/i18n/translations/en.ts          // page copy`,
+    filename: '.agents/skills/velocity-add-page/SKILL.md',
+  },
   theming: {
     lang: 'css',
     code: `/* src/styles/themes/default.css — swap this file to re-theme */
@@ -450,6 +469,7 @@ function CodeBlock({
 
 // Tab order and icons (copy comes from FeatureTabsCopy)
 const tabIcons: { id: TabId; icon: VerticalTab['icon'] }[] = [
+  { id: 'agents', icon: Bot },
   { id: 'theming', icon: Palette },
   { id: 'seo', icon: Search },
   { id: 'perf', icon: Zap },
@@ -459,7 +479,7 @@ const tabIcons: { id: TabId; icon: VerticalTab['icon'] }[] = [
 ];
 
 export function FeatureTabs({ copy = defaultCopy }: { copy?: FeatureTabsCopy }) {
-  const [activeTab, setActiveTab] = useState('theming');
+  const [activeTab, setActiveTab] = useState('agents');
   const tabs: VerticalTab[] = tabIcons.map(({ id, icon }) => ({
     id,
     label: copy.tabs[id].label,

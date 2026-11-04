@@ -1,0 +1,82 @@
+---
+title: "Velocity 2.1: Built for AI Coding Agents"
+description: "Every Velocity project now ships with agent rules and skills, so Claude Code, Codex and Cursor can add pages and components the Velocity way. Here's what's new and how to get it."
+publishedAt: 2026-11-04
+author: "Southwell Media"
+tags: ["astro", "release", "ai", "agents", "skills"]
+featured: true
+locale: en
+---
+
+AI coding agents are great at building Astro sites, until they meet a convention they can't guess. An agent might create a page without localized routes, hardcode a string, or edit a file the next upgrade replaces.
+
+Velocity 2.1 gives agents the instructions they need, inside every project.
+
+## What you get
+
+Every new project now includes:
+
+| File | What it does | Who owns it |
+|---|---|---|
+| `AGENTS.md` | Your project's rules, plus a pointer to Velocity's | You. Upgrades leave it alone. |
+| `.agents/velocity.md` | Velocity's stack, commands, rules and file ownership | Velocity. Upgrades keep it current. |
+| `.agents/skills/` and `.claude/skills/` | Step-by-step skills for common tasks | Velocity. Your own skills stay in place. |
+
+`AGENTS.md` is the shared convention tools like Claude Code, Codex and Cursor use for project instructions. Skills ship in `.claude/skills/` for Claude Code and `.agents/skills/`, the emerging cross-tool location. If your tool doesn't load skills automatically, `AGENTS.md` tells your agent where to find them.
+
+## Two skills to start
+
+### Add a page
+
+A Velocity page is more than one file. Ask your agent for a Pricing page, and `velocity-add-page` walks it through everything the page needs:
+
+- The view in `src/views/`, where the content lives
+- The wrappers for the default locale and localized URLs
+- The route, with translated slugs if you want them
+- The menu entry
+- Copy for every enabled language
+
+Your page gets localized URLs, hreflang links and test coverage, because it's built the way Velocity's own pages are.
+
+### Add a component
+
+`velocity-add-component` starts by checking whether Velocity already has what you need. If you scaffolded without a component, it restores the official one and its dependencies instead of writing a new one.
+
+When a new component really is needed, the skill covers where it belongs, how to use CVA variants and design tokens, and the accessibility, translation and CSP rules it has to follow.
+
+## Agents now know what upgrades replace
+
+This is the part that's easy to get wrong. Some files in a Velocity project are yours, and others are replaced when you upgrade. An agent can't tell which is which by reading the code.
+
+`.agents/velocity.md` spells it out. For example, new strings go in `src/i18n/translations/`, because `src/i18n/ui.ts` is replaced on upgrade. If a task really does require editing a file Velocity owns, your agent is told to warn you first.
+
+## We fixed our own instructions first
+
+Velocity 2.0 already shipped an `AGENTS.md`, but it was written for people working on Velocity itself. In your project, it pointed agents at scripts that had been removed and told them to put strings in a file that upgrades replace.
+
+So before writing this post, we tested the new setup. We gave a fresh agent a scaffolded project and a plain request: add a Pricing page, a FAQ and a new component. It finished the job, and it also found mistakes in our new instructions, which we corrected before release.
+
+Its end-to-end test also caught a real bug: the Accordion chevron never rotated. That's fixed in 2.1, along with two more:
+
+- **Social images:** pages added with `--pages` showed a raw translation key as their title. They now show the page title.
+- **`validate`:** the script needed pnpm installed. It now works with any package manager.
+
+New tests keep the instructions honest, too. Velocity's CI fails if they mention a file that doesn't exist in every project type, or if the ownership list stops matching what upgrades actually do.
+
+## Get it
+
+Start a new project:
+
+```bash
+npm create velocity-astro@latest
+```
+
+Or upgrade an existing one:
+
+```bash
+npm create velocity-astro@latest upgrade
+```
+
+The upgrade replaces your old `AGENTS.md` once, because it contains the outdated instructions. Your copy is saved to `.velocity-backup/`, so if you added your own rules, copy them into the new file's **Project notes** section.
+
+Then ask your agent to add a page. The [AI agents guide](https://docs.deployvelocity.com/getting-started/ai-agents/) covers the rest, including how to add your own skills.

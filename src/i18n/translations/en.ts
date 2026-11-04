@@ -56,6 +56,13 @@ const en = {
         'We stripped away the bloat and kept the primitives that actually speed up development for agencies and freelancers.',
       copy: 'Copy',
       copied: 'Copied',
+      agents: {
+        label: 'AI Agents',
+        description: 'Rules & skills built in',
+        title: 'Built for AI Coding Agents',
+        content:
+          'Every project ships with rules and skills for Claude Code, Codex, Cursor and other agents. They know how to add pages and components, and which files upgrades replace.',
+      },
       theming: {
         label: 'Theming',
         description: 'Design tokens & dark mode',
