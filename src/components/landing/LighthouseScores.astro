@@ -1,7 +1,7 @@
 ---
 /**
  * LighthouseScores.astro
- * A callout component displaying perfect Lighthouse scores
+ * A callout component displaying Lighthouse scores. Only list scores you have measured.
  * Designed to match the authentic Lighthouse report aesthetic
  */
 import Badge from '@/components/ui/data-display/Badge/Badge.astro';
@@ -15,7 +15,6 @@ interface Score {
 }
 
 const scores: Score[] = [
-  { label: t('landing.lighthouse.performance'), value: 100 },
   { label: t('landing.lighthouse.accessibility'), value: 100 },
   { label: t('landing.lighthouse.bestPractices'), value: 100 },
   { label: t('landing.lighthouse.seo'), value: 100 },
@@ -36,7 +35,7 @@ const scores: Score[] = [
 
     <!-- Scores Grid -->
     <div
-      class="lighthouse-scores mx-auto grid max-w-2xl grid-cols-4 gap-[var(--space-content-gap)]"
+      class="lighthouse-scores mx-auto grid max-w-xl grid-cols-3 gap-[var(--space-content-gap)]"
       role="list"
       aria-label={t('landing.lighthouse.listLabel')}
     >
