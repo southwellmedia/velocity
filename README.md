@@ -17,6 +17,7 @@
 
 ## What's Included
 
+- **Built for AI coding agents** — project rules and skills for Claude Code, Codex, Cursor and other tools, in every project
 - **58 components** across 7 categories — all accessible, typed, and dark-mode ready
 - **Design token system** with OKLCH colors, fluid typography, and two built-in themes
 - **SEO toolkit** — meta tags, JSON-LD, sitemap, robots.txt, and auto-generated OG images
@@ -58,6 +59,20 @@ pnpm create velocity-astro my-project
 ```
 
 ---
+
+## AI Coding Agents
+
+Every project created with `create-velocity-astro` includes instructions for AI coding agents:
+
+| File | Purpose | On upgrade |
+|------|---------|------------|
+| `AGENTS.md` | Your project's rules, plus a pointer to Velocity's | Left alone |
+| `.agents/velocity.md` | Velocity's stack, commands, rules and file ownership | Replaced |
+| `.agents/skills/`, `.claude/skills/` | `velocity-add-page` and `velocity-add-component` skills | Velocity's are replaced, yours stay |
+
+Ask your agent to add a page or component, and it can follow the same steps Velocity's own code does. See the [AI agents guide](https://docs.deployvelocity.com/getting-started/ai-agents/).
+
+The `AGENTS.md` in this repo is for contributors to Velocity itself.
 
 ## Commands
 

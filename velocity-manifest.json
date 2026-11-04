@@ -475,6 +475,7 @@
           "src/pages/[lang]/[...about].astro",
           "src/pages/[lang]/[...contact].astro",
           "src/content/blog/en/velocity-2-astro-7.mdx",
+          "src/content/blog/en/velocity-2-1-ai-agents.mdx",
           "src/content/faqs/general-en.json",
           "src/content/authors/team.json",
           "public/avatars"

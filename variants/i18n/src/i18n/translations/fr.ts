@@ -53,6 +53,13 @@ const fr: SiteStrings = {
         "Nous avons retiré le superflu pour ne garder que les briques qui accélèrent vraiment le développement des agences et des freelances.",
       copy: 'Copier',
       copied: 'Copié',
+      agents: {
+        label: 'Agents IA',
+        description: 'Règles et skills inclus',
+        title: 'Prêt pour les agents IA',
+        content:
+          'Chaque projet inclut des règles et des skills pour Claude Code, Codex, Cursor et d\'autres agents. Ils savent ajouter des pages et des composants, et quels fichiers les mises à jour remplacent.',
+      },
       theming: {
         label: 'Thèmes',
         description: 'Design tokens et mode sombre',
