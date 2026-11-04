@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { firstTranslation } from '@/i18n';
 import { getLocaleName, getLocaleTag } from '@/i18n/config';
 
 describe('locale helpers', () => {
@@ -23,5 +24,15 @@ describe('locale helpers', () => {
     ['ja', '日本語'],
   ])('names %s as %s', (locale, name) => {
     expect(getLocaleName(locale)).toBe(name);
+  });
+});
+
+describe('firstTranslation', () => {
+  it('uses the first key that has a translation', () => {
+    expect(firstTranslation('en', ['missing.key', 'nav.blog'], 'Fallback')).toBe('Blog');
+  });
+
+  it('returns the fallback, not a raw key, when no key has a translation', () => {
+    expect(firstTranslation('en', ['missing.key', 'also.missing'], 'Fallback')).toBe('Fallback');
   });
 });

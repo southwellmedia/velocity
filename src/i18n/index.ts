@@ -63,6 +63,12 @@ export function useTranslations(locale: Locale | string) {
   return (key: TranslationKey, params?: TranslationParams) => translate(locale, key, params);
 }
 
+/** The first of `keys` that has a translation, or `fallback` if none do. */
+export function firstTranslation(locale: string, keys: string[], fallback: string): string {
+  const key = keys.find((k) => hasTranslation(locale, k));
+  return key ? translate(locale, key) : fallback;
+}
+
 /** True if a key resolves to a string for this locale (without falling back to the key). */
 export function hasTranslation(locale: string, key: string): boolean {
   return translate(locale, key) !== key;
