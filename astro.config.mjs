@@ -3,14 +3,12 @@ import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
+import { readFileSync } from 'node:fs';
 import pagefind from './integrations/pagefind.mjs';
+import localized404 from './integrations/localized-404.mjs';
 import { resolveDeployTarget } from './integrations/deploy-target.mjs';
 import { defaultLocale, locales } from './src/i18n/locales.mjs';
-
-const LATIN =
-  'U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD';
-const LATIN_EXT =
-  'U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF';
+import { routes } from './src/config/nav.config.ts';
 
 /**
  * Deploy target: auto-detected from the build environment (Vercel, Netlify,
@@ -22,24 +20,42 @@ const target = await resolveDeployTarget();
 
 /**
  * Register an installed @fontsource-variable package with the Fonts API using
- * the local provider (latin + latin-ext subsets). Swap in fontProviders.google()
- * or fontProviders.fontsource() if you prefer to fetch fonts at build time.
+ * the local provider. Every subset the package ships is registered, so languages
+ * such as Russian or Vietnamese work; browsers only download the ones a page
+ * uses. Latin comes first because BaseLayout preloads the first face.
+ * Swap in fontProviders.google() or fontProviders.fontsource() if you prefer to
+ * fetch fonts at build time.
  */
 function fontsourceVariable({ name, pkg, cssVariable, weight, fallbacks }) {
-  const file = (subset) => `./node_modules/@fontsource-variable/${pkg}/files/${pkg}-${subset}-wght-normal.woff2`;
+  const dir = `./node_modules/@fontsource-variable/${pkg}`;
+  const css = readFileSync(`${dir}/index.css`, 'utf8');
+  const faces = [...css.matchAll(/url\(\.\/files\/([^)]+\.woff2)\)[\s\S]*?unicode-range:\s*([^;]+);/g)]
+    .map(([, file, range]) => ({ file, range }))
+    .sort((a, b) => Number(b.file.includes('-latin-wght')) - Number(a.file.includes('-latin-wght')));
+
   return {
     provider: fontProviders.local(),
     name,
     cssVariable,
     fallbacks,
     options: {
-      variants: [
-        { src: [file('latin')], weight, style: 'normal', unicodeRange: [LATIN] },
-        { src: [file('latin-ext')], weight, style: 'normal', unicodeRange: [LATIN_EXT] },
-      ],
+      variants: faces.map(({ file, range }) => ({
+        src: [`${dir}/files/${file}`],
+        weight,
+        style: 'normal',
+        unicodeRange: range.split(',').map((r) => r.trim()),
+      })),
     },
   };
 }
+
+// Search results are noindex, so keep them out of the sitemap in every language
+const searchPages = new Set(
+  locales.map((locale) => {
+    const slug = routes.search?.slugs?.[locale] ?? routes.search?.path ?? 'search';
+    return locale === defaultLocale ? `/${slug}/` : `/${locale}/${slug}/`;
+  }),
+);
 
 export default defineConfig({
   site: process.env.SITE_URL || 'https://example.com',
@@ -109,12 +125,14 @@ export default defineConfig({
   integrations: [
     react(),
     mdx(),
-    sitemap(
-      locales.length > 1
+    sitemap({
+      filter: (page) => !searchPages.has(new URL(page).pathname),
+      ...(locales.length > 1
         ? { i18n: { defaultLocale, locales: Object.fromEntries(locales.map((l) => [l, l])) } }
-        : undefined,
-    ),
+        : {}),
+    }),
     pagefind(),
+    localized404(),
   ],
 
   vite: {

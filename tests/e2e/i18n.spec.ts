@@ -62,6 +62,24 @@ test.describe('i18n', () => {
     });
   }
 
+  for (const locale of others) {
+    test(`/${locale}/ hreflang links match the canonical URL`, async ({ page }) => {
+      await page.goto(`/${locale}/`);
+      const canonical = await page.locator('link[rel="canonical"]').getAttribute('href');
+      const hrefs = await page.locator('link[rel="alternate"][hreflang]').evaluateAll((els) =>
+        els.map((el) => el.getAttribute('href')),
+      );
+      expect(hrefs).toContain(canonical);
+      for (const href of hrefs) expect(href).toMatch(/\/$/);
+    });
+
+    test(`unknown URLs under /${locale}/ get a 404 in ${locale}`, async ({ page }) => {
+      const response = await page.goto(`/${locale}/does-not-exist`);
+      expect(response?.status()).toBe(404);
+      await expect(page.locator('html')).toHaveAttribute('lang', new RegExp(`^${locale}`));
+    });
+  }
+
   test('language switcher offers every locale', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');

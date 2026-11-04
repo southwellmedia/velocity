@@ -1,0 +1,26 @@
+---
+/**
+ * InlineScript
+ *
+ * Renders a script inline and adds its hash to the page's CSP. Astro hashes the
+ * scripts it bundles, but not `is:inline` ones, so use this for any inline script
+ * that must run before the page renders. Import the source with `?raw`:
+ *
+ *   import code from './my-script.js?raw';
+ *   <InlineScript code={code} />
+ *
+ * The code must be static. Pass data through <script type="application/json">.
+ */
+interface Props {
+  code: string;
+}
+
+// HTML parsers normalize line endings, so hash what the browser will see
+const code = Astro.props.code.replace(/\r\n/g, '\n');
+
+const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(code));
+const hash = btoa(String.fromCharCode(...new Uint8Array(digest)));
+Astro.csp?.insertScriptHash(`sha256-${hash}`);
+---
+
+<script is:inline set:html={code} />

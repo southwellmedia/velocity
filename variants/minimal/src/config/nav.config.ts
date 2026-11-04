@@ -14,7 +14,10 @@
 export interface RouteDefinition {
   /** URL path for the default locale, without slashes ('' = home). */
   path: string;
-  /** Translated slugs for other locales, e.g. { es: 'sobre-nosotros' }. Falls back to `path`. */
+  /**
+   * Translated slugs for other locales, e.g. { es: 'sobre-nosotros' }. Falls back to `path`.
+   * Not available for `blog`, whose pages live in a fixed folder.
+   */
   slugs?: Partial<Record<string, string>>;
   /** Set false for pages that only exist in the default locale. */
   localized?: boolean;

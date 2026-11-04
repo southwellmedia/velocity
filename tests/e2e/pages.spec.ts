@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-import { PAGES } from './site';
+import { createHash } from 'node:crypto';
+import { ALL_PAGES, PAGES, hasRoute } from './site';
 
 for (const path of PAGES) {
   test.describe(path, () => {
@@ -36,6 +37,47 @@ for (const path of PAGES) {
   });
 }
 
+test('every inline script has a hash in the CSP', async ({ page }) => {
+  // Position in the document must not be what lets a script run
+  await page.goto('/');
+  const csp = await page.locator('meta[http-equiv="content-security-policy"]').getAttribute('content');
+  const scripts = await page
+    .locator('script:not([src]):not([type="application/json"]):not([type="application/ld+json"])')
+    .evaluateAll((els) => els.map((el) => el.textContent ?? ''));
+  expect(scripts.length).toBeGreaterThan(0);
+  for (const code of scripts) {
+    const hash = createHash('sha256').update(code).digest('base64');
+    expect(csp, code.slice(0, 60)).toContain(`sha256-${hash}`);
+  }
+});
+
+test('component showcase dialog opens and closes under the CSP', async ({ page }) => {
+  test.skip(!hasRoute('components'), 'no component showcase in this project');
+  await page.goto('/components');
+  await page.locator('[data-dialog-open="demo-dialog"]').click();
+  const cancel = page.locator('[data-dialog-close="demo-dialog"]').first();
+  await expect(cancel).toBeVisible();
+  await cancel.click();
+  await expect(cancel).toBeHidden();
+});
+
+test('only the Latin font is preloaded, and other scripts have a font', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('link[rel="preload"][as="font"]')).toHaveCount(1);
+  const ranges = await page.evaluate(() =>
+    [...document.fonts].filter((f) => f.family.includes('Manrope')).map((f) => f.unicodeRange),
+  );
+  expect(ranges.join(',')).toMatch(/U\+4[0-9A-F]{2}/i); // Cyrillic
+});
+
+test('search pages are out of the sitemap but readable by crawlers', async ({ request }) => {
+  const robots = await (await request.get('/robots.txt')).text();
+  expect(robots).not.toMatch(/Disallow: \/search/);
+  const sitemap = await (await request.get('/sitemap-0.xml')).text();
+  expect(sitemap).toContain('<loc>');
+  expect(sitemap).not.toMatch(/\/search\/</);
+});
+
 test('404 page returns 404', async ({ page }) => {
   const response = await page.goto('/does-not-exist');
   expect(response?.status()).toBe(404);
@@ -50,7 +92,7 @@ test('fonts are self-hosted and the body font is preloaded', async ({ page }) =>
 });
 
 test.describe('Content Security Policy', () => {
-  for (const path of PAGES) {
+  for (const path of ALL_PAGES) {
     test(`${path} ships a hash-based CSP with no violations`, async ({ page }) => {
       const violations: string[] = [];
       await page.exposeFunction('reportCspViolation', (v: string) => violations.push(v));

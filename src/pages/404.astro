@@ -5,7 +5,8 @@ import Icon from '@/components/ui/primitives/Icon/Icon.astro';
 import { getNavItems } from '@/config/nav.config';
 import { getLocale, localizePath, localizeRoute, useTranslations } from '@/i18n';
 
-// Astro serves this page for every unknown URL, so take the locale from the URL.
+// With several locales this page renders on demand (integrations/localized-404.mjs),
+// so the locale comes from the URL that was requested.
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
 

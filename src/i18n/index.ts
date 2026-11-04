@@ -15,7 +15,7 @@ import { ui, type UIStrings } from './ui';
 import type { SiteStrings } from './translations/en';
 
 export * from './config';
-export { localizePath, localizeRoute, getAlternates, getLocalizedStaticPaths } from './paths';
+export { localizePath, localizeRoute, getAlternates, getLocalizedStaticPaths, withTrailingSlash } from './paths';
 
 type Dict = Record<string, unknown>;
 

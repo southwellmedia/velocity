@@ -20,6 +20,11 @@ function join(locale: string, slug: string): string {
   return path || '/';
 }
 
+/** Pages build to directories, so their canonical URLs end in a slash. */
+export function withTrailingSlash(path: string): string {
+  return path.endsWith('/') ? path : `${path}/`;
+}
+
 /** URL of a route in a locale. Routes marked `localized: false` always use the default locale. */
 export function localizeRoute(id: RouteId, locale: Locale | string): string {
   const route = ROUTES[id];
@@ -68,6 +73,11 @@ export function getAlternates(pathname: string): { locale: Locale; href: string 
 export function getLocalizedStaticPaths(id: RouteId, param: string | null) {
   const route = ROUTES[id];
   if (route.localized === false) return [];
+  if (param === null && route.path && route.slugs) {
+    throw new Error(
+      `[i18n] Route "${id}" has translated slugs, but src/pages/[lang]/${route.path}/ is a fixed folder. Remove its slugs in src/config/nav.config.ts.`,
+    );
+  }
   return locales
     .filter((locale) => locale !== defaultLocale)
     .map((lang) => ({

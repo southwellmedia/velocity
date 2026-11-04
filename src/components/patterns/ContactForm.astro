@@ -7,7 +7,7 @@ import Input from '@/components/ui/form/Input/Input.astro';
 import Textarea from '@/components/ui/form/Textarea/Textarea.astro';
 import Button from '@/components/ui/form/Button/Button.astro';
 import { cn } from '@/lib/cn';
-import { actions } from 'astro:actions';
+import { actions, getActionPath } from 'astro:actions';
 import { getLocale, useTranslations } from '@/i18n';
 import { formErrorKeys } from '@/lib/forms';
 
@@ -46,7 +46,7 @@ const messages = JSON.stringify({
 
 <form
   id="contact-form"
-  action={action ?? actions.contact}
+  action={action ?? getActionPath(actions.contact)}
   method="POST"
   class={cn('space-y-6', className)}
   data-endpoint={action}

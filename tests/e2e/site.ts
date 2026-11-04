@@ -26,8 +26,8 @@ export const posts = (() => {
 })();
 
 /**
- * Pages to smoke-test: every route except the component showcase (a large demo
- * of every component, covered by its own checks) plus every blog post.
+ * Pages to smoke-test: every route except the component showcase, plus every
+ * blog post. The showcase is a large demo with its own CSP and dialog tests.
  */
 export const PAGES = [
   ...Object.entries(routeDefs)
@@ -35,3 +35,6 @@ export const PAGES = [
     .map(([, r]) => `/${r.path}`),
   ...posts.map((slug) => `/blog/${slug}`),
 ];
+
+/** Every page, for checks that apply everywhere. */
+export const ALL_PAGES = [...PAGES, ...(hasRoute('components') ? ['/components'] : [])];
