@@ -23,6 +23,24 @@ const combos = [true, false].flatMap((demo) =>
   [false, true].flatMap((i18n) => (['all', 'none'] as const).map((components) => ({ demo, i18n, components }))),
 );
 
+describe('manifest migrations', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'velocity-manifest.json'), 'utf8'));
+
+  it.each(manifest.migrations.filter((m: { pattern?: string }) => m.pattern).map((m: { title: string; pattern: string }) => [m.title, m.pattern]))(
+    '%s has a valid pattern',
+    (_title, pattern) => {
+      expect(() => new RegExp(pattern as string)).not.toThrow();
+    },
+  );
+
+  it('seeds only protected paths', () => {
+    for (const seed of manifest.files.seed) {
+      const covered = manifest.files.protected.some((p: string) => seed === p || seed.startsWith(p));
+      expect(covered, seed).toBe(true);
+    }
+  });
+});
+
 describe('component registry', () => {
   it('is consistent with the files on disk', () => {
     expect(checkRegistry(root)).toEqual([]);

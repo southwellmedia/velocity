@@ -85,3 +85,23 @@ breaking older 2.x CLIs.
   leaves a broken import.
 - Run `pnpm test:scaffold` locally before changing anything under `variants/`,
   `src/i18n/`, `src/views/` or `src/config/`.
+
+## Upgrades
+
+The manifest also tells `create-velocity-astro upgrade` what it may change in an existing project:
+
+| Manifest field | Existing file | Missing file |
+|---|---|---|
+| `files.safe` | Overwritten (user-modified files are backed up first) | Added |
+| `files.protected` | Left alone | Left alone |
+| `files.seed` (a subset of protected paths) | Left alone | Added |
+| `migrations[].replace` | Backed up to `.velocity-backup/`, then replaced, once, when upgrading across that migration's `toVersion` | Added |
+| `migrations[].remove` | Backed up to `.velocity-backup/`, then deleted, once | Nothing to do |
+
+`packageJson` sets `engines` and adds `scripts`. A script is only changed when it's missing or still equals its `replaces` value, so scripts a project customized are kept.
+
+A migration with `when` (for example `{ "i18n": true }`) applies only to projects created with those options, read from `.velocity.json`.
+
+Upgrades run against the same variant pipeline as scaffolding. Use `replace` only for breaking releases where the old file can't work with the new version, and describe what to copy back in that migration's `description`.
+
+A migration's `pattern` is a regular expression, so escape `(`, `[` and `.`.

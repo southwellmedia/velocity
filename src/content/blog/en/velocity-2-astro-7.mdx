@@ -206,21 +206,23 @@ The suite reads the page list from your routes and content, so it keeps working 
 
 ## Upgrading
 
-Run the CLI upgrade, which reads the new migrations from `velocity-manifest.json`:
+Update to **Node 22.23.4 or later** (Node 24 LTS is recommended), commit your work, then run the upgrade with `create-velocity-astro` 2.0 or later:
 
 ```bash
-pnpm create velocity-astro upgrade
+pnpm create velocity-astro@latest upgrade --dry-run
+pnpm create velocity-astro@latest upgrade
+pnpm install
 ```
 
-Before you do:
+After that, your project installs and builds on Velocity 2. We test this on real projects created with the 1.x CLI.
 
-1. **Node 22.23.4 or later** is required by Astro 7.4. Node 24 LTS is recommended, and `.nvmrc` now pins it.
-2. **`astro.config.mjs` is yours**, so the CLI won't overwrite it. Copy over the `fonts`, `cache`, `prefetch`, `security.csp` and adapter blocks. Without the `fonts` block, the build fails with `FontFamilyNotFound`.
-3. **Custom forms** that posted to `/api/contact` or `/api/newsletter` should move to the Actions in `src/actions/index.ts`.
-4. **Custom scripts** that only listen for `astro:page-load` should also call their init function directly.
-5. **`src/config/nav.config.ts` is now yours.** It holds routes, nav items and the header and footer defaults, and upgrades no longer overwrite it. Merge in its new shape once, then remove the hardcoded `cta`/`actions`/`extraNav` props from your layouts.
-6. **Projects created with the 1.x `--i18n` flag:** move your translations to `src/i18n/translations/<locale>.ts`, list your locales in `src/i18n/locales.mjs`, and delete `src/i18n/routes.ts`.
+Because this is a breaking release, the upgrade does more than usual. It replaces `astro.config.mjs`, `nav.config.ts`, your blog and `[lang]` pages, and the components in `src/components/{blog,patterns,landing}/`. Anything that differed is saved in `.velocity-backup/` first, and your other pages, content and files stay as they are.
 
-You'll also need `create-velocity-astro` 2.0 or later, since 1.x can't read Velocity 2's manifest.
+Then bring your own changes across:
 
-The full list, with search patterns for each step, is in the manifest's 2.0.0 migrations.
+1. **Restore your customizations** from `.velocity-backup/`, such as nav links and config integrations.
+2. **Fix your contact form.** The 1.x contact page posts to `/api/contact`, which never ran on static builds. Replace its form with `<ContactForm />`, and move any custom logic into `src/actions/index.ts`.
+3. **Check custom scripts.** Anything that only listens for `astro:page-load` should also call its init function directly.
+4. **Projects created with the 1.x `--i18n` flag:** move your translations to `src/i18n/translations/<locale>.ts`.
+
+The [upgrade guide](https://docs.deployvelocity.com/upgrade-guides/v1-to-v2/) has every step.

@@ -34,7 +34,8 @@
       "src/pages/og/",
       "src/pages/rss.xml.ts",
       "src/pages/404.astro",
-      "tests/e2e/site.ts"
+      "tests/e2e/site.ts",
+      "src/components/hero/"
     ],
     "protected": [
       "astro.config.mjs",
@@ -54,6 +55,15 @@
       "src/i18n/locales.mjs",
       "src/i18n/translations/",
       "src/views/"
+    ],
+    "seed": [
+      "src/i18n/locales.mjs",
+      "src/i18n/translations/",
+      "src/actions/",
+      "src/views/",
+      "src/pages/search.astro",
+      "src/pages/[lang]/",
+      "tests/"
     ]
   },
   "dependencies": {
@@ -100,6 +110,10 @@
       "@astrojs/vercel": "11.0.18",
       "@astrojs/netlify": "8.2.11",
       "@tailwindcss/typography": "^0.5.20"
+    },
+    "addDev": {
+      "@typescript-eslint/parser": "8.72.1",
+      "@axe-core/playwright": "^4.14.0"
     }
   },
   "migrations": [
@@ -237,54 +251,48 @@
       "description": "Astro 7.4 requires Node.js >=22.23.4. Node 24 LTS is recommended (.nvmrc now pins 24). Update your local Node, CI, and hosting settings (e.g. NODE_VERSION on Netlify)."
     },
     {
-      "fromVersion": "1.0.0",
       "toVersion": "2.0.0",
-      "title": "Keep HTML whitespace behavior (compressHTML)",
-      "description": "Astro 7 defaults `compressHTML` to 'jsx', which removes whitespace between inline elements (\"<a>Docs</a> <a>Blog</a>\" renders as \"DocsBlog\"). Add `compressHTML: true` to astro.config.mjs to keep Astro 6 behavior, or audit your markup and add {' '} where spacing matters.",
-      "pattern": "compressHTML",
-      "searchPaths": [
-        "astro.config.mjs"
+      "title": "Review replaced configuration and components",
+      "description": "Velocity 2 needs a new astro.config.mjs, nav.config.ts, translations, blog and [lang] pages, and components in src/components/{blog,patterns,landing}/, so the upgrade replaced them. Anything that differed is saved in .velocity-backup/: copy your customizations back, such as nav links and astro.config.mjs integrations. Files you added yourself were not touched.",
+      "replace": [
+        "astro.config.mjs",
+        "src/config/nav.config.ts",
+        "src/i18n/translations/",
+        "src/components/blog/",
+        "src/components/patterns/",
+        "src/components/landing/",
+        "src/pages/blog/",
+        "src/pages/[lang]/"
       ]
     },
     {
-      "fromVersion": "1.0.0",
       "toVersion": "2.0.0",
-      "title": "Register the Fonts API families in astro.config.mjs",
-      "description": "BaseLayout now renders <Font cssVariable=\"--font-manrope\" /> etc. and global.css no longer imports @fontsource-variable CSS. Copy the `fonts` array, `fontsourceVariable()` helper and LATIN/LATIN_EXT constants from the v2.0.0 astro.config.mjs, or the build fails with FontFamilyNotFound. Custom themes should reference var(--font-manrope) / var(--font-outfit) / var(--font-jetbrains-mono).",
-      "pattern": "fontsource-variable",
-      "searchPaths": [
-        "src/",
-        "astro.config.mjs"
-      ]
-    },
-    {
-      "fromVersion": "1.0.0",
-      "toVersion": "2.0.0",
-      "title": "Add a server adapter (deploy target auto-detection)",
-      "description": "Forms now use Astro Actions, which need a server runtime. Add `import { resolveDeployTarget } from './integrations/deploy-target.mjs'`, `const target = await resolveDeployTarget();`, `adapter: target.adapter`, and `cache: { provider: target.cacheProvider ?? memoryCache() }` to astro.config.mjs. Vercel/Netlify are detected automatically; set DEPLOY_TARGET to override. Cloudflare needs `pnpm add @astrojs/cloudflare`.",
-      "pattern": "adapter",
-      "searchPaths": [
-        "astro.config.mjs"
+      "when": {
+        "i18n": true
+      },
+      "title": "Review the move from the i18n overlay to core i18n",
+      "description": "The 1.x i18n overlay is replaced by core i18n. Your home, About and Contact pages were replaced because they passed a `lang` prop that layouts no longer take, and overlay files such as src/i18n/routes.ts were removed. Both are saved in .velocity-backup/. Move your translations into src/i18n/translations/<locale>.ts.",
+      "replace": [
+        "src/pages/index.astro",
+        "src/pages/about.astro",
+        "src/pages/contact.astro"
+      ],
+      "remove": [
+        "src/i18n/routes.ts",
+        "src/i18n/helpers.ts",
+        "src/components/i18n/",
+        "src/components/landing/Navbar.astro",
+        "src/components/landing/LandingFooter.astro"
       ]
     },
     {
       "fromVersion": "1.0.0",
       "toVersion": "2.0.0",
       "title": "Move form handlers from /api routes to Astro Actions",
-      "description": "src/pages/api/contact.ts and newsletter.ts were removed — they never ran on static builds. Copy src/actions/index.ts from v2.0.0 and port any custom logic (email/CRM calls) into the action handlers. Forms that posted to /api/contact or /api/newsletter should use <ContactForm /> / <NewsletterForm />, which call the actions.",
+      "description": "Forms now post to Astro Actions in src/actions/index.ts, which the upgrade added. The form on the 1.x contact page posts to /api/contact, which never ran on static builds, so replace it with <ContactForm />; the E2E contact tests fail until you do. Move any custom logic (email, CRM) from src/pages/api/contact.ts and newsletter.ts into the action handlers, then delete those routes.",
       "pattern": "/api/(contact|newsletter)",
       "searchPaths": [
         "src/"
-      ]
-    },
-    {
-      "fromVersion": "1.0.0",
-      "toVersion": "2.0.0",
-      "title": "Add Pagefind search",
-      "description": "Add `import pagefind from './integrations/pagefind.mjs'` and `pagefind()` to integrations in astro.config.mjs, and copy src/pages/search.astro. Content is indexed only inside `data-pagefind-body` (PageLayout and BlogLayout set this).",
-      "pattern": "pagefind",
-      "searchPaths": [
-        "astro.config.mjs"
       ]
     },
     {
@@ -344,8 +352,8 @@
     },
     {
       "title": "ClientRouter replaced by native view transitions",
-      "description": "BaseLayout no longer renders <ClientRouter />. Navigation uses CSS `@view-transition { navigation: auto; }` (in global.css) and `prefetch: { prefetchAll: true, defaultStrategy: 'hover' }` in astro.config.mjs. Add the prefetch block to your config. Scripts that only listen for `astro:page-load` must also run on initial load: call init() directly and listen for `astro:after-swap`. If you use transition:persist, transition:name or navigate(), keep ClientRouter and set `security.csp: false`.",
-      "pattern": "astro:page-load|transition:(persist|name|animate)|navigate(",
+      "description": "BaseLayout no longer renders <ClientRouter />. Navigation uses CSS `@view-transition` and prefetch. Scripts that only listen for astro:page-load will not run on first load: call your init function directly and keep the listener if you want it. If you need transition:persist, transition:name or navigate(), re-add <ClientRouter /> and set `security.csp: false`, because Astro's CSP does not support it.",
+      "pattern": "astro:page-load|transition:(persist|name|animate)|navigate\\(",
       "searchPaths": [
         "src/"
       ],
@@ -354,26 +362,10 @@
     },
     {
       "title": "Content Security Policy enabled",
-      "description": "astro.config.mjs now sets `security.csp` (hash-based script-src, Shiki-compatible style-src-attr). Copy the `csp` block into your config. Inline scripts that use `define:vars` or interpolate values at runtime cannot be hashed. Move dynamic data into `<script type=\"application/json\">` elements (see Analytics.astro). Third-party script hosts need `Astro.csp.insertScriptResource()`. Run `pnpm build && pnpm test:e2e`, which fails on CSP violations.",
+      "description": "astro.config.mjs now sets `security.csp` (hash-based script-src). Inline scripts that use `define:vars` or interpolate values cannot be hashed: pass data through <script type=\"application/json\"> instead. Declare third-party script hosts with Astro.csp.insertScriptResource() in the component that loads them. Test with a production build, because CSP does not apply in `astro dev`.",
       "pattern": "define:vars|<script[^>]+src=\"https?://",
       "searchPaths": [
         "src/"
-      ],
-      "fromVersion": "1.0.0",
-      "toVersion": "2.0.0"
-    },
-    {
-      "title": "Install new dev dependencies",
-      "description": "Velocity 2.0 adds two devDependencies the CLI cannot add for you: run `pnpm add -D @typescript-eslint/parser@8.72.1 @axe-core/playwright@^4.14.0`. The first lets eslint-plugin-astro type-check <script> blocks under pnpm; the second powers the accessibility tests. Then copy tests/, vitest.config.ts and playwright.config.ts, and run `pnpm exec playwright install chromium`.",
-      "fromVersion": "1.0.0",
-      "toVersion": "2.0.0"
-    },
-    {
-      "title": "Use an accessible Shiki theme",
-      "description": "Code-block comments in Shiki's `github-dark` theme fail WCAG AA contrast (3.0:1). Velocity 2.0 sets `markdown.shikiConfig.theme: 'github-dark-default'`. Update astro.config.mjs if you kept the old theme.",
-      "pattern": "theme:s*['\"]github-dark['\"]",
-      "searchPaths": [
-        "astro.config.mjs"
       ],
       "fromVersion": "1.0.0",
       "toVersion": "2.0.0"
@@ -388,7 +380,7 @@
       "fromVersion": "1.0.0",
       "toVersion": "2.0.0",
       "title": "Built-in i18n: locale config and translations",
-      "description": "Velocity 2 is locale-aware in core. Add src/i18n/locales.mjs (export const defaultLocale = 'en'; export const locales = ['en'];) and src/i18n/translations/en.ts (export default an object of your site copy), and add the i18n block to astro.config.mjs: i18n: { defaultLocale, locales: [...locales], routing: { prefixDefaultLocale: false } }. Projects created with the v1 --i18n flag: move src/i18n/translations/{es,fr}.ts content into the new format and list the locales in locales.mjs; delete src/i18n/routes.ts (routes now live in nav.config.ts).",
+      "description": "Velocity is locale-aware in core. The upgrade added src/i18n/locales.mjs and src/i18n/translations/. If your own code imports from @/i18n/routes or @/i18n/helpers, switch to @/i18n (useTranslations, getLocale, localizeRoute, localizePath), then delete those files.",
       "pattern": "from ['\"]@/i18n/(routes|helpers)['\"]",
       "searchPaths": [
         "src/"
@@ -397,26 +389,15 @@
     {
       "fromVersion": "1.0.0",
       "toVersion": "2.0.0",
-      "title": "nav.config.ts: routes, header and footer config",
-      "description": "nav.config.ts now exports routes (with optional translated slugs), navItems (label + route or href), headerConfig (CTA, actions, extra nav) and footerConfig. Header/Footer read these defaults, so remove the hardcoded cta/actions/extraNav props from your layouts and pages. This file is now user-owned (protected) and upgrades no longer overwrite it: merge the new shape from the v2.0.0 template by hand.",
-      "pattern": "cta={{|extraNav=|actions={[",
-      "searchPaths": [
-        "src/layouts/",
-        "src/pages/"
-      ]
-    },
-    {
-      "fromVersion": "1.0.0",
-      "toVersion": "2.0.0",
       "title": "Pages render views",
-      "description": "Page content moved to src/views/*View.astro components that take a locale prop; src/pages/*.astro are thin wrappers and src/pages/[lang]/ holds the localized wrappers. Custom pages keep working as-is; to localize one, follow src/views/AboutView.astro + src/pages/[lang]/[...about].astro."
+      "description": "New pages keep their content in src/views/*View.astro, with src/pages/*.astro as thin wrappers and src/pages/[lang]/ for other languages. Your existing pages keep working as they are, so this is optional. To localize a page, follow src/views/AboutView.astro and src/pages/[lang]/[...about].astro."
     },
     {
       "fromVersion": "1.0.0",
       "toVersion": "2.0.0",
       "title": "Blog URLs and OG images",
       "description": "Use the helpers in src/lib/blog.ts (getPosts, getPostUrl, getPostSlug) instead of building /blog/ URLs from post.id. OG images are now generated at /og/<page path>.png; blog posts previously pointed at images that did not exist (/og/blog/<slug>.png vs /og/blog/en/<slug>.png).",
-      "pattern": "post.id.replace(",
+      "pattern": "post\\.id\\.replace\\(",
       "searchPaths": [
         "src/"
       ]
@@ -507,5 +488,29 @@
       "test:scaffold",
       "check:registry"
     ]
+  },
+  "packageJson": {
+    "engines": {
+      "node": ">=22.23.4"
+    },
+    "scripts": {
+      "dev:bg": {
+        "value": "astro dev --background"
+      },
+      "test": {
+        "value": "vitest run",
+        "replaces": "vitest"
+      },
+      "test:watch": {
+        "value": "vitest"
+      },
+      "test:e2e": {
+        "value": "playwright test"
+      },
+      "validate": {
+        "value": "pnpm lint && pnpm check && pnpm test && pnpm build",
+        "replaces": "pnpm lint && pnpm check && pnpm build"
+      }
+    }
   }
 }
