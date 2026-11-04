@@ -23,6 +23,18 @@ const combos = [true, false].flatMap((demo) =>
   [false, true].flatMap((i18n) => (['all', 'none'] as const).map((components) => ({ demo, i18n, components }))),
 );
 
+/** Instruction files an agent reads in a project: the entry point, the rules and each skill. */
+function agentDocs(dir: string) {
+  const skills = path.join(dir, '.agents/skills');
+  return [
+    path.join(dir, 'AGENTS.md'),
+    path.join(dir, '.agents/velocity.md'),
+    ...fs.readdirSync(skills).map((name) => path.join(skills, name, 'SKILL.md')),
+  ];
+}
+
+const backticked = (text: string) => [...text.matchAll(/`([^`\n]+)`/g)].map((m) => m[1]);
+
 describe('manifest migrations', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'velocity-manifest.json'), 'utf8'));
 
@@ -38,6 +50,14 @@ describe('manifest migrations', () => {
       const covered = manifest.files.protected.some((p: string) => seed === p || seed.startsWith(p));
       expect(covered, seed).toBe(true);
     }
+  });
+});
+
+describe('package scripts', () => {
+  it('validates with any package manager', () => {
+    const { scripts } = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+    expect(scripts.validate).not.toMatch(/\b(pnpm|npm|yarn|bun)\b/);
+    expect(manifest.packageJson.scripts.validate.value).toBe(scripts.validate);
   });
 });
 
@@ -64,6 +84,51 @@ describe('manifest scaffold section', () => {
   });
 });
 
+describe('agent files', () => {
+  const overlay = path.join(root, 'variants/agents');
+  const skillNames = fs.readdirSync(path.join(overlay, '.agents/skills'));
+  const read = (rel: string) => fs.readFileSync(path.join(overlay, rel), 'utf8');
+
+  it.each(skillNames)('%s has valid frontmatter', (name) => {
+    const frontmatter = read(`.agents/skills/${name}/SKILL.md`).match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? '';
+    const description = frontmatter.match(/^description: (.+)$/m)?.[1]?.trim() ?? '';
+    expect(frontmatter.match(/^name: (.+)$/m)?.[1]?.trim()).toBe(name);
+    expect(name).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+    expect(description.length).toBeGreaterThan(0);
+    expect(description.length).toBeLessThanOrEqual(1024);
+  });
+
+  it.each(skillNames)('%s is identical for every agent', (name) => {
+    expect(read(`.claude/skills/${name}/SKILL.md`)).toBe(read(`.agents/skills/${name}/SKILL.md`));
+  });
+
+  it('has the same skills for every agent', () => {
+    expect(fs.readdirSync(path.join(overlay, '.claude/skills'))).toEqual(skillNames);
+  });
+
+  it('keeps Velocity-owned files current and leaves AGENTS.md to the project', () => {
+    expect(manifest.files.safe).toEqual(expect.arrayContaining(['.agents/velocity.md', '.agents/skills/', '.claude/skills/']));
+    expect(manifest.files.protected).toContain('AGENTS.md');
+    expect(manifest.files.seed).toContain('AGENTS.md');
+  });
+
+  it('describes file ownership the way the manifest does', () => {
+    const rules = read('.agents/velocity.md');
+    const line = (label: string) => rules.split(/\r?\n/).find((l) => l.startsWith(`- **${label}`)) ?? '';
+    const listed = (label: string) => backticked(line(label)).filter((ref) => !ref.includes('velocity-backup'));
+    expect(listed('Yours').length).toBeGreaterThan(0);
+    expect(listed("Velocity's").length).toBeGreaterThan(0);
+    for (const rel of listed('Yours')) expect(manifest.files.protected, rel).toContain(rel);
+    for (const rel of listed("Velocity's")) expect(manifest.files.safe, rel).toContain(rel);
+  });
+
+  it('commits project skills but ignores local Claude state', () => {
+    const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
+    expect(gitignore).toMatch(/^!\.claude\/skills\/$/m);
+    expect(gitignore).not.toMatch(/^\.claude\/$/m);
+  });
+});
+
 describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (options) => {
   const dir = path.join(tmp, `${options.demo ? 'demo' : 'min'}-${options.i18n ? 'i18n' : 'en'}-${options.components}`);
   const { applied } = scaffoldProject(root, dir, options);
@@ -79,6 +144,19 @@ describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (
 
   it('removes scaffold-only files', () => {
     for (const rel of manifest.scaffold.cleanup) expect(fs.existsSync(path.join(dir, rel)), rel).toBe(false);
+  });
+
+  it('gives agents instructions that fit the project', () => {
+    expect(fs.existsSync(path.join(dir, '.claude/skills/velocity-add-page/SKILL.md'))).toBe(true);
+    for (const doc of agentDocs(dir)) {
+      const text = fs.readFileSync(doc, 'utf8');
+      expect(text, doc).not.toMatch(/check:registry|test:scaffold|variants\//);
+      const paths = backticked(text)
+        .filter((ref) => /^(src|tests|integrations|\.agents)\//.test(ref))
+        // Worked examples and templates aren't real paths
+        .filter((ref) => !/[<*…]|pricing|\/Name/i.test(ref));
+      for (const rel of paths) expect(fs.existsSync(path.join(dir, rel)), `${doc}: ${rel}`).toBe(true);
+    }
   });
 
   it('enables the right locales', () => {

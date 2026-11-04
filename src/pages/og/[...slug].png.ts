@@ -2,7 +2,7 @@ import type { APIRoute, GetStaticPaths } from 'astro';
 import { generateOGImage } from '@/lib/og';
 import siteConfig from '@/config/site.config';
 import { routes, type RouteId, type RouteDefinition } from '@/config/nav.config';
-import { defaultLocale, isValidLocale, locales, localizeRoute, translate } from '@/i18n';
+import { defaultLocale, firstTranslation, isValidLocale, locales, localizeRoute, translate } from '@/i18n';
 import { getPosts, getPostUrl } from '@/lib/blog';
 
 /**
@@ -30,7 +30,8 @@ export const getStaticPaths: GetStaticPaths = async () => {
       .map((id) => ({
         params: { slug: ogSlug(localizeRoute(id, locale)) },
         props: {
-          title: id === 'home' ? siteConfig.name : translate(locale, `nav.${id}`),
+          // Pages added with `--pages` or the add-page skill have <id>Page.title
+          title: id === 'home' ? siteConfig.name : firstTranslation(locale, [`nav.${id}`, `${id}Page.title`], siteConfig.name),
           description: id === 'home' ? siteConfig.description : translate(locale, 'site.tagline'),
           type: 'website' as const,
         },

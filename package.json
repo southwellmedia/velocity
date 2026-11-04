@@ -1,6 +1,6 @@
 {
   "name": "velocity",
-  "version": "2.0.3",
+  "version": "2.1.0",
   "description": "Southwell Astro Boilerplate - A production-ready starter template built on Astro 7 and Tailwind CSS v4",
   "type": "module",
   "author": "Southwell Media",
@@ -38,7 +38,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "validate": "pnpm lint && pnpm check && pnpm test && pnpm build",
+    "validate": "eslint . && astro check && vitest run && astro build",
     "test:scaffold": "node scripts/scaffold-matrix.mjs",
     "check:registry": "node scripts/check-registry.mjs"
   },
