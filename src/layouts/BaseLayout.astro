@@ -45,7 +45,9 @@ const {
 
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
-const bodyFont = fontData['--font-manrope']?.[0]?.src[0]?.url;
+// Every family registered in astro.config.mjs. The first one is preloaded as the body font.
+const fontVariables = Object.keys(fontData) as (keyof typeof fontData)[];
+const bodyFont = fontVariables[0] && fontData[fontVariables[0]]?.[0]?.src[0]?.url;
 const xDefault = alternates.find((a) => a.locale === defaultLocale);
 
 // Build JSON-LD schemas
@@ -65,9 +67,7 @@ if (includeOrgSchema) {
     <!-- Fonts (Astro Fonts API: self-hosted, preloaded, metric-matched fallbacks) -->
     {/* Preload only the Latin face. Other subsets load when a page needs them. */}
     {bodyFont && <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />}
-    <Font cssVariable="--font-manrope" />
-    <Font cssVariable="--font-outfit" />
-    <Font cssVariable="--font-jetbrains-mono" />
+    {fontVariables.map((cssVariable) => <Font cssVariable={cssVariable} />)}
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href={siteConfig.branding.favicon.svg} />

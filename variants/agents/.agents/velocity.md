@@ -31,8 +31,8 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 - `src/config/site.config.ts`: site name, URL and metadata.
 - `src/i18n/`: enabled locales (`locales.mjs`), your site copy (`translations/<locale>.ts`), and helpers (`useTranslations`, `getLocale`, `localizeRoute`, `localizePath`).
 - `src/lib/blog.ts`: the only place that maps posts to URLs (`getPosts`, `getPostUrl`).
-- `src/content.config.ts`: content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`).
-- `src/styles/tokens/` and `src/styles/themes/`: design tokens (OKLCH).
+- `src/content.config.ts`: Velocity's content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`). Add your own in `src/config/collections.ts`, which is merged in.
+- `src/styles/tokens/` and `src/styles/themes/`: design tokens (OKLCH). `src/styles/theme.css` picks the active theme.
 - `integrations/`: local Astro integrations for deploy target detection and the Pagefind search index.
 - `component-registry.json`: reference list of the components Velocity ships, including ones not installed here. You don't need to add your own components to it.
 
@@ -40,7 +40,7 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 
 `create-velocity-astro upgrade` follows `velocity-manifest.json → files`. Check it before making a change you want to keep.
 
-- **Yours, never overwritten:** `src/views/`, `src/pages/`, `src/content/`, `src/assets/`, `src/config/nav.config.ts`, `src/config/site.config.ts`, `src/components/patterns/`, `src/i18n/translations/`, `src/i18n/locales.mjs`, `src/actions/`, `tests/`, `astro.config.mjs`.
+- **Yours, never overwritten:** `src/views/`, `src/pages/`, `src/content/`, `src/assets/`, `src/config/nav.config.ts`, `src/config/site.config.ts`, `src/config/collections.ts`, `src/styles/theme.css`, `src/components/patterns/`, `src/i18n/translations/`, `src/i18n/locales.mjs`, `src/actions/`, `tests/`, `astro.config.mjs`.
 - **Velocity's, overwritten on upgrade:** `src/components/ui/`, `src/components/layout/`, `src/layouts/`, `src/lib/`, `src/styles/tokens/`, `src/styles/themes/`, `src/styles/global.css`, `src/i18n/ui.ts`, `src/content.config.ts`, `integrations/`. Edited files are saved to `.velocity-backup/` first, but the edits must then be reapplied by hand.
 
 New files you add inside Velocity's folders stay in place. Only files Velocity ships are replaced. The same applies to skills: `velocity-*` skills are replaced on upgrade, so add project-specific skills under a different name. If a task requires editing a Velocity-owned file, tell the user that upgrades will replace the edit.
@@ -58,6 +58,6 @@ New files you add inside Velocity's folders stay in place. Only files Velocity s
 - **CSP is on.** Never add `'unsafe-inline'` to script-src or use inline event handlers such as `onclick`. Astro hashes bundled scripts but not `is:inline` ones, so render inline scripts with `<InlineScript code={...} />` (import the source with `?raw`) and pass data through `<script type="application/json">`. For third-party script hosts, call `Astro.csp.insertScriptResource()` in the component that needs them. `npm run test:e2e` fails on any CSP violation.
 - **Motion:** respect `prefers-reduced-motion`. The global rule in `global.css` finishes all animations instantly.
 - **Search:** only content inside `data-pagefind-body` is indexed. `PageLayout` and `BlogLayout` already set it, so mark any new content layout the same way.
-- **Fonts:** register families in `fonts` in `astro.config.mjs` and render them with `<Font cssVariable=… />`. Don't `@import` font CSS.
+- **Fonts:** register families in `fonts` in `astro.config.mjs`. `BaseLayout` renders every registered family and preloads the first. Don't `@import` font CSS.
 - **Accessibility is tested.** Routes in `src/config/nav.config.ts` are picked up by `tests/e2e/site.ts` automatically, and each must pass axe WCAG 2 A/AA with no serious or critical violations. Only each route's default-locale URL is tested, so check localized URLs separately.
 - **Secrets** go through `astro:env` (`env.schema` in `astro.config.mjs`), never `import.meta.env` directly.

@@ -10,6 +10,7 @@
  * - variant: 'default' | 'solid' | 'transparent'
  * - colorScheme: 'default' | 'invert' (use 'invert' for dark backgrounds)
  * - shape: 'bar' | 'floating' (use 'floating' for capsule header)
+ * - breakpoint: 'md' | 'lg' | 'xl' (width where the desktop nav replaces the mobile menu)
  *
  * Features:
  * - Dynamic navigation from nav.config.ts (default) or custom nav prop
@@ -60,6 +61,8 @@ interface Props extends HTMLAttributes<'header'> {
   colorScheme?: 'default' | 'invert';
   /** Shape: 'bar' (full-width, default) or 'floating' (centered capsule) */
   shape?: 'bar' | 'floating';
+  /** Width at which the desktop nav replaces the mobile menu. Raise it for long or translated nav labels. Defaults to headerConfig.breakpoint, then 'md'. */
+  breakpoint?: 'md' | 'lg' | 'xl';
   /** Override default navigation (replaces getNavRoutes()) */
   nav?: NavItem[];
   /** Additional navigation items (e.g., #features for landing pages) */
@@ -93,6 +96,7 @@ const {
   variant = 'default',
   colorScheme = 'default',
   shape = 'bar',
+  breakpoint = (headerConfig as { breakpoint?: Props['breakpoint'] }).breakpoint ?? 'md',
   nav,
   extraNav = headerConfig.extraNav,
   showCta = false,
@@ -108,6 +112,13 @@ const {
   class: className,
   ...attrs
 } = Astro.props;
+
+// Written out in full so Tailwind generates each class
+const bp = {
+  md: { flex: 'md:flex', block: 'md:block', hidden: 'md:hidden' },
+  lg: { flex: 'lg:flex', block: 'lg:block', hidden: 'lg:hidden' },
+  xl: { flex: 'xl:flex', block: 'xl:block', hidden: 'xl:hidden' },
+}[breakpoint];
 
 // Shape + color scheme helpers
 const isFloating = shape === 'floating';
@@ -208,11 +219,11 @@ const buttonId = `${menuId}-button`;
     {
       layout !== 'minimal' &&
         (hasNavSlot ? (
-          <nav class="hidden items-center gap-1 md:flex" aria-label={t('a11y.mainNav')}>
+          <nav class={cn('hidden items-center gap-1', bp.flex)} aria-label={t('a11y.mainNav')}>
             <slot name="nav" />
           </nav>
         ) : (
-          <nav class="hidden items-center gap-1 md:flex" aria-label={t('a11y.mainNav')}>
+          <nav class={cn('hidden items-center gap-1', bp.flex)} aria-label={t('a11y.mainNav')}>
             {navItems.map(({ label, href }) => (
               <a
                 href={href}
@@ -245,7 +256,7 @@ const buttonId = `${menuId}-button`;
         ) : (
           <>
             {showLanguageSwitcher && (
-              <LanguageSwitcher alternates={alternates} class={cn('hidden md:block', isFloating ? 'hdr-invert-text' : undefined)} />
+              <LanguageSwitcher alternates={alternates} class={cn('hidden', bp.block, isFloating ? 'hdr-invert-text' : undefined)} />
             )}
 
             {showThemeToggle && (
@@ -288,7 +299,8 @@ const buttonId = `${menuId}-button`;
             type="button"
             id={buttonId}
             class={cn(
-              'inline-flex items-center justify-center rounded-md p-2 md:hidden',
+              'inline-flex items-center justify-center rounded-md p-2',
+              bp.hidden,
               'transition-colors',
               'focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
               isFloating
@@ -319,7 +331,8 @@ const buttonId = `${menuId}-button`;
         <div
           id={menuId}
           class={cn(
-            'hidden origin-top scale-y-0 opacity-0 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)] md:hidden',
+            'hidden origin-top scale-y-0 opacity-0 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]',
+            bp.hidden,
             isFloating
               ? 'rounded-b-2xl bg-background/95 backdrop-blur-xl'
               : 'border-border bg-background border-t'
@@ -333,7 +346,8 @@ const buttonId = `${menuId}-button`;
         <div
           id={menuId}
           class={cn(
-            'hidden origin-top scale-y-0 opacity-0 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)] md:hidden',
+            'hidden origin-top scale-y-0 opacity-0 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.12)]',
+            bp.hidden,
             isFloating
               ? 'rounded-b-2xl bg-background/95 backdrop-blur-xl'
               : 'border-border bg-background border-t'
@@ -385,7 +399,7 @@ const buttonId = `${menuId}-button`;
   showMobileMenu && layout !== 'minimal' && (
     <div
       id={`${menuId}-backdrop`}
-      class="pointer-events-none fixed inset-0 z-40 opacity-0 transition-opacity duration-200 md:hidden"
+      class={cn('pointer-events-none fixed inset-0 z-40 opacity-0 transition-opacity duration-200', bp.hidden)}
       aria-hidden="true"
     />
   )

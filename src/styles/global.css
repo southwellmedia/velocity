@@ -4,7 +4,9 @@
    Vercel-inspired: Clean, minimal, sophisticated
    ============================================================================= */
 
-@import 'tailwindcss';
+/* Scan src/ only. Without this, Tailwind 4.3 reads all of node_modules when the
+   project sits in a folder ignored by a parent git repo, and dev requests time out. */
+@import 'tailwindcss' source('..');
 @import './tokens/colors.css';
 @import './tokens/typography.css';
 

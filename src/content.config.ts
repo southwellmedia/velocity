@@ -2,6 +2,7 @@ import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 import { defaultLocale, locales } from './i18n/locales.mjs';
+import { siteCollections } from './config/collections';
 
 const locale = z.enum(locales).default(defaultLocale);
 
@@ -72,4 +73,5 @@ export const collections = {
   pages,
   authors,
   faqs,
+  ...siteCollections,
 };
