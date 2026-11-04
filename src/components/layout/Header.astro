@@ -191,7 +191,7 @@ const buttonId = `${menuId}-button`;
           <slot name="logo" />
         ) : (
           <a href={homeHref} class="flex items-center gap-2">
-            <Logo size={size === 'lg' ? 'md' : 'sm'} forceDark={isInvert} />
+            <Logo size={size === 'lg' ? 'md' : 'sm'} forceDark={isInvert} decorative />
             <span
               class={cn(
                 'font-display text-xl font-bold tracking-tight',

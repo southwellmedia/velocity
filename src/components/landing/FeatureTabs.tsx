@@ -432,7 +432,7 @@ function CodeBlock({
       </div>
 
       {/* Code Area */}
-      <div className="bg-background overflow-x-auto p-3">
+      <div className="bg-background overflow-x-auto p-3" tabIndex={0}>
         <pre className="flex flex-col leading-5">
           {highlightedLines.map((lineTokens, i) => (
             <div key={i} className="table-row">

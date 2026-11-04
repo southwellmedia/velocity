@@ -4,6 +4,11 @@ import AxeBuilder from '@axe-core/playwright';
 import { createHash } from 'node:crypto';
 import { ALL_PAGES, PAGES, hasRoute } from './site';
 
+const VIEWPORTS = {
+  desktop: { width: 1280, height: 800 },
+  mobile: { width: 390, height: 844 },
+};
+
 for (const path of PAGES) {
   test.describe(path, () => {
     test('renders without console errors', async ({ page }) => {
@@ -22,18 +27,22 @@ for (const path of PAGES) {
       await expect(page.locator('main')).toHaveCount(1);
     });
 
-    test('has no serious accessibility violations', async ({ page }) => {
-      // Entrance animations fade content in; with reduced motion they finish
-      // instantly, so axe measures final colours rather than mid-fade ones.
-      await page.emulateMedia({ reducedMotion: 'reduce' });
-      await page.goto(path);
-      const { violations } = await new AxeBuilder({ page })
-        .withTags(['wcag2a', 'wcag2aa'])
-        .exclude('astro-dev-toolbar')
-        .analyze();
-      const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
-      expect(serious.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
-    });
+    // Text size changes with the viewport, and contrast rules depend on text size
+    for (const [device, viewport] of Object.entries(VIEWPORTS)) {
+      test(`has no serious accessibility violations on ${device}`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        // Entrance animations fade content in; with reduced motion they finish
+        // instantly, so axe measures final colours rather than mid-fade ones.
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.goto(path);
+        const { violations } = await new AxeBuilder({ page })
+          .withTags(['wcag2a', 'wcag2aa'])
+          .exclude('astro-dev-toolbar')
+          .analyze();
+        const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+        expect(serious.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+      });
+    }
   });
 }
 
