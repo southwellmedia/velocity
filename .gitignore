@@ -53,8 +53,9 @@ test-results/
 # Pagefind
 public/pagefind/
 
-# Claude Code
-.claude/
+# Claude Code (local state only; project skills are committed)
+.claude/*
+!.claude/skills/
 
 
 # npm lockfile (pnpm only)

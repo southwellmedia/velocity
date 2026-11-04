@@ -62,7 +62,7 @@ change that breaks a variant fails the PR that caused it.
    project's `.velocity.json`, before comparing files.** Otherwise a minimal or
    i18n project would be "upgraded" to demo or single-locale files.
 
-`when` keys that the CLI does not recognise mean the variant does not apply.
+A variant with no `when` always applies. `when` keys that the CLI does not recognise mean the variant does not apply.
 Unknown top-level keys must be ignored, so new fields can be added without
 breaking older 2.x CLIs.
 
@@ -70,6 +70,7 @@ breaking older 2.x CLIs.
 
 | Variant | When | What it does |
 |---------|------|--------------|
+| `agents` | always | Replaces the maintainer `AGENTS.md` with a short one the project owns, and adds Velocity's rules (`.agents/velocity.md`) and skills (`.agents/skills/`, mirrored to `.claude/skills/`). |
 | `i18n` | `--i18n` | Enables `es` and `fr` in `src/i18n/locales.mjs` and adds site-copy translations in `src/i18n/translations/`. Routing, UI strings, hreflang and the language switcher are already in core. |
 | `minimal` | no `--demo` | Replaces the home view and nav config with a minimal starter and removes demo pages and landing components. |
 
@@ -83,6 +84,7 @@ breaking older 2.x CLIs.
   and each entry must declare the components it imports. `pnpm check:registry`
   enforces both, and `tests/unit/scaffold.test.ts` checks that no combination
   leaves a broken import.
+- `variants/agents/` is what agents read in user projects, while the root `AGENTS.md` is for this repo. When a rule changes, update both. Skills must be identical in `.agents/skills/` and `.claude/skills/`, and must only reference tooling that survives `cleanup`.
 - Run `pnpm test:scaffold` locally before changing anything under `variants/`,
   `src/i18n/`, `src/views/` or `src/config/`.
 

@@ -1,5 +1,5 @@
 {
-  "version": "2.0.3",
+  "version": "2.1.0",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -35,7 +35,10 @@
       "src/pages/rss.xml.ts",
       "src/pages/404.astro",
       "tests/e2e/site.ts",
-      "src/components/hero/"
+      "src/components/hero/",
+      ".agents/velocity.md",
+      ".agents/skills/",
+      ".claude/skills/"
     ],
     "protected": [
       "astro.config.mjs",
@@ -54,7 +57,8 @@
       "src/config/nav.config.ts",
       "src/i18n/locales.mjs",
       "src/i18n/translations/",
-      "src/views/"
+      "src/views/",
+      "AGENTS.md"
     ],
     "seed": [
       "src/i18n/locales.mjs",
@@ -63,7 +67,8 @@
       "src/views/",
       "src/pages/search.astro",
       "src/pages/[lang]/",
-      "tests/"
+      "tests/",
+      "AGENTS.md"
     ]
   },
   "dependencies": {
@@ -417,6 +422,15 @@
       "toVersion": "2.0.0",
       "title": "Component registry fixes",
       "description": "React (.tsx) component files, ConsentBanner and GoogleMap were missing from component-registry.json, and several components did not declare their Icon dependency, so partial component installs deleted files that were still imported. If you scaffolded with a subset of components, check that ConsentBanner and any .tsx components you use exist; re-add them from the v2.0.0 template if not."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.1.0",
+      "title": "Agent instructions for your project",
+      "description": "AGENTS.md was written for Velocity maintainers and pointed agents at scripts your project doesn't have. It is now a short file you own, and Velocity's rules moved to .agents/velocity.md, which upgrades keep current. If you added your own rules to AGENTS.md, copy them back from .velocity-backup/ into its Project notes section. Skills for adding pages and components are now in .agents/skills/ and .claude/skills/.",
+      "replace": [
+        "AGENTS.md"
+      ]
     }
   ],
   "scaffold": {
@@ -424,6 +438,10 @@
     "minCliVersion": "2.0.0",
     "node": ">=22.23.4",
     "variants": [
+      {
+        "id": "agents",
+        "overlay": "variants/agents"
+      },
       {
         "id": "i18n",
         "when": {
@@ -513,8 +531,8 @@
         "value": "playwright test"
       },
       "validate": {
-        "value": "pnpm lint && pnpm check && pnpm test && pnpm build",
-        "replaces": "pnpm lint && pnpm check && pnpm build"
+        "value": "eslint . && astro check && vitest run && astro build",
+        "replaces": "pnpm lint && pnpm check && pnpm test && pnpm build"
       }
     }
   }

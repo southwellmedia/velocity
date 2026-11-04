@@ -1,6 +1,6 @@
 # Velocity — Agent Guide
 
-Instructions for AI coding agents (Claude Code, Codex, Cursor, etc.) working in this repo.
+Instructions for AI coding agents (Claude Code, Codex, Cursor, etc.) working in this repo. Scaffolded projects get their own guide and skills from `variants/agents/`.
 
 ## Stack
 
@@ -37,6 +37,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 - **No hardcoded user-facing strings in core components.** Use `const t = useTranslations(getLocale(Astro))`. New UI strings go in `src/i18n/ui.ts` (en, es, fr); page copy goes in `src/i18n/translations/en.ts`. Internal links go through `localizeRoute`/`localizePath`.
 - **Registry discipline.** Any file added under `src/components/{ui,patterns,hero}` must belong to an entry in `component-registry.json`, which must list every component it imports. Run `pnpm check:registry`.
 - **Scaffold variants** (`variants/`, `velocity-manifest.json → scaffold`) are what the CLI builds projects from. Read `variants/README.md` before touching them, and run `pnpm test:scaffold` after changing views, config or i18n.
+- **Agent files.** `variants/agents/` holds the `AGENTS.md`, rules and skills that user projects receive. When a rule here changes, update `variants/agents/.agents/velocity.md` too. User projects differ from this repo: `src/i18n/ui.ts` is replaced on upgrade, and registry and scaffold tooling is removed. Keep skills identical in `.agents/skills/` and `.claude/skills/`.
 
 - **Static first.** Pages are prerendered. Only Actions (and anything you explicitly mark `export const prerender = false`) run on the server. Don't add `output: 'server'`.
 - **Markup must be valid HTML.** Astro 7's Rust compiler errors on unclosed tags and won't fix invalid nesting (`<div>` inside `<p>`). `BaseLayout` owns the only `<main>`.
