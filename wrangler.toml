@@ -14,5 +14,5 @@ name = "velocity"
 compatibility_date = "2026-11-01"
 
 [assets]
-directory = "./dist"
+directory = "./dist/client"
 not_found_handling = "404-page"

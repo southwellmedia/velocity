@@ -43,7 +43,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 - **Whitespace:** `compressHTML: true` is set deliberately (see astro.config.mjs). Don't switch to `'jsx'` without auditing inline text.
 - **Imports:** `z` comes from `astro/zod`, never `zod`. Use the `@/` alias for `src/`.
 - **No client router.** Velocity uses native cross-document view transitions (CSS `@view-transition`) and `prefetch`. Component scripts call their `init()` directly and also listen for `astro:after-swap` (guarded against double init), so they still work if a project re-adds `<ClientRouter />`.
-- **CSP is on.** Never add `'unsafe-inline'` to script-src. Keep inline scripts static (pass data via `<script type="application/json">`) so Astro can hash them. Third-party script hosts: `Astro.csp.insertScriptResource()` in the component that needs them. `pnpm test:e2e` fails on any CSP violation.
+- **CSP is on.** Never add `'unsafe-inline'` to script-src, and don't use inline event handlers such as `onclick`. Astro hashes bundled scripts but not `is:inline` ones, so render inline scripts with `<InlineScript code={...} />` (import the source with `?raw`) and pass data via `<script type="application/json">`. Third-party script hosts: `Astro.csp.insertScriptResource()` in the component that needs them. `pnpm test:e2e` fails on any CSP violation.
 - **Motion:** respect `prefers-reduced-motion`. The global rule in `global.css` finishes all animations instantly.
 - **Search:** only content inside `data-pagefind-body` is indexed. Mark new content layouts accordingly.
 - **Fonts:** register families in `fonts` (astro.config.mjs) and render with `<Font cssVariable=… />`. Don't `@import` font CSS.

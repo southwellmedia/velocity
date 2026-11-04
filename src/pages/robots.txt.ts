@@ -9,7 +9,6 @@ Allow: /
 
 # Block Astro Actions endpoints
 Disallow: /_actions/
-Disallow: /search
 
 Sitemap: ${siteUrl}sitemap-index.xml
 `.trim();

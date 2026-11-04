@@ -14,9 +14,9 @@
  * - PUBLIC_GTM_ID: Google Tag Manager Container ID (e.g., GTM-XXXXXXX)
  * - PUBLIC_CONSENT_ENABLED: Enable cookie consent integration (boolean)
  *
- * CSP: All is:inline scripts here are STATIC (no define:vars). Dynamic values are
- * passed via <script type="application/json"> data elements, so Astro's
- * security.csp hashes them automatically. When analytics is enabled, this
+ * CSP: inline scripts live in ./analytics/ and render through <InlineScript />,
+ * which adds their hash to the page's CSP. They are static: dynamic values are
+ * passed via a <script type="application/json"> element. When analytics is enabled, this
  * component also registers the Google script hosts for the current page via
  * Astro.csp.insertScriptResource() — no manual config needed.
  *
@@ -39,6 +39,12 @@
  */
 import { PUBLIC_GA_MEASUREMENT_ID, PUBLIC_GTM_ID, PUBLIC_CONSENT_ENABLED } from 'astro:env/client';
 import consentConfig from '@/config/consent.config';
+import InlineScript from '@/components/seo/InlineScript.astro';
+import loadGtm from './analytics/load-gtm.js?raw';
+import loadGa from './analytics/load-ga.js?raw';
+import consentDefaults from './analytics/consent-defaults.js?raw';
+import strictGtm from './analytics/strict-gtm.js?raw';
+import strictGa from './analytics/strict-ga.js?raw';
 
 const gaId = PUBLIC_GA_MEASUREMENT_ID;
 const gtmId = PUBLIC_GTM_ID;
@@ -116,118 +122,32 @@ const analyticsDataJson = JSON.stringify({
 
 {/* ── No consent: load GTM directly ── */}
 {noConsent && hasGtm && (
-  <script is:inline>
-    (function(){
-      const d = JSON.parse(document.getElementById('analytics-data').textContent);
-      const i = d.gtmId;
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-      const f = document.getElementsByTagName('script')[0],
-        j = document.createElement('script');
-      j.async = true;
-      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
-      f.parentNode.insertBefore(j, f);
-    })();
-  </script>
+  <InlineScript code={loadGtm} />
 )}
 
 {/* ── No consent: load GA directly ── */}
 {noConsent && hasGa && (
   <>
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
-    <script is:inline>
-      (function(){
-        const d = JSON.parse(document.getElementById('analytics-data').textContent);
-        window.dataLayer = window.dataLayer || [];
-        // eslint-disable-next-line prefer-rest-params -- GA4 requires Arguments object, not rest params
-        function gtag(){window.dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', d.gaId);
-      })();
-    </script>
+    <InlineScript code={loadGa} />
   </>
 )}
 
 {/* ── Consent enabled: set consent defaults BEFORE loading scripts ── */}
 {consentEnabled && hasAnalytics && (
-  <script is:inline>
-    (function(){
-      const d = JSON.parse(document.getElementById('analytics-data').textContent);
-      window.dataLayer = window.dataLayer || [];
-      // eslint-disable-next-line prefer-rest-params -- GA4 requires Arguments object, not rest params
-      function gtag(){window.dataLayer.push(arguments);}
-
-      let stored = null;
-      try {
-        const raw = localStorage.getItem(d.storageKey);
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          if (parsed && parsed.version === d.configVersion) {
-            stored = parsed;
-          }
-        }
-      } catch { /* ignored */ }
-
-      const gcmValues = {};
-      const keys = Object.keys(d.gcmDefaults);
-      for (let k = 0; k < keys.length; k++) { gcmValues[keys[k]] = d.gcmDefaults[keys[k]]; }
-      let decided = false;
-      let categories = {};
-      const catKeys = Object.keys(d.categoryDefaults);
-      for (let c = 0; c < catKeys.length; c++) { categories[catKeys[c]] = d.categoryDefaults[catKeys[c]]; }
-
-      if (stored && stored.categories) {
-        decided = true;
-        categories = stored.categories;
-
-        const mapKeys = Object.keys(d.categoryGcmMap);
-        for (let m = 0; m < mapKeys.length; m++) {
-          const catKey = mapKeys[m];
-          const granted = !!categories[catKey];
-          const gcmTypes = d.categoryGcmMap[catKey];
-          for (let g = 0; g < gcmTypes.length; g++) {
-            gcmValues[gcmTypes[g]] = granted ? 'granted' : 'denied';
-          }
-        }
-      }
-
-      gtag('consent', 'default', gcmValues);
-      window.__consentState = { decided: decided, categories: categories };
-    })();
-  </script>
+  <InlineScript code={consentDefaults} />
 )}
 
 {/* ── V2 mode: load GTM after consent defaults ── */}
 {isV2 && hasGtm && (
-  <script is:inline>
-    (function(){
-      const d = JSON.parse(document.getElementById('analytics-data').textContent);
-      const i = d.gtmId;
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-      const f = document.getElementsByTagName('script')[0],
-        j = document.createElement('script');
-      j.async = true;
-      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
-      f.parentNode.insertBefore(j, f);
-    })();
-  </script>
+  <InlineScript code={loadGtm} />
 )}
 
 {/* ── V2 mode: load GA after consent defaults ── */}
 {isV2 && hasGa && (
   <>
     <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}></script>
-    <script is:inline>
-      (function(){
-        const d = JSON.parse(document.getElementById('analytics-data').textContent);
-        window.dataLayer = window.dataLayer || [];
-        // eslint-disable-next-line prefer-rest-params -- GA4 requires Arguments object
-        function gtag(){window.dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', d.gaId);
-      })();
-    </script>
+    <InlineScript code={loadGa} />
   </>
 )}
 
@@ -241,39 +161,10 @@ const analyticsDataJson = JSON.stringify({
 
 {/* ── Strict mode: conditionally load GTM if consent already granted ── */}
 {isStrict && hasGtm && (
-  <script is:inline>
-    (function(){
-      const d = JSON.parse(document.getElementById('analytics-data').textContent);
-      if (window.__consentState && window.__consentState.decided && window.__consentState.categories[d.analyticsCategoryKey]) {
-        const i = d.gtmId;
-        window.dataLayer = window.dataLayer || [];
-        window.dataLayer.push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
-        const f = document.getElementsByTagName('script')[0],
-          j = document.createElement('script');
-        j.async = true;
-        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i;
-        f.parentNode.insertBefore(j, f);
-      }
-    })();
-  </script>
+  <InlineScript code={strictGtm} />
 )}
 
 {/* ── Strict mode: conditionally load GA if consent already granted ── */}
 {isStrict && hasGa && (
-  <script is:inline>
-    (function(){
-      const d = JSON.parse(document.getElementById('analytics-data').textContent);
-      if (window.__consentState && window.__consentState.decided && window.__consentState.categories[d.analyticsCategoryKey]) {
-        const s = document.createElement('script');
-        s.async = true;
-        s.src = 'https://www.googletagmanager.com/gtag/js?id=' + d.gaId;
-        document.head.appendChild(s);
-        window.dataLayer = window.dataLayer || [];
-        // eslint-disable-next-line prefer-rest-params -- GA4 requires Arguments object
-        function gtag(){window.dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', d.gaId);
-      }
-    })();
-  </script>
+  <InlineScript code={strictGa} />
 )}

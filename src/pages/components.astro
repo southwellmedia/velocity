@@ -1076,7 +1076,7 @@ const categories = [
             <span class="showcase-hint">Modal overlay</span>
           </div>
           <div class="showcase-content">
-            <Button onclick="openDialog('demo-dialog')">
+            <Button data-dialog-open="demo-dialog">
               <Icon name="external-link" size="sm" />
               Open Dialog
             </Button>
@@ -1086,8 +1086,8 @@ const categories = [
                 Are you sure you want to delete <strong class="text-foreground">velocity-demo</strong>? All files, deployments, and analytics data will be permanently removed.
               </p>
               <div class="flex justify-end gap-3 pt-6">
-                <Button variant="outline" onclick="closeDialog('demo-dialog')">Cancel</Button>
-                <Button variant="destructive" onclick="closeDialog('demo-dialog')">
+                <Button variant="outline" data-dialog-close="demo-dialog">Cancel</Button>
+                <Button variant="destructive" data-dialog-close="demo-dialog">
                   <Icon name="x" size="sm" />
                   Delete Project
                 </Button>
@@ -2108,3 +2108,16 @@ const categories = [
   }
 
 </style>
+
+<script>
+  // Inline onclick handlers are blocked by the CSP, so buttons declare their target
+  type DialogWindow = Window & { openDialog?: (id: string) => void; closeDialog?: (id: string) => void };
+
+  document.addEventListener('click', (event) => {
+    const button = (event.target as Element).closest<HTMLElement>('[data-dialog-open], [data-dialog-close]');
+    if (!button) return;
+    const w = window as DialogWindow;
+    if (button.dataset.dialogOpen) w.openDialog?.(button.dataset.dialogOpen);
+    if (button.dataset.dialogClose) w.closeDialog?.(button.dataset.dialogClose);
+  });
+</script>

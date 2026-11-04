@@ -6,6 +6,7 @@ dist/
 
 # Files saved by `create-velocity-astro upgrade`
 .velocity-backup/
+.matrix/
 .vercel/
 .netlify/
 

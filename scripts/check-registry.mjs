@@ -65,7 +65,7 @@ function importsOf(root, file) {
   const code = codeOf(fs.readFileSync(path.join(root, file), 'utf8'), file);
   return ts
     .preProcessFile(code, true, true)
-    .importedFiles.map((f) => f.fileName)
+    .importedFiles.map((f) => f.fileName.split('?')[0])
     .filter((spec) => spec.startsWith('@/components/') || /^\.\.?\//.test(spec));
 }
 

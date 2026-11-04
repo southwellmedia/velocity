@@ -10,13 +10,15 @@ import path from 'node:path';
 
 const SKIP = new Set(['node_modules', 'dist', '.git', '.astro', '.vercel', '.netlify', 'test-results', 'playwright-report']);
 
-function copyDir(src, dest) {
+function copyDir(src, dest, stop = path.resolve(dest)) {
   fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     if (SKIP.has(entry.name)) continue;
     const from = path.join(src, entry.name);
     const to = path.join(dest, entry.name);
-    if (entry.isDirectory()) copyDir(from, to);
+    // The output folder may be inside the source, e.g. --out=./.matrix
+    if (stop === path.resolve(from) || stop.startsWith(path.resolve(from) + path.sep)) continue;
+    if (entry.isDirectory()) copyDir(from, to, stop);
     else fs.copyFileSync(from, to);
   }
 }

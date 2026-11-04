@@ -29,7 +29,10 @@ export function getLocaleFromPath(pathname: string): Locale {
  * `const locale = getLocale(Astro);`
  */
 export function getLocale(astro: { currentLocale?: string; url: URL }): Locale {
-  return isValidLocale(astro.currentLocale) ? astro.currentLocale : getLocaleFromPath(astro.url.pathname);
+  // The URL comes first: on a 404, currentLocale is always the default locale
+  const first = astro.url.pathname.split('/').filter(Boolean)[0];
+  if (isValidLocale(first)) return first;
+  return isValidLocale(astro.currentLocale) ? astro.currentLocale : defaultLocale;
 }
 
 /** Path without its locale prefix: `/es/blog` → `/blog`. */

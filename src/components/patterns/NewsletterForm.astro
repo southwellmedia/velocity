@@ -2,7 +2,7 @@
 import Input from '@/components/ui/form/Input/Input.astro';
 import Button from '@/components/ui/form/Button/Button.astro';
 import { cn } from '@/lib/cn';
-import { actions } from 'astro:actions';
+import { actions, getActionPath } from 'astro:actions';
 import { getLocale, useTranslations } from '@/i18n';
 
 interface Props {
@@ -35,7 +35,7 @@ const messages = JSON.stringify({
 
 <form
   class={cn('newsletter-form', className)}
-  action={action ?? actions.newsletter}
+  action={action ?? getActionPath(actions.newsletter)}
   method="POST"
   data-endpoint={action}
   data-messages={messages}

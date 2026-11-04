@@ -8,7 +8,10 @@ import { Font } from 'astro:assets';
 import { createWebsiteSchema, createOrganizationSchema } from '@/lib/schema';
 import type { WebSite, Organization, WithContext } from 'schema-dts';
 import siteConfig from '@/config/site.config';
-import { defaultLocale, getAlternates, getLocale, getLocaleTag, useTranslations, type Locale } from '@/i18n';
+import InlineScript from '@/components/seo/InlineScript.astro';
+import themeScript from './theme-script.js?raw';
+import { fontData } from 'astro:assets';
+import { withTrailingSlash, defaultLocale, getAlternates, getLocale, getLocaleTag, useTranslations, type Locale } from '@/i18n';
 
 interface Props {
   title?: string;
@@ -42,6 +45,7 @@ const {
 
 const locale = getLocale(Astro);
 const t = useTranslations(locale);
+const bodyFont = fontData['--font-manrope']?.[0]?.src[0]?.url;
 const xDefault = alternates.find((a) => a.locale === defaultLocale);
 
 // Build JSON-LD schemas
@@ -59,7 +63,9 @@ if (includeOrgSchema) {
     <meta name="generator" content={Astro.generator} />
 
     <!-- Fonts (Astro Fonts API: self-hosted, preloaded, metric-matched fallbacks) -->
-    <Font cssVariable="--font-manrope" preload />
+    {/* Preload only the Latin face. Other subsets load when a page needs them. */}
+    {bodyFont && <link rel="preload" href={bodyFont} as="font" type="font/woff2" crossorigin />}
+    <Font cssVariable="--font-manrope" />
     <Font cssVariable="--font-outfit" />
     <Font cssVariable="--font-jetbrains-mono" />
 
@@ -81,9 +87,9 @@ if (includeOrgSchema) {
 
     <!-- Alternate languages (only when more than one locale is enabled) -->
     {alternates.map((alt) => (
-      <link rel="alternate" hreflang={getLocaleTag(alt.locale)} href={new URL(alt.href, Astro.site)} />
+      <link rel="alternate" hreflang={getLocaleTag(alt.locale)} href={new URL(withTrailingSlash(alt.href), Astro.site)} />
     ))}
-    {xDefault && <link rel="alternate" hreflang="x-default" href={new URL(xDefault.href, Astro.site)} />}
+    {xDefault && <link rel="alternate" hreflang="x-default" href={new URL(withTrailingSlash(xDefault.href), Astro.site)} />}
 
     <!-- RSS Feed -->
     <link rel="alternate" type="application/rss+xml" title={`${siteConfig.name} RSS Feed`} href="/rss.xml" />
@@ -95,18 +101,7 @@ if (includeOrgSchema) {
     <Analytics />
 
     <!-- Theme script (runs before render to prevent flash) -->
-    <script is:inline>
-      (function () {
-        const theme = localStorage.getItem('theme');
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-        if (theme === 'dark' || (!theme && systemDark)) {
-          document.documentElement.classList.add('dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-        }
-      })();
-    </script>
+    <InlineScript code={themeScript} />
   </head>
 
   <body class="min-h-screen bg-background text-foreground antialiased">
