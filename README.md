@@ -17,7 +17,7 @@
 
 ## What's Included
 
-- **57 components** across 7 categories — all accessible, typed, and dark-mode ready
+- **58 components** across 7 categories — all accessible, typed, and dark-mode ready
 - **Design token system** with OKLCH colors, fluid typography, and two built-in themes
 - **SEO toolkit** — meta tags, JSON-LD, sitemap, robots.txt, and auto-generated OG images
 - **Content collections** — type-safe blog, pages, authors, and FAQs with Zod validation

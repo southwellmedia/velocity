@@ -27,7 +27,7 @@ Build times are the median of three clean builds of the same site on the same ma
 
 Astro 7 is a performance release, and most of the speedup came without changing any Velocity code.
 
-- **A Rust compiler** replaces the Go one. It's faster and stricter: unclosed tags now fail the build, and invalid nesting (a `<div>` inside a `<p>`) is no longer silently "fixed". All 57 Velocity components compiled cleanly on the first try.
+- **A Rust compiler** replaces the Go one. It's faster and stricter: unclosed tags now fail the build, and invalid nesting (a `<div>` inside a `<p>`) is no longer silently "fixed". All 58 Velocity components compiled cleanly on the first try.
 - **Vite 8 with Rolldown** handles bundling.
 - **Sätteri** is the new default Markdown processor. We don't use remark or rehype plugins, so nothing changed for us, and Shiki highlighting still works.
 - **Route caching is stable**, with CDN providers for Vercel, Netlify and Cloudflare.
@@ -122,7 +122,7 @@ Third-party scripts are declared by the component that loads them, on the pages 
 
 ```astro
 ---
-// src/pages/search.astro
+// src/views/SearchView.astro
 Astro.csp?.insertScriptResource("'wasm-unsafe-eval'");
 ---
 ```

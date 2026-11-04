@@ -1,5 +1,8 @@
 import { expect, test } from '@playwright/test';
+import fs from 'node:fs';
+import path from 'node:path';
 import { defaultLocale, locales } from '../../src/i18n/locales.mjs';
+import { posts } from './site';
 
 /**
  * Multilingual behaviour. Runs only when more than one locale is enabled
@@ -38,6 +41,24 @@ test.describe('i18n', () => {
       for (const href of hrefs) {
         expect((await request.get(href)).status(), href).toBe(200);
       }
+    });
+  }
+
+  // Translations share a file name in each locale's folder
+  for (const locale of others) {
+    const slug = posts.find((p) =>
+      ['md', 'mdx'].some((ext) => fs.existsSync(path.join('src/content/blog', locale, `${p}.${ext}`))),
+    );
+    test(`language switcher follows a post to its ${locale} translation`, async ({ page }) => {
+      test.skip(!slug, `no ${locale} translation of a post`);
+      await page.setViewportSize({ width: 1280, height: 800 });
+      await page.goto(`/blog/${slug}`);
+      await page.locator('details.lang-switcher summary').first().click();
+      const link = page.locator(`details.lang-switcher a[hreflang^="${locale}"]`).first();
+      await expect(link).toHaveAttribute('href', new RegExp(`/blog/${slug}/?$`));
+      await link.click();
+      await expect(page).toHaveURL(new RegExp(`/${locale}/.*${slug}`));
+      await expect(page.locator('html')).toHaveAttribute('lang', new RegExp(`^${locale}`));
     });
   }
 

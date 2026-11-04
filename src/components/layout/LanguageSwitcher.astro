@@ -3,7 +3,8 @@
  * LanguageSwitcher
  *
  * Links to the current page in every enabled locale, or to that locale's home
- * page when the page has no translation. No JavaScript: the dropdown is a native
+ * page when the page has no translation. Pages whose translations aren't known
+ * routes, such as blog posts, pass their own `alternates`. No JavaScript: the dropdown is a native
  * <details> element, so it works under strict CSP and without hydration.
  *
  * Rendered automatically by <Header /> when more than one locale is enabled.
@@ -13,28 +14,30 @@ import Icon from '@/components/ui/primitives/Icon/Icon.astro';
 import {
   getAlternates,
   getLocale,
+  getLocaleName,
   getLocaleTag,
-  localeNames,
   localizeRoute,
   locales,
   useTranslations,
+  type Locale,
 } from '@/i18n';
 
 interface Props {
   /** 'dropdown' for the desktop header, 'list' for the mobile menu */
   variant?: 'dropdown' | 'list';
+  /** Translations of this page. Defaults to the matching route in every locale. */
+  alternates?: { locale: Locale; href: string }[];
   class?: string;
 }
 
-const { variant = 'dropdown', class: className } = Astro.props;
+const { variant = 'dropdown', alternates = getAlternates(Astro.url.pathname), class: className } = Astro.props;
 
 const current = getLocale(Astro);
 const t = useTranslations(current);
-const alternates = getAlternates(Astro.url.pathname);
 
 const options = locales.map((locale) => ({
   locale,
-  name: localeNames[locale] ?? locale,
+  name: getLocaleName(locale),
   href: alternates.find((a) => a.locale === locale)?.href ?? localizeRoute('home', locale),
   active: locale === current,
 }));

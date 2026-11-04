@@ -1,6 +1,9 @@
 import { defineCollection } from 'astro:content';
 import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
+import { defaultLocale, locales } from './i18n/locales.mjs';
+
+const locale = z.enum(locales).default(defaultLocale);
 
 // Blog collection with Content Layer API
 const blog = defineCollection({
@@ -19,7 +22,7 @@ const blog = defineCollection({
       tags: z.array(z.string()).default([]),
       draft: z.boolean().default(false),
       featured: z.boolean().default(false),
-      locale: z.enum(['en', 'es', 'fr']).default('en'),
+      locale,
     }),
 });
 
@@ -30,7 +33,7 @@ const pages = defineCollection({
     title: z.string(),
     description: z.string(),
     updatedAt: z.coerce.date().optional(),
-    locale: z.enum(['en', 'es', 'fr']).default('en'),
+    locale,
   }),
 });
 
@@ -60,7 +63,7 @@ const faqs = defineCollection({
     answer: z.string(),
     category: z.string().optional(),
     order: z.number().default(0),
-    locale: z.enum(['en', 'es', 'fr']).default('en'),
+    locale,
   }),
 });
 

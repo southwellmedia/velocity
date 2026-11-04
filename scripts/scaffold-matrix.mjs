@@ -2,15 +2,16 @@
 /**
  * Build every project shape create-velocity-astro can produce.
  *
- *   pnpm test:scaffold                  # 8 combinations: install, astro check, build
+ *   pnpm test:scaffold                  # 8 combinations + a custom-language project: install, astro check, build
  *   pnpm test:scaffold --e2e            # …plus the Playwright suite in each full-component project
- *   pnpm test:scaffold --only=min-i18n  # filter by name (demo|min)-(en|i18n)-(all|none)
+ *   pnpm test:scaffold --only=min-i18n  # filter by name: (demo|min)-(en|i18n)-(all|none) or custom-locale
  *   pnpm test:scaffold --out=./.matrix  # where projects are created (default: OS temp dir)
  *
  * Projects are produced by scripts/scaffold.mjs, the reference implementation
  * of the contract in variants/README.md, so this is what users get.
  */
 import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,16 +27,18 @@ const args = Object.fromEntries(
 );
 const out = path.resolve(typeof args.out === 'string' ? args.out : path.join(os.tmpdir(), 'velocity-matrix'));
 
-const combos = [true, false]
-  .flatMap((demo) =>
+const combos = [
+  ...[true, false].flatMap((demo) =>
     [false, true].flatMap((i18n) =>
       ['all', 'none'].map((components) => ({
         name: `${demo ? 'demo' : 'min'}-${i18n ? 'i18n' : 'en'}-${components}`,
         options: { demo, i18n, components },
       })),
     ),
-  )
-  .filter((c) => typeof args.only !== 'string' || c.name.includes(args.only));
+  ),
+  // Adding a language is one edit to locales.mjs, even one with no built-in strings.
+  { name: 'custom-locale', options: { demo: true, i18n: false, components: 'all' }, locales: ['en', 'de'] },
+].filter((c) => typeof args.only !== 'string' || c.name.includes(args.only));
 
 function run(cmd, cwd, env = {}) {
   const started = Date.now();
@@ -54,11 +57,17 @@ const bin = (pkgBin) => `${node} ${JSON.stringify(path.join('node_modules', pkgB
 const results = [];
 let port = 4400;
 
-for (const { name, options } of combos) {
+for (const { name, options, locales } of combos) {
   const dir = path.join(out, name);
   process.stdout.write(`\n▶ ${name}\n`);
   const { applied } = scaffoldProject(root, dir, options);
   process.stdout.write(`  variants: ${applied.join(', ') || '(none)'}\n`);
+  if (locales) {
+    const file = path.join(dir, 'src/i18n/locales.mjs');
+    const list = locales.map((l) => `'${l}'`).join(', ');
+    const source = fs.readFileSync(file, 'utf8').replace(/\['en'\]/g, `[${list}]`);
+    fs.writeFileSync(file, source);
+  }
 
   // Steps run lazily, in order; the first failure stops this combination.
   const steps = [

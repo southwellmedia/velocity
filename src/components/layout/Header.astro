@@ -24,7 +24,7 @@
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { getNavItems, headerConfig, type NavItem as NavConfigItem } from '@/config/nav.config';
-import { getLocale, isMultilingual, localizePath, localizeRoute, useTranslations } from '@/i18n';
+import { getLocale, isMultilingual, localizePath, localizeRoute, useTranslations, type Locale } from '@/i18n';
 import LanguageSwitcher from '@/components/layout/LanguageSwitcher.astro';
 import { headerVariants, headerInnerVariants } from './header.variants';
 import Button from '@/components/ui/form/Button/Button.astro';
@@ -82,6 +82,8 @@ interface Props extends HTMLAttributes<'header'> {
   hideLogo?: boolean;
   /** Show language switcher (default: when more than one locale is enabled) */
   showLanguageSwitcher?: boolean;
+  /** Translations of this page, for the language switcher */
+  alternates?: { locale: Locale; href: string }[];
 }
 
 const {
@@ -102,6 +104,7 @@ const {
   logoText,
   hideLogo = false,
   showLanguageSwitcher = isMultilingual,
+  alternates,
   class: className,
   ...attrs
 } = Astro.props;
@@ -242,7 +245,7 @@ const buttonId = `${menuId}-button`;
         ) : (
           <>
             {showLanguageSwitcher && (
-              <LanguageSwitcher class={cn('hidden md:block', isFloating ? 'hdr-invert-text' : undefined)} />
+              <LanguageSwitcher alternates={alternates} class={cn('hidden md:block', isFloating ? 'hdr-invert-text' : undefined)} />
             )}
 
             {showThemeToggle && (
@@ -360,7 +363,7 @@ const buttonId = `${menuId}-button`;
 
             {showLanguageSwitcher && (
               <div class="border-border mt-3 border-t pt-3">
-                <LanguageSwitcher variant="list" />
+                <LanguageSwitcher variant="list" alternates={alternates} />
               </div>
             )}
 

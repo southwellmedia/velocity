@@ -68,7 +68,7 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
     tags,
   }}
 >
-  <Header slot="header" position="fixed" size="lg" showActiveState showCta />
+  <Header slot="header" position="fixed" size="lg" showActiveState showCta alternates={alternates} />
 
   <!-- Article Hero -->
   <ArticleHero
