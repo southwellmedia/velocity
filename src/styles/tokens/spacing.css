@@ -47,6 +47,9 @@
   /* ---------------------------------------------------------------------------
      Semantic Spacing
      --------------------------------------------------------------------------- */
+  /* Top padding that clears a fixed header. Set to 0 in your theme if yours is sticky. */
+  --header-offset: 4rem;
+
   --space-section: clamp(var(--space-16), 10vw, var(--space-24));
   --space-section-header: clamp(var(--space-6), 5vw, var(--space-16));
   --space-container-x: clamp(var(--space-4), 5vw, var(--space-8));
@@ -83,6 +86,6 @@
   /* ---------------------------------------------------------------------------
      Page Top Spacing (after fixed header)
      --------------------------------------------------------------------------- */
-  --space-page-top: var(--space-32); /* 128px - clearance for fixed header + breathing room */
-  --space-page-top-sm: var(--space-24); /* 96px - smaller top clearance */
+  --space-page-top: calc(var(--space-32) + var(--header-offset) - 4rem); /* 128px - clearance for fixed header + breathing room */
+  --space-page-top-sm: calc(var(--space-24) + var(--header-offset) - 4rem); /* 96px - smaller top clearance */
 }

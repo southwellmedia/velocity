@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 import { createHash } from 'node:crypto';
-import { ALL_PAGES, PAGES, hasRoute } from './site';
+import { ALL_PAGES, LOCALIZED_PAGES, PAGES, hasRoute } from './site';
 
 const VIEWPORTS = {
   desktop: { width: 1280, height: 800 },
@@ -81,9 +81,11 @@ test('component showcase dialog opens and closes under the CSP', async ({ page }
 test('only the Latin font is preloaded, and other scripts have a font', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('link[rel="preload"][as="font"]')).toHaveCount(1);
-  const ranges = await page.evaluate(() =>
-    [...document.fonts].filter((f) => f.family.includes('Manrope')).map((f) => f.unicodeRange),
-  );
+  const ranges = await page.evaluate(() => {
+    const unquote = (name: string) => name.replace(/["']/g, '').trim();
+    const body = unquote(getComputedStyle(document.body).fontFamily.split(',')[0]);
+    return [...document.fonts].filter((f) => unquote(f.family) === body).map((f) => f.unicodeRange);
+  });
   expect(ranges.join(',')).toMatch(/U\+4[0-9A-F]{2}/i); // Cyrillic
 });
 
@@ -95,6 +97,12 @@ test('search pages are out of the sitemap but readable by crawlers', async ({ re
   expect(sitemap).not.toMatch(/\/search\/</);
 });
 
+test('every route loads in every locale', async ({ request }) => {
+  for (const path of LOCALIZED_PAGES) {
+    expect((await request.get(path, { maxRedirects: 0 })).status(), path).toBe(200);
+  }
+});
+
 test('404 page returns 404', async ({ page }) => {
   const response = await page.goto('/does-not-exist');
   expect(response?.status()).toBe(404);
@@ -104,8 +112,12 @@ test('fonts are self-hosted and the body font is preloaded', async ({ page }) =>
   await page.goto('/');
   const preloads = page.locator('link[rel="preload"][as="font"]');
   await expect(preloads.first()).toHaveAttribute('href', /^\/_astro\/fonts\/.+\.woff2$/);
-  const family = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
-  expect(family).toMatch(/Manrope/);
+  const selfHosted = await page.evaluate(() => {
+    const unquote = (name: string) => name.replace(/["']/g, '').trim();
+    const body = unquote(getComputedStyle(document.body).fontFamily.split(',')[0]);
+    return [...document.fonts].some((f) => unquote(f.family) === body);
+  });
+  expect(selfHosted).toBe(true);
 });
 
 test.describe('Content Security Policy', () => {
@@ -136,8 +148,10 @@ test.describe('Content Security Policy', () => {
 
 test('navigations prefetch internal links on hover', async ({ page }) => {
   await page.goto('/');
-  const prefetched = page.waitForRequest((r) => new URL(r.url()).pathname.startsWith('/blog'));
-  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Blog' }).hover();
+  const link = page.locator('nav[aria-label="Main navigation"] a[href^="/"]:not([href*="#"])').first();
+  const href = (await link.getAttribute('href')) ?? '';
+  const prefetched = page.waitForRequest((r) => new URL(r.url()).pathname.startsWith(href));
+  await link.hover();
   await prefetched;
 });
 

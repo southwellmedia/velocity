@@ -5,6 +5,10 @@ description: Add a new page or route to this Velocity site, with its view, local
 
 # Add a page
 
+**First, read the Project notes in `AGENTS.md`.** They describe this site's own conventions and take priority over the examples here.
+
+`PageLayout` renders the site's header and footer from `src/components/site/`, so a new page matches the rest of the site. For page content, reach for `Section`, `PageHeader` and `MediaSlot` in `src/components/patterns/` first.
+
 A Velocity page is a view plus thin wrappers, registered in the route config. Creating only `src/pages/<slug>.astro` leaves the page without localized URLs, hreflang links or test coverage.
 
 ## Choose the names
@@ -26,6 +30,8 @@ Check `routes` in `src/config/nav.config.ts` first. The slug must not match an e
 
 ```astro
 ---
+import PageHeader from '@/components/patterns/PageHeader.astro';
+import Section from '@/components/patterns/Section.astro';
 import PageLayout from '@/layouts/PageLayout.astro';
 import { useTranslations, type Locale } from '@/i18n';
 
@@ -38,12 +44,10 @@ const t = useTranslations(locale);
 ---
 
 <PageLayout title={t('pricingPlansPage.title')} description={t('pricingPlansPage.description')}>
-  <section class="mx-auto max-w-4xl px-6 py-24">
-    <h1 class="font-display text-foreground text-4xl font-bold tracking-tight md:text-5xl">
-      {t('pricingPlansPage.title')}
-    </h1>
-    <p class="text-foreground-muted mt-6 text-lg">{t('pricingPlansPage.description')}</p>
-  </section>
+  <PageHeader title={t('pricingPlansPage.title')} lead={t('pricingPlansPage.description')} />
+  <Section>
+    <!-- Page content -->
+  </Section>
 </PageLayout>
 ```
 
@@ -96,6 +100,8 @@ If the page belongs in the menus, add it to `navItems` with the next `order` val
 { label: 'pricingPlansPage.title', route: 'pricingPlans', order: 3 },
 ```
 
+`navItems` feeds both the header and the default footer. For a link in only one of them, edit `src/components/site/SiteHeader.astro` or `SiteFooter.astro` instead. Check how the footer is built first: `footerConfig.extraLinks` only appears in the `simple` and `stacked` layouts.
+
 ## Add the copy
 
 Add a namespace to every file in `src/i18n/translations/`:
@@ -119,5 +125,5 @@ Use `localizeRoute('pricingPlans', locale)` for links in code. `navItems` entrie
 
 1. Run `npm run validate`.
 2. Run `npm run build && npm run test:e2e`. `tests/e2e/site.ts` adds the route's default-locale URL to the page checks, including axe and console errors. If Playwright has no browser, run `npx playwright install chromium`.
-3. Open the rendered page and check that no raw keys such as `pricingPlansPage.title` appear. Neither step above catches missing copy.
-4. If more than one locale is enabled, check each localized URL too, because the page checks don't cover them.
+3. `npm test` fails if a literal key such as `t('pricingPlansPage.title')` has no string. Keys built at runtime aren't checked, so open any page that uses them.
+4. The e2e suite loads the route in every enabled locale, but runs axe on the default locale only. Open the translated page to check its copy and layout.

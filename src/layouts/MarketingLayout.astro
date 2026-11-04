@@ -5,8 +5,8 @@
  * Uses Header shape="floating" for a distinctive visual identity
  */
 import BaseLayout from './BaseLayout.astro';
-import Header from '@/components/layout/Header.astro';
-import Footer from '@/components/layout/Footer.astro';
+import SiteHeader from '@/components/site/SiteHeader.astro';
+import SiteFooter from '@/components/site/SiteFooter.astro';
 
 interface Props {
   title?: string;
@@ -38,7 +38,7 @@ const {
   nofollow={nofollow}
   includeOrgSchema={includeOrgSchema}
 >
-  <Header
+  <SiteHeader
     slot="header"
     shape="floating"
     variant="transparent"
@@ -51,5 +51,5 @@ const {
 
   <slot />
 
-  <Footer slot="footer" layout="simple" background="secondary" showCopyright={false} />
+  <SiteFooter slot="footer" background="secondary" showCopyright={false} />
 </BaseLayout>

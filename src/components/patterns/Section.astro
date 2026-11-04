@@ -1,0 +1,43 @@
+---
+/** Page section with standard spacing, width and an optional heading block. */
+import { cn } from '@/lib/cn';
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  /** 'secondary' adds the tinted background */
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, tone = 'default', class: className } = Astro.props;
+---
+
+<section
+  id={id}
+  class={cn(
+    'scroll-mt-24 py-[var(--space-section-md)]',
+    tone === 'secondary' && 'bg-background-secondary',
+    className
+  )}
+>
+  <div class="mx-auto max-w-6xl px-6">
+    {title && (
+      <div class="mb-10 flex flex-wrap items-end justify-between gap-6 md:mb-12">
+        <div class="max-w-2xl">
+          {eyebrow && (
+            <p class="text-primary mb-3 text-xs font-bold tracking-[0.12em] uppercase">{eyebrow}</p>
+          )}
+          <h2 class="font-display text-foreground text-4xl leading-[1.05] tracking-tight">
+            {title}
+          </h2>
+          {lead && <p class="text-foreground-secondary mt-4 text-lg">{lead}</p>}
+        </div>
+        <slot name="action" />
+      </div>
+    )}
+    <slot />
+  </div>
+</section>

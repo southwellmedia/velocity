@@ -7,13 +7,16 @@
  * - logomark-dark.svg  → Icon for dark backgrounds
  * - logo-full.svg      → Full logo for light backgrounds
  * - logo-full-dark.svg → Full logo for dark backgrounds
+ *
+ * The files render inline, so they can use currentColor and CSS variables such as
+ * var(--logo-accent) to follow the theme.
  */
 import siteConfig from '@/config/site.config';
 
-import logomark from '@/assets/branding/logomark.svg';
-import logomarkDark from '@/assets/branding/logomark-dark.svg';
-import logoFull from '@/assets/branding/logo-full.svg';
-import logoFullDark from '@/assets/branding/logo-full-dark.svg';
+import logomark from '@/assets/branding/logomark.svg?raw';
+import logomarkDark from '@/assets/branding/logomark-dark.svg?raw';
+import logoFull from '@/assets/branding/logo-full.svg?raw';
+import logoFullDark from '@/assets/branding/logo-full-dark.svg?raw';
 
 interface Props {
   /** Size preset */
@@ -51,26 +54,13 @@ const sizeClass = sizeClasses[size] || sizeClasses.md;
 const alt = decorative ? '' : siteConfig.branding.logo.alt;
 ---
 
-<span class:list={['inline-block', className]}>
+<span class:list={['inline-block', className]} role={decorative ? undefined : 'img'} aria-label={alt || undefined} aria-hidden={decorative ? 'true' : undefined}>
   {forceDark ? (
-    <img
-      src={darkLogo.src}
-      alt={alt}
-      class:list={[sizeClass]}
-    />
+    <span class:list={[sizeClass, 'block [&>svg]:size-full']} set:html={darkLogo} />
   ) : (
     <Fragment>
-      <img
-        src={lightLogo.src}
-        alt={alt}
-        class:list={[sizeClass, 'block dark:hidden']}
-      />
-      <img
-        src={darkLogo.src}
-        alt=""
-        class:list={[sizeClass, 'hidden dark:block']}
-        aria-hidden="true"
-      />
+      <span class:list={[sizeClass, 'block dark:hidden [&>svg]:size-full']} set:html={lightLogo} />
+      <span class:list={[sizeClass, 'hidden dark:block [&>svg]:size-full']} set:html={darkLogo} />
     </Fragment>
   )}
 </span>

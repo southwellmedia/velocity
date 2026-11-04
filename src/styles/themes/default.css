@@ -18,6 +18,11 @@
        --theme-radius-xl, --theme-radius-full
 
      Dark mode: all of the above re-mapped for dark backgrounds
+
+   Optional:
+     --brand-hue recolours the brand scale. --theme-radius-button and
+     --theme-button-weight style every Button. --logo-accent colours the logo.
+     Themes load last, so a theme can also override any token, such as --text-*.
    ============================================================================= */
 
 :root {

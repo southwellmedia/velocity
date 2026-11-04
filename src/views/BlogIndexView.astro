@@ -4,8 +4,8 @@
  * src/pages/[lang]/blog/index.astro.
  */
 import BaseLayout from '@/layouts/BaseLayout.astro';
-import Header from '@/components/layout/Header.astro';
-import Footer from '@/components/layout/Footer.astro';
+import SiteHeader from '@/components/site/SiteHeader.astro';
+import SiteFooter from '@/components/site/SiteFooter.astro';
 import BlogCard from '@/components/blog/BlogCard.astro';
 import Badge from '@/components/ui/data-display/Badge/Badge.astro';
 import Icon from '@/components/ui/primitives/Icon/Icon.astro';
@@ -31,7 +31,7 @@ const regularPosts = nonFeaturedPosts.length > 0 ? nonFeaturedPosts : posts;
 ---
 
 <BaseLayout title={t('blog.title')} description={t('blog.description')}>
-  <Header slot="header" position="fixed" size="lg" showActiveState showCta />
+  <SiteHeader slot="header" />
 
   <Hero layout="split" size="sm" class="bg-surface-secondary border-b border-border">
     <Badge slot="badge">
@@ -119,5 +119,5 @@ const regularPosts = nonFeaturedPosts.length > 0 ? nonFeaturedPosts : posts;
     <NewsletterForm class="mx-auto max-w-md" />
   </CTA>
 
-  <Footer slot="footer" layout="simple" background="secondary" showCopyright={false} />
+  <SiteFooter slot="footer" background="secondary" showCopyright={false} />
 </BaseLayout>

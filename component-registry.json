@@ -81,7 +81,9 @@
         "utilities": [
           "cn"
         ],
-        "components": []
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     },
@@ -831,6 +833,48 @@
           "cn"
         ],
         "components": []
+      },
+      "premium": false
+    },
+    "section": {
+      "name": "Section",
+      "category": "patterns",
+      "files": [
+        "src/components/patterns/Section.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": []
+      },
+      "premium": false
+    },
+    "page-header": {
+      "name": "PageHeader",
+      "category": "patterns",
+      "files": [
+        "src/components/patterns/PageHeader.astro"
+      ],
+      "dependencies": {
+        "utilities": [],
+        "components": []
+      },
+      "premium": false
+    },
+    "media-slot": {
+      "name": "MediaSlot",
+      "category": "patterns",
+      "files": [
+        "src/components/patterns/MediaSlot.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     }

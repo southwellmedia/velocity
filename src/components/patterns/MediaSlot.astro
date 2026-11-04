@@ -1,0 +1,91 @@
+---
+/**
+ * An image slot. Add a photo to src/assets/photos/ named after the `photo` prop and
+ * it appears here. With no matching file it renders a placeholder at the right
+ * aspect ratio, so a page looks finished before its photos exist.
+ *
+ *   <MediaSlot photo="team" alt="Our team outside the office" ratio="4/3" />
+ *   → src/assets/photos/team.jpg
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { cn } from '@/lib/cn';
+import { getLocale, useTranslations } from '@/i18n';
+
+interface Props {
+  /** File name in src/assets/photos/, without the extension */
+  photo?: string;
+  alt?: string;
+  /** What belongs here, shown on the placeholder */
+  label?: string;
+  /** 'fill' covers the nearest positioned ancestor, so give that ancestor `relative` */
+  ratio?: '16/10' | '4/3' | '4/5' | 'fill';
+  icon?: string;
+  /** Load straight away. Use for the first image on a page. */
+  priority?: boolean;
+  /** Extra classes for the image, such as object position */
+  imageClass?: string;
+  class?: string;
+}
+
+const {
+  photo,
+  alt = '',
+  label,
+  ratio = '4/3',
+  icon = 'image',
+  priority = false,
+  imageClass,
+  class: className,
+} = Astro.props;
+const t = useTranslations(getLocale(Astro));
+
+const photos = import.meta.glob<{ default: ImageMetadata }>(
+  '/src/assets/photos/*.{jpg,jpeg,png,webp,avif}',
+  {
+    eager: true,
+  }
+);
+const src = Object.entries(photos).find(
+  ([file]) => file.split('/').pop()?.split('.')[0] === photo
+)?.[1].default;
+
+const ratios = {
+  '16/10': 'aspect-[16/10]',
+  '4/3': 'aspect-[4/3]',
+  '4/5': 'aspect-[4/5]',
+  fill: 'absolute inset-0',
+};
+const name = label ?? t('media.photo');
+---
+
+<div class={cn('relative overflow-hidden', ratios[ratio], className)}>
+  {src ? (
+    <Image
+      src={src}
+      alt={alt}
+      widths={[480, 800, 1200, 1920]}
+      sizes={ratio === 'fill' ? '100vw' : '(min-width: 1024px) 50vw, 100vw'}
+      class={cn('size-full object-cover', imageClass)}
+      loading={priority ? 'eager' : 'lazy'}
+      fetchpriority={priority ? 'high' : undefined}
+    />
+  ) : ratio === 'fill' ? (
+    <div
+      class="from-surface-invert-tertiary to-surface-invert size-full bg-linear-to-br"
+      aria-hidden="true"
+    />
+  ) : (
+    <div
+      role="img"
+      aria-label={t('media.placeholder', { name })}
+      class="bg-muted text-foreground-muted flex size-full flex-col items-center justify-center gap-2 p-4 text-center"
+    >
+      <Icon name={icon} size="lg" />
+      <span class="text-xs font-semibold" aria-hidden="true">
+        {name}
+      </span>
+    </div>
+  )}
+</div>

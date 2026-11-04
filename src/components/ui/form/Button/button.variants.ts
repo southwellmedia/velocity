@@ -3,7 +3,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 export const buttonVariants = cva(
   [
     'inline-flex items-center justify-center gap-2',
-    'font-medium rounded-md',
+    'font-[number:var(--theme-button-weight,500)] rounded-[var(--theme-radius-button,var(--theme-radius-md))]',
     'transition-all duration-150 ease-out',
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
     'disabled:pointer-events-none disabled:opacity-50',
@@ -13,7 +13,7 @@ export const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          'bg-foreground text-background hover:bg-foreground/90 active:scale-[0.98]',
+          'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]',
         secondary:
           'bg-secondary text-secondary-foreground border border-border hover:bg-secondary-hover hover:border-border-strong active:scale-[0.98]',
         outline:
@@ -33,7 +33,7 @@ export const buttonVariants = cva(
         true: 'w-full',
       },
       icon: {
-        true: 'rounded-md',
+        true: 'rounded-[var(--theme-radius-button,var(--theme-radius-md))]',
       },
     },
     compoundVariants: [

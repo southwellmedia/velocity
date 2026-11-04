@@ -6,11 +6,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { routes } from '../../src/config/nav.config';
-import { defaultLocale } from '../../src/i18n/locales.mjs';
+import { defaultLocale, locales } from '../../src/i18n/locales.mjs';
 
 // Playwright runs from the project root (where playwright.config.ts lives)
 const root = process.cwd();
-const routeDefs: Record<string, { path: string; localized?: boolean }> = routes;
+const routeDefs: Record<
+  string,
+  { path: string; slugs?: Record<string, string>; localized?: boolean }
+> = routes;
 
 export const hasRoute = (id: string) => id in routeDefs;
 
@@ -38,3 +41,14 @@ export const PAGES = [
 
 /** Every page, for checks that apply everywhere. */
 export const ALL_PAGES = [...PAGES, ...(hasRoute('components') ? ['/components'] : [])];
+
+/** Every route in every enabled locale, with its translated slug. */
+export const LOCALIZED_PAGES = Object.entries(routeDefs)
+  .filter(([id, route]) => id !== 'components' && route.localized !== false)
+  .flatMap(([, route]) =>
+    (locales as readonly string[]).map((locale) => {
+      const slug = route.slugs?.[locale] ?? route.path;
+      const parts = locale === defaultLocale ? [slug] : [locale, slug];
+      return `/${parts.filter(Boolean).join('/')}/`.replace('//', '/');
+    })
+  );

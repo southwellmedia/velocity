@@ -8,8 +8,8 @@
  * via CLI for users who want the full landing page experience.
  */
 import BaseLayout from './BaseLayout.astro';
-import Header from '@/components/layout/Header.astro';
-import Footer from '@/components/layout/Footer.astro';
+import SiteHeader from '@/components/site/SiteHeader.astro';
+import SiteFooter from '@/components/site/SiteFooter.astro';
 
 interface Props {
   title?: string;
@@ -41,14 +41,9 @@ const {
   nofollow={nofollow}
   includeOrgSchema={includeOrgSchema}
 >
-  <Header
-    slot="header"
-    position="fixed"
-    size="lg"
-    showCta
-  />
+  <SiteHeader slot="header" />
 
   <slot />
 
-  <Footer slot="footer" layout="simple" background="secondary" showCopyright={false} />
+  <SiteFooter slot="footer" background="secondary" showCopyright={false} />
 </BaseLayout>
