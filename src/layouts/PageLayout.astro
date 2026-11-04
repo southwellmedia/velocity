@@ -15,9 +15,11 @@ interface Props {
   imageAlt?: string;
   noindex?: boolean;
   nofollow?: boolean;
+  /** Include this page in the Pagefind site search index (default: true) */
+  searchable?: boolean;
 }
 
-const { title, description, image, imageAlt, noindex, nofollow } = Astro.props;
+const { title, description, image, imageAlt, noindex, nofollow, searchable = true } = Astro.props;
 ---
 
 <BaseLayout
@@ -34,22 +36,12 @@ const { title, description, image, imageAlt, noindex, nofollow } = Astro.props;
     size="lg"
     showActiveState
     showCta
-    cta={{ label: 'View Docs', href: 'https://docs.deployvelocity.com' }}
-    extraNav={[{ label: 'Features', href: '#features' }]}
-    actions={[
-      {
-        icon: 'github',
-        href: 'https://github.com/southwellmedia/velocity',
-        label: 'View on GitHub',
-        iconOnly: true,
-        target: '_blank',
-      },
-    ]}
   />
 
-  <main class="min-h-screen pt-16">
+  <!-- BaseLayout already renders <main>; this wrapper only offsets the fixed header -->
+  <div class="min-h-screen pt-16" data-pagefind-body={searchable ? '' : undefined}>
     <slot />
-  </main>
+  </div>
 
   <Footer slot="footer" layout="simple" />
 </BaseLayout>

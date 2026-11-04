@@ -3,6 +3,9 @@ node_modules/
 
 # Build output
 dist/
+
+# Files saved by `create-velocity-astro upgrade`
+.velocity-backup/
 .vercel/
 .netlify/
 

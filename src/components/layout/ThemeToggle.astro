@@ -1,11 +1,13 @@
 ---
 import { cn } from '@/lib/cn';
+import { getLocale, useTranslations } from '@/i18n';
 
 interface Props {
   class?: string;
 }
 
 const { class: className } = Astro.props;
+const t = useTranslations(getLocale(Astro));
 ---
 
 <button
@@ -18,7 +20,7 @@ const { class: className } = Astro.props;
     'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
     className
   )}
-  aria-label="Toggle theme"
+  aria-label={t('a11y.toggleTheme')}
 >
   <!-- Sun icon (shown in dark mode) -->
   <svg

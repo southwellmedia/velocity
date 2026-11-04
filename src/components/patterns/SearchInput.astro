@@ -2,11 +2,12 @@
 /**
  * SearchInput Pattern
  * Composition example: Input + Icon for a search field.
- * Demonstrates building on UI primitives.
+ * Demonstrates building on UI primitives. Used by /search (Pagefind).
  */
+import type { HTMLAttributes } from 'astro/types';
 import Input from '@/components/ui/form/Input/Input.astro';
 
-interface Props {
+interface Props extends Omit<HTMLAttributes<'input'>, 'size' | 'type'> {
   placeholder?: string;
   size?: 'sm' | 'md' | 'lg';
   class?: string;
@@ -16,10 +17,12 @@ const {
   placeholder = 'Search...',
   size = 'md',
   class: className,
+  ...attrs
 } = Astro.props;
 ---
 
 <Input
+  {...attrs}
   type="search"
   placeholder={placeholder}
   size={size}

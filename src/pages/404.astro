@@ -2,11 +2,23 @@
 import LandingLayout from '@/layouts/LandingLayout.astro';
 import Button from '@/components/ui/form/Button/Button.astro';
 import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { getNavItems } from '@/config/nav.config';
+import { getLocale, localizePath, localizeRoute, useTranslations } from '@/i18n';
+
+// Astro serves this page for every unknown URL, so take the locale from the URL.
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+
+// Quick links come from the nav config, so they always point at pages that exist.
+const quickLinks = getNavItems()
+  .filter((item) => item.route && item.route !== 'blog')
+  .slice(0, 3)
+  .map((item) => ({ label: t(item.label), href: localizeRoute(item.route!, locale) }));
 ---
 
 <LandingLayout
-  title="Page not found"
-  description="The page you're looking for has either been moved, deleted, or never existed in the first place."
+  title={t('notFound.title')}
+  description={t('notFound.text')}
   noindex
 >
   <section class="relative min-h-[calc(100vh-8rem)] flex items-center justify-center overflow-hidden pt-16">
@@ -32,41 +44,38 @@ import Icon from '@/components/ui/primitives/Icon/Icon.astro';
 
         <!-- Copy -->
         <h1 class="font-display text-2xl md:text-3xl font-bold text-foreground mb-4">
-          Looks like you've drifted off course
+          {t('notFound.heading')}
         </h1>
 
         <p class="text-lg text-foreground-muted max-w-md mx-auto mb-10">
-          The page you're looking for has either been moved, deleted, or never existed in the first place.
+          {t('notFound.text')}
         </p>
 
         <!-- CTAs -->
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
-          <Button href="/" size="lg">
+          <Button href={localizeRoute('home', locale)} size="lg">
             <Icon name="arrow-left" size="sm" />
-            Back to Home
+            {t('notFound.backHome')}
           </Button>
-          <Button href="/blog" variant="outline" size="lg">
-            Browse Blog
+          <Button href={localizePath('/blog', locale)} variant="outline" size="lg">
+            {t('notFound.browseBlog')}
           </Button>
         </div>
 
         <!-- Quick Links -->
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-border">
-          <span class="text-sm text-foreground-muted">Quick Links:</span>
-          <a
-            href="/#features"
-            class="text-sm font-medium text-foreground hover:text-brand-500 transition-colors"
-          >
-            Features
-          </a>
-          <span class="text-foreground-subtle">|</span>
-          <a
-            href="/components"
-            class="text-sm font-medium text-foreground hover:text-brand-500 transition-colors"
-          >
-            Components
-          </a>
-        </div>
+        {quickLinks.length > 0 && (
+          <nav aria-label={t('notFound.quickLinks')} class="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-2 rounded-full bg-secondary/50 border border-border">
+            <span class="text-sm text-foreground-muted">{t('notFound.quickLinks')}</span>
+            {quickLinks.map((link, i) => (
+              <>
+                {i > 0 && <span class="text-foreground-subtle" aria-hidden="true">|</span>}
+                <a href={link.href} class="text-sm font-medium text-foreground hover:text-brand-500 transition-colors">
+                  {link.label}
+                </a>
+              </>
+            ))}
+          </nav>
+        )}
       </div>
     </div>
   </section>

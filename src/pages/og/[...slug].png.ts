@@ -1,44 +1,55 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
-import { getCollection } from 'astro:content';
 import { generateOGImage } from '@/lib/og';
 import siteConfig from '@/config/site.config';
+import { routes, type RouteId, type RouteDefinition } from '@/config/nav.config';
+import { defaultLocale, isValidLocale, locales, localizeRoute, translate } from '@/i18n';
+import { getPosts, getPostUrl } from '@/lib/blog';
 
-// Define static pages that need OG images
-const STATIC_PAGES = [
-  { slug: 'index', title: siteConfig.name, description: siteConfig.description },
-  { slug: 'about', title: 'About', description: `Learn more about ${siteConfig.name}` },
-  { slug: 'contact', title: 'Contact', description: `Get in touch with ${siteConfig.name}` },
-  { slug: 'blog', title: 'Blog', description: `Latest articles and updates from ${siteConfig.name}` },
-  { slug: 'components', title: 'Component Library', description: 'UI component showcase' },
-];
+/**
+ * Open Graph images, generated at build time for every page URL:
+ * /og/index.png, /og/about.png, /og/es/index.png, /og/es/sobre-nosotros.png,
+ * /og/blog/<slug>.png …
+ *
+ * SEO.astro points og:image at /og/<page path>.png (or /og/<locale>/index.png
+ * for a locale's home page), so this route and SEO.astro must stay in sync.
+ */
+
+/** OG slug for a page path: '/' → 'index', '/es' → 'es/index', '/es/blog' → 'es/blog' */
+function ogSlug(path: string): string {
+  const clean = path.replace(/^\/|\/$/g, '');
+  if (!clean) return 'index';
+  return isValidLocale(clean) ? `${clean}/index` : clean;
+}
 
 export const getStaticPaths: GetStaticPaths = async () => {
-  // Get all blog posts
-  const blogPosts = await getCollection('blog', ({ data }) => {
-    return import.meta.env.PROD ? data.draft !== true : true;
+  const routeDefs: Record<string, RouteDefinition> = routes;
+
+  const pagePaths = locales.flatMap((locale) =>
+    (Object.keys(routes) as RouteId[])
+      .filter((id) => locale === defaultLocale || routeDefs[id].localized !== false)
+      .map((id) => ({
+        params: { slug: ogSlug(localizeRoute(id, locale)) },
+        props: {
+          title: id === 'home' ? siteConfig.name : translate(locale, `nav.${id}`),
+          description: id === 'home' ? siteConfig.description : translate(locale, 'site.tagline'),
+          type: 'website' as const,
+        },
+      })),
+  );
+
+  const posts = (await Promise.all(locales.map((locale) => getPosts(locale)))).flat();
+  const postPaths = posts.map((post) => ({
+    params: { slug: ogSlug(getPostUrl(post)) },
+    props: { title: post.data.title, description: post.data.description, type: 'article' as const },
+  }));
+
+  // A slug can only be generated once
+  const seen = new Set<string>();
+  return [...pagePaths, ...postPaths].filter((p) => {
+    if (seen.has(p.params.slug)) return false;
+    seen.add(p.params.slug);
+    return true;
   });
-
-  // Generate paths for blog posts
-  const blogPaths = blogPosts.map((post) => ({
-    params: { slug: `blog/${post.id}` },
-    props: {
-      title: post.data.title,
-      description: post.data.description,
-      type: 'article' as const,
-    },
-  }));
-
-  // Generate paths for static pages
-  const staticPaths = STATIC_PAGES.map((page) => ({
-    params: { slug: page.slug },
-    props: {
-      title: page.title,
-      description: page.description,
-      type: 'website' as const,
-    },
-  }));
-
-  return [...staticPaths, ...blogPaths];
 };
 
 export const GET: APIRoute = async ({ props }) => {

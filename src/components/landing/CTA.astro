@@ -4,24 +4,27 @@ import Button from '@/components/ui/form/Button/Button.astro';
 import Icon from '@/components/ui/primitives/Icon/Icon.astro';
 import Logo from '@/components/ui/marketing/Logo/Logo.astro';
 import NpmCopyButton from '@/components/ui/marketing/NpmCopyButton/NpmCopyButton.astro';
+import { getLocale, useTranslations } from '@/i18n';
+
+const t = useTranslations(getLocale(Astro));
 ---
 
 <CTASection id="cta" variant="default" size="xl" maxWidth="lg">
   <Logo slot="logo" size="2xl" class="mx-auto" />
 
   <h2 slot="heading">
-    Stop configuring. <span class="text-brand-500">Start building.</span>
+    {t('landing.cta.heading')} <span class="text-brand-500">{t('landing.cta.headingHighlight')}</span>
   </h2>
 
   <p slot="description">
-    Join the developers building faster, better websites with Velocity. Open source and free forever.
+    {t('landing.cta.description')}
   </p>
 
   <Fragment slot="actions">
     <NpmCopyButton command="npm create velocity-astro@latest" />
     <Button variant="outline" size="lg" href="https://docs.deployvelocity.com" target="_blank">
       <Icon name="book" size="md" />
-      View Docs
+      {t('landing.cta.docs')}
     </Button>
   </Fragment>
 </CTASection>

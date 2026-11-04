@@ -1,0 +1,49 @@
+---
+/**
+ * A single blog post. Rendered by src/pages/blog/[...slug].astro and
+ * src/pages/[lang]/blog/[...slug].astro.
+ *
+ * Translations of a post share its slug in another locale folder
+ * (content/blog/es/<slug>.mdx); they're linked automatically via hreflang.
+ */
+import BlogLayout from '@/layouts/BlogLayout.astro';
+import { render } from 'astro:content';
+import { locales } from '@/i18n';
+import { getPosts, getPostSlug, getPostUrl, getPostReadingTime, type BlogPost } from '@/lib/blog';
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+
+const slug = getPostSlug(post);
+const alternates =
+  locales.length > 1
+    ? (
+        await Promise.all(
+          locales.map(async (locale) => {
+            const match = (await getPosts(locale)).find((p) => getPostSlug(p) === slug);
+            return match ? { locale, href: getPostUrl(match) } : null;
+          }),
+        )
+      ).filter((a) => a !== null)
+    : [];
+---
+
+<BlogLayout
+  title={post.data.title}
+  description={post.data.description}
+  publishedAt={post.data.publishedAt}
+  updatedAt={post.data.updatedAt}
+  author={post.data.author}
+  image={post.data.image}
+  imageAlt={post.data.imageAlt}
+  tags={post.data.tags}
+  slug={slug}
+  readingTime={getPostReadingTime(post)}
+  alternates={alternates.length > 1 ? alternates : undefined}
+>
+  <Content />
+</BlogLayout>

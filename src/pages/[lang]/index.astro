@@ -1,0 +1,16 @@
+---
+/**
+ * Home page for non-default locales (e.g. /es/).
+ * Generates nothing while only one locale is enabled in src/i18n/locales.mjs.
+ */
+import HomeView from '@/views/HomeView.astro';
+import { getLocalizedStaticPaths, type Locale } from '@/i18n';
+
+export function getStaticPaths() {
+  return getLocalizedStaticPaths('home', null);
+}
+
+const { locale } = Astro.props as { locale: Locale };
+---
+
+<HomeView locale={locale} />

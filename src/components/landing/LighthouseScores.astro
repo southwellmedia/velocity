@@ -5,6 +5,9 @@
  * Designed to match the authentic Lighthouse report aesthetic
  */
 import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import { getLocale, useTranslations } from '@/i18n';
+
+const t = useTranslations(getLocale(Astro));
 
 interface Score {
   label: string;
@@ -12,10 +15,10 @@ interface Score {
 }
 
 const scores: Score[] = [
-  { label: 'Performance', value: 100 },
-  { label: 'Accessibility', value: 100 },
-  { label: 'Best Practices', value: 100 },
-  { label: 'SEO', value: 100 },
+  { label: t('landing.lighthouse.performance'), value: 100 },
+  { label: t('landing.lighthouse.accessibility'), value: 100 },
+  { label: t('landing.lighthouse.bestPractices'), value: 100 },
+  { label: t('landing.lighthouse.seo'), value: 100 },
 ];
 ---
 
@@ -24,10 +27,10 @@ const scores: Score[] = [
     <!-- Header -->
     <div class="mb-[var(--space-section-header)] text-center">
       <div class="mb-4 flex justify-center">
-        <Badge variant="success">Lighthouse Report</Badge>
+        <Badge variant="success">{t('landing.lighthouse.badge')}</Badge>
       </div>
       <h3 class="font-display text-foreground text-2xl font-bold md:text-3xl">
-        Perfect scores. Out of the box.
+        {t('landing.lighthouse.heading')}
       </h3>
     </div>
 
@@ -35,7 +38,7 @@ const scores: Score[] = [
     <div
       class="lighthouse-scores mx-auto grid max-w-2xl grid-cols-4 gap-[var(--space-content-gap)]"
       role="list"
-      aria-label="Lighthouse scores"
+      aria-label={t('landing.lighthouse.listLabel')}
     >
       {
         scores.map((score, index) => (
@@ -100,8 +103,7 @@ const scores: Score[] = [
 
     <!-- Footer note -->
     <p class="text-foreground-subtle mt-[var(--space-stack-lg)] text-center text-xs">
-      *Tested in production for landing page demo &middot; Desktop & Mobile emulation &middot;
-      Results will vary.
+      {t('landing.lighthouse.note')}
     </p>
   </div>
 </section>

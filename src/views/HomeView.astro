@@ -1,0 +1,98 @@
+---
+/**
+ * Home view — the demo landing page.
+ * Rendered by src/pages/index.astro (default locale) and
+ * src/pages/[lang]/index.astro (other locales).
+ */
+import LandingLayout from '@/layouts/LandingLayout.astro';
+import { Hero } from '@/components/hero';
+import Button from '@/components/ui/form/Button/Button.astro';
+import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import SocialProof from '@/components/ui/marketing/SocialProof/SocialProof.astro';
+import { TerminalDemo } from '@/components/ui/marketing/TerminalDemo';
+import TechStack from '@/components/landing/TechStack.astro';
+import FeatureTabs, { type FeatureTabsCopy } from '@/components/landing/FeatureTabs.tsx';
+import LighthouseScores from '@/components/landing/LighthouseScores.astro';
+import Credibility from '@/components/landing/Credibility.astro';
+import CTA from '@/components/landing/CTA.astro';
+import { useTranslations, type Locale } from '@/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const tab = (id: string) => ({
+  label: t(`landing.features.${id}.label`),
+  description: t(`landing.features.${id}.description`),
+  title: t(`landing.features.${id}.title`),
+  content: t(`landing.features.${id}.content`),
+});
+
+const featureCopy: FeatureTabsCopy = {
+  heading: t('landing.features.heading'),
+  headingHighlight: t('landing.features.headingHighlight'),
+  intro: t('landing.features.intro'),
+  copy: t('landing.features.copy'),
+  copied: t('landing.features.copied'),
+  tabs: {
+    theming: tab('theming'),
+    seo: tab('seo'),
+    perf: tab('perf'),
+    components: tab('components'),
+    i18n: tab('i18n'),
+    content: tab('content'),
+  },
+};
+---
+
+<LandingLayout title={t('meta.home.title')} description={t('meta.home.description')}>
+  <Hero layout="split" size="lg" showGrid showBlob blobPosition="right">
+    <Badge slot="badge" pill pulse>{t('home.hero.badge')}</Badge>
+
+    <h1 slot="title">
+      {t('home.hero.title')} <span class="text-brand-500">{t('home.hero.titleHighlight')}</span>
+    </h1>
+
+    <p slot="description">
+      {t('home.hero.description')}
+    </p>
+
+    <Fragment slot="actions">
+      <Button size="lg" href="https://docs.deployvelocity.com" target="_blank">
+        {t('home.hero.docs')}
+        <Icon name="arrow-right" size="sm" />
+      </Button>
+      <Button
+        size="lg"
+        variant="outline"
+        href="https://github.com/southwellmedia/velocity"
+        target="_blank"
+      >
+        <Icon name="github" size="sm" />
+        {t('home.hero.github')}
+      </Button>
+    </Fragment>
+
+    <TerminalDemo slot="aside" client:load />
+
+    <SocialProof
+      class="mt-[var(--space-stack-lg)]"
+      text={t('home.hero.socialProof')}
+      avatars={[
+        'https://i.pravatar.cc/150?img=12',
+        'https://i.pravatar.cc/150?img=33',
+        'https://www.southwellmedia.com/_vercel/image?url=%2Fassets%2FMichaelFroseth2025.jpg&w=828&q=90',
+      ]}
+    />
+  </Hero>
+
+  <TechStack />
+  <FeatureTabs client:visible copy={featureCopy} />
+  <LighthouseScores />
+  <Credibility />
+  <CTA />
+</LandingLayout>

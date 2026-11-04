@@ -15,8 +15,10 @@
  * - PUBLIC_CONSENT_ENABLED: Enable cookie consent integration (boolean)
  *
  * CSP: All is:inline scripts here are STATIC (no define:vars). Dynamic values are
- * passed via <script type="application/json"> data elements. Pin each script's
- * sha256 hash in astro.config.mjs → security.csp.scriptDirective.hashes.
+ * passed via <script type="application/json"> data elements, so Astro's
+ * security.csp hashes them automatically. When analytics is enabled, this
+ * component also registers the Google script hosts for the current page via
+ * Astro.csp.insertScriptResource() — no manual config needed.
  *
  * Required CSP directives for GA4/GTM:
  *
@@ -79,6 +81,18 @@ const hasGtm = !!gtmId;
 const hasGa = !!gaId && !gtmId;
 const hasAnalytics = !!(gaId || gtmId);
 const noConsent = !consentEnabled;
+
+// Declare the third-party script hosts this page needs (security.csp).
+// Pages without analytics keep a strict 'self'-only script-src.
+if (hasAnalytics && Astro.csp) {
+  for (const host of [
+    'https://*.googletagmanager.com',
+    'https://*.google-analytics.com',
+    'https://analytics.google.com',
+  ]) {
+    Astro.csp.insertScriptResource(host);
+  }
+}
 const isV2 = consentEnabled && consentMode === 'consent_mode_v2';
 const isStrict = consentEnabled && consentMode === 'strict';
 

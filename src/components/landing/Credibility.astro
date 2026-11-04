@@ -1,18 +1,21 @@
 ---
 import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { getLocale, useTranslations } from '@/i18n';
+
+const t = useTranslations(getLocale(Astro));
 
 const cliFlags = [
-  { flag: '--demo', desc: 'Sample landing page + blog posts' },
-  { flag: '--components', desc: '24 optional UI components' },
-  { flag: '--i18n', desc: 'Multi-language routing configured' },
-  { flag: '--pages', desc: 'Generate pages (+ i18n versions)' },
-  { flag: '-y', desc: 'Skip prompts, use defaults' },
+  { flag: '--demo', desc: t('landing.credibility.flags.demo') },
+  { flag: '--components', desc: t('landing.credibility.flags.components') },
+  { flag: '--i18n', desc: t('landing.credibility.flags.i18n') },
+  { flag: '--pages', desc: t('landing.credibility.flags.pages') },
+  { flag: '-y', desc: t('landing.credibility.flags.yes') },
 ];
 
 const stats = [
-  { value: '1', label: 'command to start' },
-  { value: '5', label: 'flags to customize' },
-  { value: '40+', label: 'components included' },
+  { value: '1', label: t('landing.credibility.stats.command') },
+  { value: '5', label: t('landing.credibility.stats.flags') },
+  { value: '40+', label: t('landing.credibility.stats.components') },
 ];
 ---
 
@@ -25,22 +28,22 @@ const stats = [
         class="text-brand-500 mb-4 flex items-center gap-2 text-sm font-bold tracking-wide uppercase"
       >
         <Icon name="terminal" size="sm" />
-        <span>One Command</span>
+        <span>{t('landing.credibility.eyebrow')}</span>
       </div>
 
       <h2 class="font-display mb-[var(--space-heading-gap)] text-3xl font-bold text-balance md:text-4xl">
-        Scaffold exactly <span class="text-brand-500">what you need.</span>
+        {t('landing.credibility.heading')} <span class="text-brand-500">{t('landing.credibility.headingHighlight')}</span>
       </h2>
 
       <div class="text-foreground-secondary space-y-4 text-lg leading-relaxed">
         <p>
-          Not every project needs everything. The Velocity CLI lets you pick your starting point.
+          {t('landing.credibility.intro')}
         </p>
         <p>
-          Need custom pages? Use <code class="font-mono text-base text-cyan-400">--pages</code> and they're generated with routes and nav already wired. Pair it with <code class="font-mono text-base text-cyan-400">--i18n</code> and you get localized versions too—translations scaffolded and ready.
+          {t('landing.credibility.pagesBefore')} <code class="font-mono text-base text-cyan-400">--pages</code> {t('landing.credibility.pagesMiddle')} <code class="font-mono text-base text-cyan-400">--i18n</code> {t('landing.credibility.pagesAfter')}
         </p>
         <p class="text-foreground-muted">
-          No prompts to click through. No wizard to escape. Just flags that do what they say.
+          {t('landing.credibility.outro')}
         </p>
       </div>
 
@@ -87,7 +90,7 @@ const stats = [
           </div>
 
           <!-- Comment -->
-          <div class="text-foreground-muted mb-3 pl-4"># Add what you need</div>
+          <div class="text-foreground-muted mb-3 pl-4"># {t('landing.credibility.terminalComment')}</div>
 
           <!-- Flags -->
           <div class="space-y-2 pl-4">
@@ -105,7 +108,7 @@ const stats = [
           <div class="border-border mt-6 border-t pt-4">
             <div class="flex items-center gap-2">
               <span class="text-green-400">✓</span>
-              <span class="text-foreground">Project created successfully!</span>
+              <span class="text-foreground">{t('landing.credibility.terminalSuccess')}</span>
             </div>
             <div class="text-foreground-muted mt-1 pl-5">cd my-site && pnpm dev</div>
           </div>

@@ -1,0 +1,123 @@
+---
+/**
+ * Blog index for one locale. Rendered by src/pages/blog/index.astro and
+ * src/pages/[lang]/blog/index.astro.
+ */
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Header from '@/components/layout/Header.astro';
+import Footer from '@/components/layout/Footer.astro';
+import BlogCard from '@/components/blog/BlogCard.astro';
+import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import NewsletterForm from '@/components/patterns/NewsletterForm.astro';
+import CTA from '@/components/ui/marketing/CTA/CTA.astro';
+import { Hero } from '@/components/hero';
+import { useTranslations, type Locale } from '@/i18n';
+import { getPosts, getPostUrl, getPostReadingTime } from '@/lib/blog';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+
+const posts = await getPosts(locale);
+
+// Featured posts get their own section; if every post is featured, list them all below too.
+const featuredPosts = posts.filter((post) => post.data.featured);
+const nonFeaturedPosts = posts.filter((post) => !post.data.featured);
+const regularPosts = nonFeaturedPosts.length > 0 ? nonFeaturedPosts : posts;
+---
+
+<BaseLayout title={t('blog.title')} description={t('blog.description')}>
+  <Header slot="header" position="fixed" size="lg" showActiveState showCta />
+
+  <Hero layout="split" size="sm" class="bg-surface-secondary border-b border-border">
+    <Badge slot="badge">
+      <Icon name="book" size="sm" class="text-brand-500" />
+      {t('blog.allPosts')}
+    </Badge>
+
+    <h1 slot="title">{t('blog.title')}</h1>
+
+    <p slot="description">{t('blog.description')}</p>
+  </Hero>
+
+  {
+    featuredPosts.length > 0 && (
+      <section class="bg-background py-16">
+        <div class="mx-auto max-w-6xl px-6">
+          <h2 class="font-display text-foreground mb-8 flex items-center gap-2 text-2xl font-bold">
+            <svg class="text-brand-500 h-6 w-6" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+            </svg>
+            {t('blog.featured')}
+          </h2>
+
+          <div class="grid gap-6 md:grid-cols-2">
+            {featuredPosts.map((post) => (
+              <BlogCard
+                title={post.data.title}
+                description={post.data.description}
+                readingTime={getPostReadingTime(post)}
+                href={getPostUrl(post)}
+                publishedAt={post.data.publishedAt}
+                tags={post.data.tags}
+                author={post.data.author}
+                image={post.data.image}
+                featured={true}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="bg-background-secondary py-16">
+    <div class="mx-auto max-w-6xl px-6">
+      {
+        featuredPosts.length > 0 && nonFeaturedPosts.length > 0 && (
+          <h2 class="font-display text-foreground mb-8 text-2xl font-bold">{t('blog.allPosts')}</h2>
+        )
+      }
+
+      {
+        regularPosts.length > 0 ? (
+          <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {regularPosts.map((post) => (
+              <BlogCard
+                title={post.data.title}
+                description={post.data.description}
+                readingTime={getPostReadingTime(post)}
+                href={getPostUrl(post)}
+                publishedAt={post.data.publishedAt}
+                tags={post.data.tags}
+                author={post.data.author}
+                image={post.data.image}
+              />
+            ))}
+          </div>
+        ) : (
+          <div class="py-16 text-center">
+            <div class="bg-background mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+              <Icon name="file-text" size="lg" class="text-foreground-muted" />
+            </div>
+            <p class="text-foreground text-lg font-medium">{t('blog.noPosts')}</p>
+            <p class="text-foreground-muted mt-1">{t('blog.noPostsHint')}</p>
+          </div>
+        )
+      }
+    </div>
+  </section>
+
+  <CTA variant="invert" size="sm" maxWidth="lg">
+    <h2 slot="heading">{t('blog.subscribeTitle')}</h2>
+    <p slot="description">{t('blog.subscribeText')}</p>
+
+    <NewsletterForm class="mx-auto max-w-md" />
+  </CTA>
+
+  <Footer slot="footer" layout="simple" background="secondary" showCopyright={false} />
+</BaseLayout>

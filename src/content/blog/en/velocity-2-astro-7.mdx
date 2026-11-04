@@ -1,0 +1,228 @@
+---
+title: "Velocity 2.0: Rebuilt for Astro 7"
+description: "Astro 7, a 2.2× faster build, working forms with Astro Actions, strict CSP by default, site search, the Fonts API, and a real test suite. Here's what changed and why."
+publishedAt: 2026-11-03
+author: "Southwell Media"
+tags: ["astro", "release", "astro-7", "performance", "security"]
+featured: true
+locale: en
+---
+
+Velocity 2.0 moves the starter to **Astro 7.4**. The upgrade also gave us a reason to audit everything Velocity ships, and we found more to fix than a version bump. This post covers what changed in Astro, what we changed in Velocity, and the bugs we found along the way.
+
+## The headline numbers
+
+| | Velocity 1.0 (Astro 6) | Velocity 2.0 (Astro 7) |
+|---|---|---|
+| Production build | 13.9 s | **6.3 s** |
+| Baseline JS per page (gzip) | 5.7 KB | **1.2 KB** |
+| Content Security Policy | off | **on, hash-based** |
+| Working form backend | no | **yes (Astro Actions)** |
+| Site search | no | **yes (Pagefind)** |
+| Automated tests | 0 | **64 unit + 45 E2E**, across 8 project shapes |
+
+Build times are the median of three clean builds of the same site on the same machine and Node 24. The 2.0 build also does more work: a server adapter bundle and a search index.
+
+## What Astro 7 changed
+
+Astro 7 is a performance release, and most of the speedup came without changing any Velocity code.
+
+- **A Rust compiler** replaces the Go one. It's faster and stricter: unclosed tags now fail the build, and invalid nesting (a `<div>` inside a `<p>`) is no longer silently "fixed". All 58 Velocity components compiled cleanly on the first try.
+- **Vite 8 with Rolldown** handles bundling.
+- **Sätteri** is the new default Markdown processor. We don't use remark or rehype plugins, so nothing changed for us, and Shiki highlighting still works.
+- **Route caching is stable**, with CDN providers for Vercel, Netlify and Cloudflare.
+- **`compressHTML` now defaults to `'jsx'`**, which removes whitespace between inline elements. This was the one default we kept off (more below).
+
+## What we changed in Velocity
+
+### Forms that actually submit: Astro Actions
+
+The 1.0 contact and newsletter forms posted to `/api/contact` and `/api/newsletter`. Velocity had no server adapter and its output was fully static, so **those routes were never deployed**. Astro skipped them at build time with a warning. The blog's subscribe form was worse: it had no handler at all.
+
+In 2.0 both forms run on [Astro Actions](https://docs.astro.build/en/guides/actions/), which give us typed inputs, Zod validation on the server, and structured field errors on the client:
+
+```ts
+// src/actions/index.ts
+export const server = {
+  contact: defineAction({
+    accept: 'form',
+    input: contactSchema,
+    handler: async ({ honeypot, ...data }) => {
+      if (honeypot) return { success: true }; // silently drop bots
+      // send the email, call your CRM…
+      return { success: true };
+    },
+  }),
+};
+```
+
+```ts
+// in the component's <script>
+const { error } = await actions.contact(new FormData(form));
+if (isInputError(error)) showErrors(error.fields);
+```
+
+We also fixed a small leak. In 1.0 the honeypot field was validated with `z.string().max(0)`, so a bot that filled it got back a 400 telling it exactly which field gave it away. Now the action returns a normal success response and discards the submission.
+
+### Static pages, with an auto-detected adapter
+
+Actions need a server, but we didn't want to give up static pages. Every page is still prerendered, and only the action endpoints run on demand. A small local integration picks the adapter for whichever host is building:
+
+```js
+// astro.config.mjs
+const target = await resolveDeployTarget(); // VERCEL → vercel, NETLIFY → netlify, …
+
+export default defineConfig({
+  adapter: target.adapter,
+  cache: { provider: target.cacheProvider ?? memoryCache() },
+});
+```
+
+Vercel and Netlify also get their CDN cache providers, so `Astro.cache.set({ maxAge, swr, tags })` on any on-demand route writes real CDN headers and supports tag invalidation. Anywhere else, Velocity uses the Node adapter with an in-memory cache. You can force a target with `DEPLOY_TARGET`. Cloudflare is opt-in (`pnpm add @astrojs/cloudflare`), because its adapter pulls in the `workerd` runtime and we didn't want every user to download it.
+
+### Dropping the client router
+
+Velocity 1.0 shipped `<ClientRouter />` on every page. When we checked, nothing used what it offers: no `transition:persist`, no `transition:name`, no `navigate()`. We were shipping 5.7 KB of router to every visitor for a cross-fade. Astro's CSP also can't run alongside it.
+
+2.0 uses the browser's own cross-document view transitions plus Astro's prefetch:
+
+```css
+@view-transition {
+  navigation: auto;
+}
+```
+
+```js
+prefetch: { prefetchAll: true, defaultStrategy: 'hover' },
+```
+
+Supporting browsers still cross-fade between pages, links still prefetch on hover, and baseline JavaScript drops to the 1.2 KB prefetch script. Every component still re-initialises on `astro:after-swap`, so a project that needs the router can add it back.
+
+### Strict CSP, on by default
+
+With the router gone, we turned on Astro's [hash-based Content Security Policy](https://docs.astro.build/en/reference/configuration-reference/#securitycsp). Every page now gets a policy where `script-src` is `'self'` plus a SHA-256 hash for each inline script, with no `'unsafe-inline'`.
+
+Shiki was the one remaining issue: it colours code (like the snippets in this post) with `style="…"` attributes. Astro 7.1 added directive scoping, so we can allow inline style **attributes** while `<style>` elements stay hash-locked:
+
+```js
+security: {
+  csp: {
+    scriptDirective: { resources: ["'self'"] },
+    styleDirective: {
+      resources: [
+        { resource: "'self'", kind: 'element' },
+        { resource: "'unsafe-inline'", kind: 'attribute' }, // Shiki only
+      ],
+    },
+  },
+},
+```
+
+Third-party scripts are declared by the component that loads them, on the pages where they render. The analytics component adds the Google hosts only when GA or GTM is configured, and the search page adds `'wasm-unsafe-eval'` for Pagefind's WebAssembly engine:
+
+```astro
+---
+// src/views/SearchView.astro
+Astro.csp?.insertScriptResource("'wasm-unsafe-eval'");
+---
+```
+
+Every other page keeps a `'self'`-only `script-src`. The E2E suite fails on any CSP violation, which caught both of these during the upgrade.
+
+### Site search with Pagefind
+
+`/search` is new. After each production build, [Pagefind](https://pagefind.app) indexes the prerendered HTML and writes a static index next to the site. There's no search server or API key, and the browser only downloads the index chunks that match the query. Only content inside `data-pagefind-body` is indexed (blog posts and content pages), so navigation and the component showcase stay out of the results.
+
+### The Fonts API
+
+Fonts used to arrive as `@fontsource` CSS imports. They now go through Astro's [Fonts API](https://docs.astro.build/en/guides/fonts/), still self-hosted from the same packages with no network access at build time. In return we get a preload for the body font and **metric-matched fallback fonts**: Astro generates an Arial fallback with the same metrics as Manrope, so text doesn't shift when the web font loads.
+
+### Internationalization is now part of the core
+
+In 1.0, multi-language support was an overlay: the CLI copied about 40 of its own versions of Velocity's files over a new project. Those copies drifted. By the time we looked, the i18n `Header` was 784 lines out of date, the i18n `Analytics` had no consent mode, and **`create-velocity-astro --i18n` produced a project that didn't build**, because its `astro.config.mjs` predated the `env` schema.
+
+In 2.0 every component is locale-aware, and a site is simply single-language by default. Adding languages means listing them in one file:
+
+```js
+// src/i18n/locales.mjs
+export const defaultLocale = 'en';
+export const locales = ['en', 'es', 'fr'];
+```
+
+Then add site copy in `src/i18n/translations/<locale>.ts`. Those files are typed against English, so a missing key is a type error. Everything else is automatic:
+
+- `/es/…` and `/fr/…` routes, with optional translated slugs (`/es/sobre-nosotros`)
+- A language switcher, built on `<details>` so it needs no JavaScript
+- `hreflang` alternates, including `x-default`, plus a localized sitemap
+- Per-language search
+- Localized social preview images
+- Translated validation messages from the Actions
+
+Built-in UI strings ship in English, Spanish and French in a Velocity-owned file that upgrades can update, while your copy lives in files upgrades never touch. A blog post with the same file name in two locale folders is linked as a translation automatically.
+
+### A CLI that can't drift
+
+The overlay problem wasn't limited to i18n, so we fixed it structurally. `create-velocity-astro` 2.0 ships **no template files at all**. Everything a new project can contain lives in this repo: the minimal starter, the i18n locales and the demo. Velocity's manifest declares how they combine, and the CLI just applies that recipe.
+
+Velocity's CI now scaffolds all eight project shapes the CLI can produce: demo or minimal, with or without i18n, with all components or none. It type-checks, builds and runs the browser tests in each one, so a change that breaks a project shape fails in our pull request instead of in your terminal.
+
+### Smaller things that add up
+
+- **`deferRender: true`** on the blog loader (Astro 7.1) renders Markdown when a page needs it, not during content sync, so memory stays flat as the blog grows.
+- **`session: false`**, because Velocity doesn't use sessions and adapters no longer need to provision storage for them.
+- **AGENTS.md** gives AI coding agents the house rules, and `pnpm dev:bg` uses Astro 7's background dev server with `status`, `logs` and `stop` subcommands.
+
+## Bugs we found along the way
+
+Adding tests surfaced several issues that had been in 1.0 all along:
+
+- **Lint had been failing.** pnpm's strict dependency layout hid `@typescript-eslint/parser` from `eslint-plugin-astro`, so TypeScript inside every `<script>` block was parsed as plain JavaScript. That produced 11 false errors, and CI's lint step failed on `main`.
+- **Two `<main>` landmarks.** `PageLayout` nested a `<main>` inside the one from `BaseLayout`. Browsers accept it, but the HTML is invalid and screen-reader landmarks were wrong. The Rust compiler can't catch this because it parses fine; the new "single `<main>`" test does.
+- **Duplicated forms.** The contact page carried its own copy of the contact form, and the blog's subscribe form wasn't connected to anything. Both now use the shared `ContactForm` and `NewsletterForm` components.
+- **Unstyled blog posts.** BlogLayout was full of `prose-*` classes, but `@tailwindcss/typography` was never installed, so every post rendered as plain text. It's installed now, and inline-code styles no longer leak into highlighted code blocks.
+- **Off-by-one dates and fake reading times.** Dates are now formatted in UTC, so a post dated 2026-11-03 no longer shows as November 2 in US time zones. Reading time used to be estimated from the *description*; it's now computed from the post body.
+- **Broken social previews for blog posts.** OG images were generated at `/og/blog/en/<slug>.png`, but pages pointed at `/og/blog/<slug>.png`, so every shared blog link had a missing image. A test now fetches every page's `og:image`.
+- **Partial component installs deleted files that were still in use.** The component registry was missing the React versions of 15 components, plus `ConsentBanner` (which every page renders) and `GoogleMap`, and five components imported `Icon` without declaring it. Choosing a subset of components could therefore break the site. A registry check now runs in CI.
+- **Reduced motion.** Entrance animations ignored `prefers-reduced-motion`. A global rule now finishes every animation immediately for users who ask for less motion.
+- **Contrast.** The "Featured" badge on blog cards failed WCAG AA, and it's now one shade darker. Writing this post found another one: the `github-dark` code theme renders comments at 3.0:1. Velocity now uses `github-dark-default`, which looks the same and passes.
+
+## The one default we kept
+
+Astro 7's `compressHTML: 'jsx'` produces smaller HTML, but it changes how inline whitespace renders. We diffed the visible text of every page between 1.0 and 2.0 and found 133 run-together words, such as tag lists rendering as "astrotutorialgetting-started". Velocity's components are written with normal HTML whitespace, so 2.0 sets `compressHTML: true`. With that setting, the rendered text matches 1.0.
+
+## Tests
+
+`pnpm test` runs Vitest against the form schemas, deploy-target detection and the utility and JSON-LD helpers. `pnpm test:e2e` runs Playwright against the real production server:
+
+- Every page returns 200 with no console errors or CSP violations.
+- Every page has exactly one `<main>` and passes axe WCAG 2 A/AA with no serious or critical issues.
+- Both forms submit through their Actions, including server-side validation errors.
+- Search returns the right posts and leaves out the component showcase.
+- Fonts are self-hosted and preloaded, and links prefetch on hover.
+- Every page's `og:image` and `hreflang` link resolves.
+- In multi-language builds, each locale renders in its own language, and nav links stay within that locale.
+
+The suite reads the page list from your routes and content, so it keeps working as you add pages, and it runs in every project the CLI creates. CI runs all of this on every push, and the scaffold matrix runs it in all eight project shapes.
+
+## Upgrading
+
+Update to **Node 22.23.4 or later** (Node 24 LTS is recommended), commit your work, then run the upgrade with `create-velocity-astro` 2.0 or later:
+
+```bash
+pnpm create velocity-astro@latest upgrade --dry-run
+pnpm create velocity-astro@latest upgrade
+pnpm install
+```
+
+After that, your project installs and builds on Velocity 2. We test this on real projects created with the 1.x CLI.
+
+Because this is a breaking release, the upgrade does more than usual. It replaces `astro.config.mjs`, `nav.config.ts`, your blog and `[lang]` pages, and the components in `src/components/{blog,patterns,landing}/`. Anything that differed is saved in `.velocity-backup/` first, and your other pages, content and files stay as they are.
+
+Then bring your own changes across:
+
+1. **Restore your customizations** from `.velocity-backup/`, such as nav links and config integrations.
+2. **Fix your contact form.** The 1.x contact page posts to `/api/contact`, which never ran on static builds. Replace its form with `<ContactForm />`, and move any custom logic into `src/actions/index.ts`.
+3. **Check custom scripts.** Anything that only listens for `astro:page-load` should also call its init function directly.
+4. **Projects created with the 1.x `--i18n` flag:** move your translations to `src/i18n/translations/<locale>.ts`.
+
+The [upgrade guide](https://docs.deployvelocity.com/upgrade-guides/v1-to-v2/) has every step.

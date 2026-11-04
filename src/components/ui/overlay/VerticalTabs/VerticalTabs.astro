@@ -725,7 +725,7 @@ const defaultTab = tabs.find(t => t.id === defaultValue);
         trigger.addEventListener('keydown', (e) => {
           const triggersArray = Array.from(triggers);
           const currentIndex = triggersArray.indexOf(trigger);
-          let newIndex = currentIndex;
+          let newIndex: number;
 
           switch (e.key) {
             case 'ArrowUp':

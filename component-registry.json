@@ -57,8 +57,13 @@
     "cn": {
       "name": "cn utility",
       "description": "Tailwind CSS class merging utility",
-      "files": ["src/lib/cn.ts"],
-      "npm": ["clsx", "tailwind-merge"]
+      "files": [
+        "src/lib/cn.ts"
+      ],
+      "npm": [
+        "clsx",
+        "tailwind-merge"
+      ]
     }
   },
   "components": {
@@ -73,7 +78,9 @@
         "src/components/ui/form/Button/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -89,8 +96,12 @@
         "src/components/ui/form/Input/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": []
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     },
@@ -105,7 +116,9 @@
         "src/components/ui/form/Textarea/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -121,7 +134,9 @@
         "src/components/ui/form/Select/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -137,7 +152,9 @@
         "src/components/ui/form/Checkbox/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -153,7 +170,9 @@
         "src/components/ui/form/Radio/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -169,7 +188,9 @@
         "src/components/ui/form/Switch/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -185,7 +206,9 @@
         "src/components/ui/data-display/Card/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -197,10 +220,13 @@
       "files": [
         "src/components/ui/data-display/Badge/Badge.astro",
         "src/components/ui/data-display/Badge/badge.variants.ts",
-        "src/components/ui/data-display/Badge/index.ts"
+        "src/components/ui/data-display/Badge/index.ts",
+        "src/components/ui/data-display/Badge/Badge.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -212,10 +238,13 @@
       "files": [
         "src/components/ui/data-display/Avatar/Avatar.astro",
         "src/components/ui/data-display/Avatar/avatar.variants.ts",
-        "src/components/ui/data-display/Avatar/index.ts"
+        "src/components/ui/data-display/Avatar/index.ts",
+        "src/components/ui/data-display/Avatar/Avatar.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -226,11 +255,16 @@
       "subcategory": "data-display",
       "files": [
         "src/components/ui/data-display/AvatarGroup/AvatarGroup.astro",
-        "src/components/ui/data-display/AvatarGroup/index.ts"
+        "src/components/ui/data-display/AvatarGroup/index.ts",
+        "src/components/ui/data-display/AvatarGroup/AvatarGroup.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["avatar"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "avatar"
+        ]
       },
       "premium": false
     },
@@ -240,10 +274,13 @@
       "subcategory": "data-display",
       "files": [
         "src/components/ui/data-display/Table/Table.astro",
-        "src/components/ui/data-display/Table/index.ts"
+        "src/components/ui/data-display/Table/index.ts",
+        "src/components/ui/data-display/Table/Table.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -255,11 +292,16 @@
       "files": [
         "src/components/ui/data-display/Pagination/Pagination.astro",
         "src/components/ui/data-display/Pagination/pagination.variants.ts",
-        "src/components/ui/data-display/Pagination/index.ts"
+        "src/components/ui/data-display/Pagination/index.ts",
+        "src/components/ui/data-display/Pagination/Pagination.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["icon"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     },
@@ -270,10 +312,13 @@
       "files": [
         "src/components/ui/data-display/Progress/Progress.astro",
         "src/components/ui/data-display/Progress/progress.variants.ts",
-        "src/components/ui/data-display/Progress/index.ts"
+        "src/components/ui/data-display/Progress/index.ts",
+        "src/components/ui/data-display/Progress/Progress.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -285,10 +330,13 @@
       "files": [
         "src/components/ui/data-display/Skeleton/Skeleton.astro",
         "src/components/ui/data-display/Skeleton/skeleton.variants.ts",
-        "src/components/ui/data-display/Skeleton/index.ts"
+        "src/components/ui/data-display/Skeleton/index.ts",
+        "src/components/ui/data-display/Skeleton/Skeleton.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -300,11 +348,16 @@
       "files": [
         "src/components/ui/feedback/Alert/Alert.astro",
         "src/components/ui/feedback/Alert/alert.variants.ts",
-        "src/components/ui/feedback/Alert/index.ts"
+        "src/components/ui/feedback/Alert/index.ts",
+        "src/components/ui/feedback/Alert/Alert.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": []
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     },
@@ -320,7 +373,9 @@
         "src/components/ui/feedback/Toast/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -331,10 +386,13 @@
       "subcategory": "feedback",
       "files": [
         "src/components/ui/feedback/Tooltip/Tooltip.astro",
-        "src/components/ui/feedback/Tooltip/index.ts"
+        "src/components/ui/feedback/Tooltip/index.ts",
+        "src/components/ui/feedback/Tooltip/Tooltip.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -345,11 +403,16 @@
       "subcategory": "overlay",
       "files": [
         "src/components/ui/overlay/Dialog/Dialog.astro",
-        "src/components/ui/overlay/Dialog/index.ts"
+        "src/components/ui/overlay/Dialog/index.ts",
+        "src/components/ui/overlay/Dialog/Dialog.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": []
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     },
@@ -359,11 +422,16 @@
       "subcategory": "overlay",
       "files": [
         "src/components/ui/overlay/Dropdown/Dropdown.astro",
-        "src/components/ui/overlay/Dropdown/index.ts"
+        "src/components/ui/overlay/Dropdown/index.ts",
+        "src/components/ui/overlay/Dropdown/Dropdown.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": []
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     },
@@ -373,10 +441,13 @@
       "subcategory": "overlay",
       "files": [
         "src/components/ui/overlay/Tabs/Tabs.astro",
-        "src/components/ui/overlay/Tabs/index.ts"
+        "src/components/ui/overlay/Tabs/index.ts",
+        "src/components/ui/overlay/Tabs/Tabs.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -391,8 +462,12 @@
         "src/components/ui/overlay/VerticalTabs/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": []
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     },
@@ -403,11 +478,16 @@
       "files": [
         "src/components/ui/overlay/Accordion/Accordion.astro",
         "src/components/ui/overlay/Accordion/accordion.variants.ts",
-        "src/components/ui/overlay/Accordion/index.ts"
+        "src/components/ui/overlay/Accordion/index.ts",
+        "src/components/ui/overlay/Accordion/Accordion.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["icon"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     },
@@ -418,10 +498,13 @@
       "files": [
         "src/components/ui/layout/Separator/Separator.astro",
         "src/components/ui/layout/Separator/separator.variants.ts",
-        "src/components/ui/layout/Separator/index.ts"
+        "src/components/ui/layout/Separator/index.ts",
+        "src/components/ui/layout/Separator/Separator.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -432,10 +515,13 @@
       "subcategory": "primitives",
       "files": [
         "src/components/ui/primitives/Icon/Icon.astro",
-        "src/components/ui/primitives/Icon/index.ts"
+        "src/components/ui/primitives/Icon/index.ts",
+        "src/components/ui/primitives/Icon/Icon.tsx"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -449,7 +535,9 @@
         "src/components/ui/content/CodeBlock/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -463,7 +551,9 @@
         "src/components/ui/marketing/Logo/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -477,8 +567,12 @@
         "src/components/ui/marketing/CTA/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["logo"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "logo"
+        ]
       },
       "premium": false
     },
@@ -491,8 +585,12 @@
         "src/components/ui/marketing/NpmCopyButton/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["icon"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
       },
       "premium": false
     },
@@ -505,7 +603,9 @@
         "src/components/ui/marketing/SocialProof/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -519,7 +619,9 @@
         "src/components/ui/marketing/TerminalDemo/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -527,29 +629,52 @@
     "contact-form": {
       "name": "ContactForm",
       "category": "patterns",
-      "files": ["src/components/patterns/ContactForm.astro"],
+      "files": [
+        "src/components/patterns/ContactForm.astro",
+        "src/actions/index.ts",
+        "src/lib/forms.ts"
+      ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["input", "textarea", "button"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "input",
+          "textarea",
+          "button"
+        ]
       },
       "premium": false
     },
     "newsletter-form": {
       "name": "NewsletterForm",
       "category": "patterns",
-      "files": ["src/components/patterns/NewsletterForm.astro"],
+      "files": [
+        "src/components/patterns/NewsletterForm.astro",
+        "src/actions/index.ts",
+        "src/lib/forms.ts"
+      ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["input", "button"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "input",
+          "button"
+        ]
       },
       "premium": false
     },
     "form-field": {
       "name": "FormField",
       "category": "patterns",
-      "files": ["src/components/patterns/FormField.astro"],
+      "files": [
+        "src/components/patterns/FormField.astro"
+      ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -557,40 +682,67 @@
     "search-input": {
       "name": "SearchInput",
       "category": "patterns",
-      "files": ["src/components/patterns/SearchInput.astro"],
+      "files": [
+        "src/components/patterns/SearchInput.astro"
+      ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["input"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "input"
+        ]
       },
       "premium": false
     },
     "password-input": {
       "name": "PasswordInput",
       "category": "patterns",
-      "files": ["src/components/patterns/PasswordInput.astro"],
+      "files": [
+        "src/components/patterns/PasswordInput.astro"
+      ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["input", "icon"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "input",
+          "icon"
+        ]
       },
       "premium": false
     },
     "stat-card": {
       "name": "StatCard",
       "category": "patterns",
-      "files": ["src/components/patterns/StatCard.astro"],
+      "files": [
+        "src/components/patterns/StatCard.astro"
+      ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["card", "icon"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "card",
+          "icon"
+        ]
       },
       "premium": false
     },
     "empty-state": {
       "name": "EmptyState",
       "category": "patterns",
-      "files": ["src/components/patterns/EmptyState.astro"],
+      "files": [
+        "src/components/patterns/EmptyState.astro"
+      ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["icon", "button"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon",
+          "button"
+        ]
       },
       "premium": false
     },
@@ -603,7 +755,9 @@
         "src/components/hero/index.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
+        "utilities": [
+          "cn"
+        ],
         "components": []
       },
       "premium": false
@@ -616,8 +770,14 @@
         "src/components/layout/header.variants.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["button", "icon", "logo"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "button",
+          "icon",
+          "logo"
+        ]
       },
       "premium": false
     },
@@ -629,8 +789,48 @@
         "src/components/layout/footer.variants.ts"
       ],
       "dependencies": {
-        "utilities": ["cn"],
-        "components": ["icon", "logo"]
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon",
+          "logo"
+        ]
+      },
+      "premium": false
+    },
+    "consent-banner": {
+      "name": "ConsentBanner",
+      "category": "ui",
+      "subcategory": "overlay",
+      "files": [
+        "src/components/ui/overlay/ConsentBanner/ConsentBanner.astro",
+        "src/components/ui/overlay/ConsentBanner/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [],
+        "components": [
+          "dialog",
+          "button",
+          "switch"
+        ]
+      },
+      "premium": false
+    },
+    "google-map": {
+      "name": "GoogleMap",
+      "category": "ui",
+      "subcategory": "data-display",
+      "files": [
+        "src/components/ui/data-display/GoogleMap/GoogleMap.astro",
+        "src/components/ui/data-display/GoogleMap/googleMap.variants.ts",
+        "src/components/ui/data-display/GoogleMap/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": []
       },
       "premium": false
     }

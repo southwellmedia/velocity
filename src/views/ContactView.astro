@@ -1,0 +1,139 @@
+---
+/**
+ * Contact view.
+ * Rendered by src/pages/contact.astro (default locale) and
+ * src/pages/[lang]/[...contact].astro (other locales).
+ */
+import PageLayout from '@/layouts/PageLayout.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import ContactForm from '@/components/patterns/ContactForm.astro';
+import Card from '@/components/ui/data-display/Card/Card.astro';
+import { Hero } from '@/components/hero';
+import GoogleMap from '@/components/ui/data-display/GoogleMap/GoogleMap.astro';
+import siteConfig from '@/config/site.config';
+import { useTranslations, type Locale } from '@/i18n';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<PageLayout title={t('meta.contact.title')} description={t('meta.contact.description')}>
+  <Hero layout="centered" size="sm" showGrid>
+    <Badge slot="badge" pill pulse>{t('contact.hero.badge')}</Badge>
+
+    <h1 slot="title">
+      {t('contact.hero.title')} <span class="text-brand-500">{t('contact.hero.titleHighlight')}</span>
+    </h1>
+
+    <p slot="description">
+      {t('contact.hero.description')}
+    </p>
+  </Hero>
+
+  <!-- Contact Section -->
+  <section class="py-20 bg-surface-secondary">
+    <div class="mx-auto max-w-6xl px-6">
+      <div class="grid gap-12 lg:grid-cols-2">
+        <!-- Form -->
+        <Card padding="lg">
+          <h2 class="text-2xl font-display font-bold text-foreground mb-6">{t('contact.form.title')}</h2>
+
+          <ContactForm
+            submitLabel={t('contact.form.submit')}
+            successMessage={t('contact.form.success')}
+            labels={{ name: t('contact.form.nameLabel'), email: t('contact.form.emailLabel') }}
+            placeholders={{
+              name: t('contact.form.namePlaceholder'),
+              email: t('contact.form.emailPlaceholder'),
+              subject: t('contact.form.subjectPlaceholder'),
+              message: t('contact.form.messagePlaceholder'),
+            }}
+          >
+            <Icon slot="icon" name="mail" size="sm" />
+          </ContactForm>
+        </Card>
+
+        <!-- Right column: Map + Contact Info -->
+        <div class="flex flex-col gap-8">
+          {/* Map */}
+          <GoogleMap
+            size="sm"
+            ariaLabel={t('contact.map.ariaLabel', { name: siteConfig.name })}
+            placeholderTitle={t('contact.map.placeholderTitle')}
+          />
+
+          {/* Contact Info */}
+          <div>
+            <h2 class="font-display text-2xl font-bold text-foreground mb-6">
+              {t('contact.other.title')}
+            </h2>
+
+            <div class="space-y-4">
+              <!-- Email -->
+              <a href={`mailto:${siteConfig.email}`} class="block">
+                <Card hover padding="sm">
+                  <div class="flex items-center gap-4">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-500/5 flex items-center justify-center text-brand-500 shrink-0">
+                      <Icon name="mail" size="md" />
+                    </div>
+                    <div>
+                      <p class="text-sm text-foreground-muted">{t('contact.other.email')}</p>
+                      <p class="font-medium text-foreground">{siteConfig.email}</p>
+                    </div>
+                  </div>
+                </Card>
+              </a>
+
+              <!-- GitHub -->
+              <a
+                href="https://github.com/southwellmedia/velocity"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block"
+              >
+                <Card hover padding="sm">
+                  <div class="flex items-center gap-4">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-500/5 flex items-center justify-center text-brand-500 shrink-0">
+                      <Icon name="github" size="md" />
+                    </div>
+                    <div>
+                      <p class="text-sm text-foreground-muted">{t('contact.other.github')}</p>
+                      <p class="font-medium text-foreground">velocity</p>
+                    </div>
+                  </div>
+                </Card>
+              </a>
+
+              <!-- Twitter -->
+              {siteConfig.twitter && (
+                <a
+                  href={`https://twitter.com/${siteConfig.twitter.site.replace('@', '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block"
+                >
+                  <Card hover padding="sm">
+                    <div class="flex items-center gap-4">
+                      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-500/5 flex items-center justify-center text-brand-500 shrink-0">
+                        <Icon name="twitter" size="md" />
+                      </div>
+                      <div>
+                        <p class="text-sm text-foreground-muted">{t('contact.other.twitter')}</p>
+                        <p class="font-medium text-foreground">{siteConfig.twitter.site}</p>
+                      </div>
+                    </div>
+                  </Card>
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</PageLayout>

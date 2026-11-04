@@ -18,7 +18,8 @@
  */
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
-import { getNavItems, type NavItem as NavConfigItem } from '@/config/nav.config';
+import { getNavItems, footerConfig, type NavItem as NavConfigItem } from '@/config/nav.config';
+import { getLocale, localizePath, localizeRoute, useTranslations } from '@/i18n';
 import { footerVariants, footerColumnGridVariants } from './footer.variants';
 import Logo from '@/components/ui/marketing/Logo/Logo.astro';
 import Icon from '@/components/ui/primitives/Icon/Icon.astro';
@@ -63,7 +64,7 @@ interface Props extends HTMLAttributes<'footer'> {
   showSocial?: boolean;
   /** Show copyright */
   showCopyright?: boolean;
-  /** Custom copyright text (supports {year} and {siteName} placeholders) */
+  /** Custom copyright text (supports {year} and {siteName} placeholders). Defaults to the translated footer.rights string. */
   copyright?: string;
   /** Legal links (Privacy, Terms, etc.) */
   legalLinks?: LegalLink[];
@@ -82,7 +83,7 @@ const {
   socialLinks = [],
   showSocial = true,
   showCopyright = true,
-  copyright = '© {year} {siteName}. All rights reserved.',
+  copyright,
   legalLinks = [],
   hideLogo = false,
   tagline,
@@ -90,27 +91,24 @@ const {
   ...attrs
 } = Astro.props;
 
-// Get navigation items
-const defaultNav: NavItem[] = getNavItems().map((item: NavConfigItem) => ({
-  label: item.label,
-  href: item.href,
-}));
-const navItems: NavItem[] = nav || defaultNav;
+// Locale-aware labels and links (labels may be translation keys or plain text)
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const homeHref = localizeRoute('home', locale);
 
-// Default external links if none provided via nav
-const defaultExternalLinks: NavItem[] = [
-  { label: 'GitHub', href: 'https://github.com/southwellmedia/velocity', external: true },
-  { label: 'License', href: 'https://github.com/southwellmedia/velocity/blob/main/LICENSE', external: true },
-];
+function toNavItem(item: NavConfigItem): NavItem {
+  const href = item.route ? localizeRoute(item.route, locale) : localizePath(item.href ?? '/', locale);
+  return { label: t(item.label), href, external: item.external };
+}
 
-// Add external links to nav if using default nav
-const allNavItems: NavItem[] = nav ? navItems : [...navItems, ...defaultExternalLinks];
+// Default nav = nav.config items + footerConfig.extraLinks (GitHub, License, …)
+const allNavItems: NavItem[] = nav ?? [...getNavItems(), ...footerConfig.extraLinks].map(toNavItem);
 
 // Process copyright text
 const currentYear = new Date().getFullYear();
 const processedCopyright = copyright
-  .replace('{year}', String(currentYear))
-  .replace('{siteName}', siteConfig.name);
+  ? copyright.replace('{year}', String(currentYear)).replace('{siteName}', siteConfig.name)
+  : t('footer.rights', { year: currentYear, name: siteConfig.name });
 
 // Check slots
 const hasLogoSlot = Astro.slots.has('logo');
@@ -145,7 +143,7 @@ function getSocialIcon(platform: string): string {
             {hasLogoSlot ? (
               <slot name="logo" />
             ) : (
-              <a href="/" class="flex items-center gap-2">
+              <a href={homeHref} class="flex items-center gap-2">
                 <Logo size="sm" />
                 <span class="font-display text-lg font-bold text-brand-500">
                   {siteConfig.name}
@@ -206,7 +204,7 @@ function getSocialIcon(platform: string): string {
               {hasLogoSlot ? (
                 <slot name="logo" />
               ) : (
-                <a href="/" class="flex items-center gap-2">
+                <a href={homeHref} class="flex items-center gap-2">
                   <Logo size="sm" />
                   <span class="font-display text-lg font-bold text-brand-500">
                     {siteConfig.name}
@@ -313,7 +311,7 @@ function getSocialIcon(platform: string): string {
           hasLogoSlot ? (
             <slot name="logo" />
           ) : (
-            <a href="/" class="flex items-center gap-2">
+            <a href={homeHref} class="flex items-center gap-2">
               <Logo size="md" />
               <span class="font-display text-xl font-bold text-brand-500">
                 {siteConfig.name}
