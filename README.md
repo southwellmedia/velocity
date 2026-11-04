@@ -3,13 +3,13 @@
 </p>
 
 <p align="center">
-  <strong>Astro 6 Boilerplate</strong> — A production-ready starter template built on Astro 6 and Tailwind CSS v4.
+  <strong>Astro 7 Boilerplate</strong> — A production-ready starter template built on Astro 7 and Tailwind CSS v4.
 </p>
 
 <p align="center">
-  <a href="https://astro.build"><img src="https://img.shields.io/badge/Astro-6.0-bc52ee?logo=astro&logoColor=white" alt="Astro" /></a>
+  <a href="https://astro.build"><img src="https://img.shields.io/badge/Astro-7.4-bc52ee?logo=astro&logoColor=white" alt="Astro" /></a>
   <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind-4.0-38bdf8?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" /></a>
-  <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.7-3178c6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
+  <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22c55e" alt="License" /></a>
 </p>
 
@@ -23,7 +23,14 @@
 - **Content collections** — type-safe blog, pages, authors, and FAQs with Zod validation
 - **API routes** — contact form and newsletter endpoints with validation
 - **React islands** — optional client-side interactivity where needed
-- **i18n-ready** — locale-aware schemas; full i18n via the [CLI](https://github.com/southwellmedia/create-velocity-astro)
+- **Astro Actions** — type-safe contact and newsletter forms with server-side validation
+- **Deploy anywhere** — adapter auto-detected for Vercel, Netlify, Cloudflare, or Node; pages stay static
+- **Route caching** — Astro 7 cache providers wired to Vercel/Netlify CDNs, in-memory elsewhere
+- **Site search** — Pagefind index built on every production build, no search server
+- **Fonts API** — self-hosted, preloaded fonts with metric-matched fallbacks
+- **Strict CSP by default** — hash-based Content Security Policy, native view transitions (no client router)
+- **Tested** — Vitest unit tests plus Playwright E2E and axe accessibility checks in CI
+- **Built-in i18n** — every component is locale-aware; add languages by listing them in one file (UI strings ship in English, Spanish and French)
 
 ---
 
@@ -34,7 +41,7 @@
 git clone https://github.com/southwellmedia/velocity.git my-project
 cd my-project
 
-# Install (requires Node 22.12+)
+# Install (requires Node 22.23.4+, Node 24 LTS recommended)
 pnpm install
 
 # Configure
@@ -57,20 +64,27 @@ pnpm create velocity-astro my-project
 | Command | Description |
 |---------|-------------|
 | `pnpm dev` | Start dev server |
-| `pnpm build` | Production build |
+| `pnpm dev:bg` | Start dev server in the background (`astro dev status` / `logs` / `stop`) |
+| `pnpm build` | Production build (+ Pagefind search index) |
 | `pnpm preview` | Preview production build |
 | `pnpm check` | Astro type checker |
 | `pnpm lint` | ESLint |
 | `pnpm format` | Prettier |
-| `pnpm test` | Vitest |
-| `pnpm test:e2e` | Playwright E2E |
+| `pnpm test` | Vitest unit tests |
+| `pnpm test:e2e` | Playwright E2E + accessibility (run `pnpm build` first) |
+| `pnpm validate` | Lint, type check, unit tests, build |
 
 ---
 
 ## Project Structure
 
 ```
+integrations/     # deploy-target (adapter detection), pagefind (search index)
+tests/
+  unit/           # Vitest
+  e2e/            # Playwright + axe
 src/
+  actions/        # Astro Actions (contact, newsletter)
   components/
     ui/           # 31 UI components (form, data-display, feedback, overlay, etc.)
     patterns/     # 7 composed patterns (ContactForm, SearchInput, StatCard, etc.)
@@ -81,7 +95,7 @@ src/
   content/        # Blog posts, authors, FAQs
   config/         # Site and navigation config
   styles/         # Global CSS and design tokens
-  pages/          # Routes, API endpoints, OG image generation
+  pages/          # Routes, search, OG image generation
 ```
 
 ---
@@ -100,11 +114,56 @@ View all components at `/components` in development.
 
 ---
 
+## Languages
+
+Velocity is multilingual out of the box and single-language by default.
+
+1. List locales in `src/i18n/locales.mjs`: `export const locales = ['en', 'es', 'fr'];`
+2. Add site copy per locale in `src/i18n/translations/<locale>.ts` (typed against `en.ts`, so missing keys are type errors).
+3. That's it. `/es/…` pages, the language switcher, `hreflang` alternates, a localized sitemap, per-language search and localized OG images are generated automatically. Translated URL slugs are optional (`routes` in `src/config/nav.config.ts`).
+
+Built-in UI strings (navigation, blog, forms, search) live in `src/i18n/ui.ts` for en, es and fr. Override any of them in your translations file. Blog posts go in `src/content/blog/<locale>/`, and a post with the same file name in two locales is linked as a translation. `npm create velocity-astro --i18n` sets up English, Spanish and French for you.
+
+---
+
+## Deployment
+
+Every page is prerendered. A server adapter is still included because Astro Actions (the contact and newsletter forms) run on demand. `integrations/deploy-target.mjs` picks it for you:
+
+| Host | Detected by | Adapter | Route cache provider |
+|------|-------------|---------|----------------------|
+| Vercel | `VERCEL` | `@astrojs/vercel` | Vercel CDN (`cacheVercel`) |
+| Netlify | `NETLIFY` | `@astrojs/netlify` | Netlify CDN (`cacheNetlify`) |
+| Cloudflare | `CF_PAGES` / `WORKERS_CI` | `@astrojs/cloudflare` (`pnpm add` it first) | Cloudflare (`cacheCloudflare`) |
+| Anything else | — | `@astrojs/node` (standalone) | In-memory |
+
+Force a target with `DEPLOY_TARGET=node|vercel|netlify|cloudflare`. With the Node adapter, run the server with `node dist/server/entry.mjs`.
+
+To add caching to an on-demand route, use `Astro.cache.set({ maxAge: 300, swr: 60, tags: ['products'] })` or add a pattern to `routeRules` in `astro.config.mjs`.
+
+---
+
+## Content Security Policy
+
+Velocity ships with Astro's hash-based CSP **enabled** (`security.csp` in `astro.config.mjs`). Every page gets a `<meta http-equiv="content-security-policy">` where:
+
+- `script-src` is `'self'` plus a SHA-256 hash for each inline script. No `'unsafe-inline'`.
+- `style-src-elem` is `'self'` plus hashes. `style-src-attr 'unsafe-inline'` is allowed only so Shiki can colour code blocks through `style=""` attributes (Astro 7.1+ directive scoping). Inline style attributes can't run script. Astro still logs a generic Shiki/CSP warning at build time.
+- Pages declare extra sources they need at render time with `Astro.csp.insertScriptResource()`. `Analytics.astro` adds the Google hosts only when GA/GTM is configured, and `/search` adds `'wasm-unsafe-eval'` for Pagefind.
+
+Some directives (`frame-ancestors`, `report-uri`) are ignored in a `<meta>` CSP. Velocity sends `X-Frame-Options: DENY` from `vercel.json` and `netlify.toml` instead. CSP is not applied in `astro dev`. Test it with `pnpm build && pnpm preview`.
+
+**Third-party scripts:** add their hosts with `Astro.csp.insertScriptResource('https://cdn.example.com')` in the component that loads them, or globally under `security.csp.scriptDirective.resources`.
+
+**Want `<ClientRouter />` back?** Astro's CSP doesn't support it, so set `security.csp: false` before adding it. Velocity's components re-initialise on `astro:after-swap`, so they keep working.
+
+---
+
 ## Contributing
 
 1. Fork the repo
 2. Create a feature branch
-3. Ensure `pnpm lint` and `pnpm check` pass
+3. Ensure `pnpm validate` and `pnpm test:e2e` pass
 4. Open a PR
 
 ---
