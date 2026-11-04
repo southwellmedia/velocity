@@ -1,8 +1,8 @@
 ---
 import type { ImageMetadata } from 'astro';
 import BaseLayout from './BaseLayout.astro';
-import Header from '@/components/layout/Header.astro';
-import Footer from '@/components/layout/Footer.astro';
+import SiteHeader from '@/components/site/SiteHeader.astro';
+import SiteFooter from '@/components/site/SiteFooter.astro';
 import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
 import ArticleHero from '@/components/blog/ArticleHero.astro';
 import ShareButtons from '@/components/blog/ShareButtons.astro';
@@ -68,7 +68,7 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
     tags,
   }}
 >
-  <Header slot="header" position="fixed" size="lg" showActiveState showCta alternates={alternates} />
+  <SiteHeader slot="header" alternates={alternates} />
 
   <!-- Article Hero -->
   <ArticleHero
@@ -136,5 +136,5 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
     )
   }
 
-  <Footer slot="footer" layout="simple" background="secondary" showCopyright={false} />
+  <SiteFooter slot="footer" layout="simple" background="secondary" showCopyright={false} />
 </BaseLayout>

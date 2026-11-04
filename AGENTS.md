@@ -22,6 +22,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 
 - `src/components/ui/` — design-system primitives (one folder per component, with `*.variants.ts` using CVA). Catalogued in `component-registry.json`; keep the registry in sync when adding, renaming, or changing a component's file dependencies.
 - `src/components/patterns/` — compositions of primitives (ContactForm, NewsletterForm, SearchInput…).
+- `src/components/site/` — `SiteHeader` and `SiteFooter`, owned by the project. Every layout renders them. Don't render `Header` or `Footer` from a layout directly.
 - `src/views/` — page content. `src/pages/*.astro` are thin wrappers that render a view with a locale; `src/pages/[lang]/` holds the localized wrappers.
 - `src/i18n/` — locales (`locales.mjs`), built-in UI strings (`ui.ts`, Velocity-owned), site copy (`translations/<locale>.ts`, user-owned), helpers (`useTranslations`, `getLocale`, `localizeRoute`, `localizePath`).
 - `src/config/nav.config.ts` — routes (with translated slugs), nav items, header/footer defaults (CTA, actions, extra links).

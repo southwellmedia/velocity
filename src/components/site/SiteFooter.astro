@@ -1,0 +1,12 @@
+---
+/**
+ * Your site's footer. Every layout renders this file, so a change here reaches
+ * every page, and upgrades never overwrite it.
+ */
+import type { ComponentProps } from 'astro/types';
+import Footer from '@/components/layout/Footer.astro';
+
+type Props = ComponentProps<typeof Footer>;
+---
+
+<Footer layout="simple" {...Astro.props} />

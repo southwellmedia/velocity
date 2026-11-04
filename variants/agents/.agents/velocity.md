@@ -24,6 +24,8 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 
 ## Where things live
 
+- `src/components/site/`: this site's `SiteHeader` and `SiteFooter`. Every layout renders them, so change the header or footer here, never in `src/layouts/` or `src/components/layout/`.
+- `src/styles/theme.css`: picks the active theme. Themes load last, so they can override any token. `--brand-hue` recolours the brand scale.
 - `src/views/`: page content. `src/pages/*.astro` are thin wrappers that render a view with a locale, and `src/pages/[lang]/` holds the localized wrappers.
 - `src/components/ui/`: design-system primitives, one folder per component with a `*.variants.ts` file using CVA.
 - `src/components/patterns/`: compositions of primitives, such as `SearchInput`.
@@ -40,7 +42,7 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 
 `create-velocity-astro upgrade` follows `velocity-manifest.json → files`. Check it before making a change you want to keep.
 
-- **Yours, never overwritten:** `src/views/`, `src/pages/`, `src/content/`, `src/assets/`, `src/config/nav.config.ts`, `src/config/site.config.ts`, `src/config/collections.ts`, `src/styles/theme.css`, `src/components/patterns/`, `src/i18n/translations/`, `src/i18n/locales.mjs`, `src/actions/`, `tests/`, `astro.config.mjs`.
+- **Yours, never overwritten:** `src/components/site/`, `src/styles/theme.css`, `src/config/collections.ts`, `src/views/`, `src/pages/`, `src/content/`, `src/assets/`, `src/config/nav.config.ts`, `src/config/site.config.ts`, `src/components/patterns/`, `src/i18n/translations/`, `src/i18n/locales.mjs`, `src/actions/`, `tests/`, `astro.config.mjs`.
 - **Velocity's, overwritten on upgrade:** `src/components/ui/`, `src/components/layout/`, `src/layouts/`, `src/lib/`, `src/styles/tokens/`, `src/styles/themes/`, `src/styles/global.css`, `src/i18n/ui.ts`, `src/content.config.ts`, `integrations/`. Edited files are saved to `.velocity-backup/` first, but the edits must then be reapplied by hand.
 
 New files you add inside Velocity's folders stay in place. Only files Velocity ships are replaced. The same applies to skills: `velocity-*` skills are replaced on upgrade, so add project-specific skills under a different name. If a task requires editing a Velocity-owned file, tell the user that upgrades will replace the edit.
@@ -59,5 +61,6 @@ New files you add inside Velocity's folders stay in place. Only files Velocity s
 - **Motion:** respect `prefers-reduced-motion`. The global rule in `global.css` finishes all animations instantly.
 - **Search:** only content inside `data-pagefind-body` is indexed. `PageLayout` and `BlogLayout` already set it, so mark any new content layout the same way.
 - **Fonts:** register families in `fonts` in `astro.config.mjs`. `BaseLayout` renders every registered family and preloads the first. Don't `@import` font CSS.
-- **Accessibility is tested.** Routes in `src/config/nav.config.ts` are picked up by `tests/e2e/site.ts` automatically, and each must pass axe WCAG 2 A/AA with no serious or critical violations. Only each route's default-locale URL is tested, so check localized URLs separately.
+- **Accessibility is tested.** Routes in `src/config/nav.config.ts` are picked up by `tests/e2e/site.ts` automatically, and each must pass axe WCAG 2 A/AA with no serious or critical violations. Axe runs on each route's default-locale URL, and every route must load in every enabled locale.
+- **Forms:** `ContactForm` and `NewsletterForm` submit to Actions in `src/actions/index.ts` that report success but deliver nothing until you finish their TODOs. Connect a provider before relying on them.
 - **Secrets** go through `astro:env` (`env.schema` in `astro.config.mjs`), never `import.meta.env` directly.

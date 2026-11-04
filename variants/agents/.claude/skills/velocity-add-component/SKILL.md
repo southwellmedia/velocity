@@ -5,6 +5,8 @@ description: Add, restore or customize a UI component in this Velocity site, fol
 
 # Add a component
 
+**First, read the Project notes in `AGENTS.md`.** They describe this site's own conventions and take priority over the examples here.
+
 ## 1. Check whether it already exists
 
 Look up the component in `component-registry.json`, then check whether its `files` are on disk.

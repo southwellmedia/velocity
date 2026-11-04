@@ -11,6 +11,11 @@
  */
 
 const en = {
+  media: {
+    photo: 'Photo',
+    placeholder: 'Image placeholder: {name}',
+  },
+
   a11y: {
     skipToContent: 'Skip to content',
     mainNav: 'Main navigation',
@@ -113,6 +118,11 @@ export type UIStrings = typeof en;
 type DeepPartial<T> = { [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K] };
 
 const es: DeepPartial<UIStrings> = {
+  media: {
+    photo: 'Foto',
+    placeholder: 'Espacio para imagen: {name}',
+  },
+
   a11y: {
     skipToContent: 'Saltar al contenido',
     mainNav: 'Navegación principal',
@@ -211,6 +221,11 @@ const es: DeepPartial<UIStrings> = {
 };
 
 const fr: DeepPartial<UIStrings> = {
+  media: {
+    photo: 'Photo',
+    placeholder: 'Emplacement pour image : {name}',
+  },
+
   a11y: {
     skipToContent: 'Aller au contenu',
     mainNav: 'Navigation principale',

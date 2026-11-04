@@ -1,9 +1,8 @@
 /* =============================================================================
    Velocity Design Tokens - Colors
    =============================================================================
-   This file aggregates primitive color scales and the active theme.
-   To switch themes, edit src/styles/theme.css (upgrades leave that file alone).
+   Primitive color scales. The active theme loads after every token file, so a
+   theme can override any token. To switch themes, edit src/styles/theme.css.
    ============================================================================= */
 
 @import './primitives.css';
-@import '../theme.css';

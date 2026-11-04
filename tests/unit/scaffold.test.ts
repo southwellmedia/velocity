@@ -177,7 +177,7 @@ describe('template extension points', () => {
   it('merges project collections and imports the active theme', () => {
     const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
     expect(read('src/content.config.ts')).toContain('...siteCollections');
-    expect(read('src/styles/tokens/colors.css')).toContain("@import '../theme.css';");
+    expect(read('src/styles/global.css')).toContain("@import './theme.css';");
   });
 });
 

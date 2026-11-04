@@ -1,0 +1,22 @@
+---
+/** Opening band for inner pages. Holds the page's only <h1>. */
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+}
+
+const { eyebrow, title, lead } = Astro.props;
+---
+
+<div class="bg-background-secondary border-border border-b py-14 md:py-20">
+  <div class="mx-auto max-w-6xl px-6">
+    {eyebrow && (
+      <p class="text-primary mb-3 text-xs font-bold tracking-[0.12em] uppercase">{eyebrow}</p>
+    )}
+    <h1 class="font-display text-foreground max-w-3xl text-5xl leading-[1.02] tracking-tight">
+      {title}
+    </h1>
+    {lead && <p class="text-foreground-secondary mt-5 max-w-2xl text-lg">{lead}</p>}
+  </div>
+</div>

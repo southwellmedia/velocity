@@ -2,6 +2,7 @@
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { isExternalUrl } from '@/lib/utils';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
 import { buttonVariants } from './button.variants';
 
 interface Props extends HTMLAttributes<'button'> {
@@ -12,6 +13,10 @@ interface Props extends HTMLAttributes<'button'> {
   href?: string;
   target?: string;
   icon?: boolean;
+  /** Icon name shown before the label */
+  leadingIcon?: string;
+  /** Icon name shown after the label */
+  trailingIcon?: string;
 }
 
 const {
@@ -22,6 +27,8 @@ const {
   href,
   target,
   icon = false,
+  leadingIcon,
+  trailingIcon,
   class: className,
   disabled,
   ...attrs
@@ -72,5 +79,7 @@ const classes = cn(
       </svg>
     ) : null
   }
+  {leadingIcon && <Icon name={leadingIcon} size="sm" />}
   <slot />
+  {trailingIcon && <Icon name={trailingIcon} size="sm" />}
 </Element>

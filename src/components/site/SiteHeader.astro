@@ -1,0 +1,15 @@
+---
+/**
+ * Your site's header. Every layout renders this file, so a change here reaches
+ * every page, and upgrades never overwrite it.
+ *
+ * Set defaults on <Header /> below, or replace it with your own markup. If your
+ * header isn't fixed, or isn't 4rem tall, set --header-offset in your theme.
+ */
+import type { ComponentProps } from 'astro/types';
+import Header from '@/components/layout/Header.astro';
+
+type Props = ComponentProps<typeof Header>;
+---
+
+<Header position="fixed" size="lg" showActiveState showCta {...Astro.props} />

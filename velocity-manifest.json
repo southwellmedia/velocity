@@ -1,5 +1,5 @@
 {
-  "version": "2.1.0",
+  "version": "2.2.0",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -46,6 +46,7 @@
       "src/config/consent.config.ts",
       "src/config/collections.ts",
       "src/styles/theme.css",
+      "src/components/site/",
       "src/pages/",
       "src/content/",
       "src/assets/",
@@ -63,6 +64,7 @@
       "AGENTS.md"
     ],
     "seed": [
+      "src/components/site/",
       "src/config/collections.ts",
       "src/styles/theme.css",
       "src/i18n/locales.mjs",
@@ -500,6 +502,9 @@
         "src/components/hero"
       ],
       "alwaysInclude": [
+        "section",
+        "page-header",
+        "media-slot",
         "badge",
         "button",
         "consent-banner",
