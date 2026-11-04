@@ -61,7 +61,7 @@
     "satori": "^0.63.2",
     "satori-html": "^0.3.2",
     "schema-dts": "^2.1.0",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.5",
     "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {

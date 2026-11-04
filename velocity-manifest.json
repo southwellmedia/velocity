@@ -44,6 +44,8 @@
       "astro.config.mjs",
       "src/config/site.config.ts",
       "src/config/consent.config.ts",
+      "src/config/collections.ts",
+      "src/styles/theme.css",
       "src/pages/",
       "src/content/",
       "src/assets/",
@@ -61,6 +63,8 @@
       "AGENTS.md"
     ],
     "seed": [
+      "src/config/collections.ts",
+      "src/styles/theme.css",
       "src/i18n/locales.mjs",
       "src/i18n/translations/",
       "src/actions/",
@@ -85,6 +89,7 @@
       "tailwind-merge": "^3.7.0",
       "lucide-react": "^1.67.0",
       "satori": "^0.63.2",
+      "sharp": "^0.35.5",
       "schema-dts": "^2.1.0",
       "react": "^19.3.1",
       "react-dom": "^19.3.1",
@@ -431,6 +436,12 @@
       "replace": [
         "AGENTS.md"
       ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.1.0",
+      "title": "Your theme and collections have their own files",
+      "description": "The active theme is now set in src/styles/theme.css, and your own collections go in src/config/collections.ts. Upgrades leave both alone. If you switched themes in src/styles/tokens/colors.css, this upgrade restored the default theme, so set yours in src/styles/theme.css. If you added collections to src/content.config.ts, move them to src/config/collections.ts. Your edited files were saved to .velocity-backup/."
     }
   ],
   "scaffold": {

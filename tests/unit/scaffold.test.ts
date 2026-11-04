@@ -164,3 +164,26 @@ describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (
     expect(locales.includes("'es'")).toBe(options.i18n);
   });
 });
+
+describe('template extension points', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'velocity-manifest.json'), 'utf8'));
+
+  it.each(['src/styles/theme.css', 'src/config/collections.ts'])('upgrades add %s but never replace it', (file) => {
+    expect(fs.existsSync(path.join(process.cwd(), file))).toBe(true);
+    expect(manifest.files.protected).toContain(file);
+    expect(manifest.files.seed).toContain(file);
+  });
+
+  it('merges project collections and imports the active theme', () => {
+    const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
+    expect(read('src/content.config.ts')).toContain('...siteCollections');
+    expect(read('src/styles/tokens/colors.css')).toContain("@import '../theme.css';");
+  });
+});
+
+describe('styles', () => {
+  it('limits Tailwind to src/, so it never scans node_modules', () => {
+    const css = fs.readFileSync(path.join(process.cwd(), 'src/styles/global.css'), 'utf8');
+    expect(css).toContain("@import 'tailwindcss' source('..');");
+  });
+});

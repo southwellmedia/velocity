@@ -6,8 +6,8 @@
 
    Dark mode is the hero. Light mode carries the purple tint gracefully.
 
-   To use: swap the theme import in tokens/colors.css:
-     @import '../themes/midnight.css';
+   To use: swap the theme import in src/styles/theme.css:
+     @import './themes/midnight.css';
    ============================================================================= */
 
 :root {

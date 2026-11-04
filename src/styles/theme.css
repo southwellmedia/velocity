@@ -1,0 +1,9 @@
+/* =============================================================================
+   Active theme
+   =============================================================================
+   Change this import to switch themes. Upgrades never overwrite this file.
+   To use the midnight theme:
+     @import './themes/midnight.css';
+   ============================================================================= */
+
+@import './themes/default.css';
