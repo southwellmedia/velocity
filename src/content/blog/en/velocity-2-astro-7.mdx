@@ -19,7 +19,7 @@ Velocity 2.0 moves the starter to **Astro 7.4**. The upgrade also gave us a reas
 | Content Security Policy | off | **on, hash-based** |
 | Working form backend | no | **yes (Astro Actions)** |
 | Site search | no | **yes (Pagefind)** |
-| Automated tests | 0 | **64 unit + 45 E2E**, across 8 project shapes |
+| Automated tests | 0 | **97 unit + 51 E2E**, across every project shape |
 
 Build times are the median of three clean builds of the same site on the same machine and Node 24. The 2.0 build also does more work: a server adapter bundle and a search index.
 
@@ -164,7 +164,7 @@ Built-in UI strings ship in English, Spanish and French in a Velocity-owned file
 
 The overlay problem wasn't limited to i18n, so we fixed it structurally. `create-velocity-astro` 2.0 ships **no template files at all**. Everything a new project can contain lives in this repo: the minimal starter, the i18n locales and the demo. Velocity's manifest declares how they combine, and the CLI just applies that recipe.
 
-Velocity's CI now scaffolds all eight project shapes the CLI can produce: demo or minimal, with or without i18n, with all components or none. It type-checks, builds and runs the browser tests in each one, so a change that breaks a project shape fails in our pull request instead of in your terminal.
+Velocity's CI now scaffolds all eight project shapes the CLI can produce: demo or minimal, with or without i18n, with all components or none. It type-checks and builds each one, and runs the browser tests in every project with all components, so a change that breaks a project shape fails in our pull request instead of in your terminal.
 
 ### Smaller things that add up
 
@@ -195,14 +195,14 @@ Astro 7's `compressHTML: 'jsx'` produces smaller HTML, but it changes how inline
 `pnpm test` runs Vitest against the form schemas, deploy-target detection and the utility and JSON-LD helpers. `pnpm test:e2e` runs Playwright against the real production server:
 
 - Every page returns 200 with no console errors or CSP violations.
-- Every page has exactly one `<main>` and passes axe WCAG 2 A/AA with no serious or critical issues.
-- Both forms submit through their Actions, including server-side validation errors.
+- Every page has exactly one `<main>` and passes axe WCAG 2 A/AA with no serious or critical issues. The component showcase is the one exception, and gets CSP checks only.
+- Both forms submit through their Actions, including server-side validation errors, and still reach them without JavaScript.
 - Search returns the right posts and leaves out the component showcase.
 - Fonts are self-hosted and preloaded, and links prefetch on hover.
 - Every page's `og:image` and `hreflang` link resolves.
-- In multi-language builds, each locale renders in its own language, and nav links stay within that locale.
+- In multi-language builds, each locale renders in its own language, including its 404 page, and nav links stay within that locale.
 
-The suite reads the page list from your routes and content, so it keeps working as you add pages, and it runs in every project the CLI creates. CI runs all of this on every push, and the scaffold matrix runs it in all eight project shapes.
+The suite reads the page list from your routes and content, so it keeps working as you add pages, and it runs in every project the CLI creates. CI runs all of this on every push, and the scaffold matrix runs it in every project with all components, including one with a language Velocity ships no strings for.
 
 ## Upgrading
 
