@@ -1,7 +1,12 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { completeSocialImages } from './og-images.mjs';
 
 /**
+ * Also completes each page's social share image. That runs here because this step
+ * reads every finished page, and because astro.config.mjs belongs to the project,
+ * so a new integration would never reach projects that upgrade.
+ *
  * Builds a Pagefind search index from the prerendered HTML after every
  * production build. The index is written to `<client output>/pagefind/` and
  * loaded on demand by the site search dialog — no search server required.
@@ -13,6 +18,7 @@ import path from 'node:path';
  */
 export default function pagefind() {
   let clientDir;
+  let site;
 
   return {
     name: 'velocity:pagefind',
@@ -22,17 +28,21 @@ export default function pagefind() {
         // to build.client. Adapters that relocate output (e.g. Vercel) do so
         // after this integration has written the index.
         clientDir = config.adapter ? config.build.client : config.outDir;
+        site = config.site;
       },
       'astro:build:done': async ({ logger }) => {
+        const output = fileURLToPath(clientDir);
+        const social = await completeSocialImages(output, { site });
+        logger.info(`Checked share images on ${social.pages} page(s), drew ${social.generated}`);
+
         const { createIndex, close } = await import('pagefind');
-        const site = fileURLToPath(clientDir);
         const { index, errors } = await createIndex();
         if (!index) throw new Error(`Pagefind failed to start: ${errors.join(', ')}`);
 
-        const { page_count, errors: addErrors } = await index.addDirectory({ path: site });
+        const { page_count, errors: addErrors } = await index.addDirectory({ path: output });
         if (addErrors.length) logger.warn(addErrors.join('\n'));
 
-        await index.writeFiles({ outputPath: path.join(site, 'pagefind') });
+        await index.writeFiles({ outputPath: path.join(output, 'pagefind') });
         await close();
         logger.info(`Indexed ${page_count} page(s) for search`);
       },
