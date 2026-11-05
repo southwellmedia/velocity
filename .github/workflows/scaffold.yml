@@ -47,5 +47,6 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
       - name: Scaffold and check with no lockfile
         run: node scripts/scaffold-matrix.mjs --fresh --only=min-en-all --out=${{ runner.temp }}/velocity-fresh
