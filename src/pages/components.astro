@@ -1,6 +1,9 @@
 ---
 // velocity-allow-hardcoded velocity-single-language: the demo's component showcase is deliberately English-only.
 import LandingLayout from '@/layouts/LandingLayout.astro';
+import registry from '../../component-registry.json';
+
+const componentCount = Object.keys(registry.components).length;
 // Form Components
 import Button from '@/components/ui/form/Button/Button.astro';
 import Input from '@/components/ui/form/Input/Input.astro';
@@ -67,7 +70,7 @@ const categories = [
 
   <!-- Hero Section -->
   <Hero layout="split" size="lg" showGrid showBlob>
-    <Badge slot="badge" pill pulse>50+ Production Components</Badge>
+    <Badge slot="badge" pill pulse>{componentCount} Production Components</Badge>
 
     <h1 slot="title">
       Component <span class="text-brand-500">Library</span>
