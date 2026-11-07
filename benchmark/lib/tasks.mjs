@@ -13,6 +13,7 @@ import path from 'node:path';
 import { BENCH_DIR } from './util.mjs';
 import { newContext, pathKey } from './site.mjs';
 
+/** Read the task prompts (front matter id and title, then the prompt body) from `dir`, in file order. */
 export function loadTasks(dir = path.join(BENCH_DIR, 'tasks')) {
   return fs
     .readdirSync(dir)
@@ -49,11 +50,14 @@ export function renderPrompt(task, vars) {
 
 // ---------------------------------------------------------------- helpers
 
+/** Lower-case text and normalize apostrophes and whitespace, for forgiving text matching. */
 const lc = (s) => (s ?? '').toLowerCase().replace(/[’']/g, "'").replace(/\s+/g, ' ');
 const has = (page, needle) => lc(page?.text).includes(lc(needle));
 const check = (id, ok, detail = '', required = true) => ({ id, ok: Boolean(ok), required, detail });
+/** Whether a crawled page loaded with a 2xx status and HTML. */
 const ok200 = (p) => p && p.html && p.status >= 200 && p.status < 300;
 
+/** The crawled page a link points at, or undefined for external or unparseable links. */
 function linkTarget(pages, link) {
   try {
     return pages.get(pathKey(link.href));
@@ -75,6 +79,7 @@ function findPage(pages, { linkText, pathRe }) {
   return null;
 }
 
+/** Whether page `from` links to page `target` (optionally only links that pass `filter`). */
 function linksTo(from, target, filter = () => true) {
   if (!from || !target) return false;
   return (from.links ?? []).some((l) => {
@@ -94,6 +99,7 @@ const STOP_ES = new Set(
 const STOP_EN = new Set(
   'the and of to in for with is are your our on this that it be you we home welcome site'.split(' ')
 );
+/** Count Spanish and English marker words in text, to tell whether a page is actually in Spanish. */
 function languageScore(text) {
   const words = lc(text).match(/[a-záéíóúñü]+/g) ?? [];
   let es = 0;
@@ -195,6 +201,7 @@ function brandProbe(targetHex) {
 const BRAND_HEX = '#0F766E';
 const BRAND_TOLERANCE = 0.05; // OKLab distance; ~2.5x a just-noticeable difference
 
+/** Rebrand checks: the brand colour is close to the requested one on the home page and Inter is the font in use. */
 async function rebrandChecks(ctx) {
   const context = await newContext(ctx.browser);
   const page = await context.newPage();
@@ -305,6 +312,7 @@ async function submitContactForm(ctx, page) {
   };
 }
 
+/** Contact checks: submitting the form delivers JSON with name, email and message to the mock endpoint, and (optionally) the visitor sees a confirmation. */
 async function contactChecks(ctx, contact) {
   if (!contact)
     return {

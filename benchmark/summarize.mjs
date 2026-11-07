@@ -13,6 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { median, parseArgs, wilson } from './lib/util.mjs';
 
+/** Parse every record in a results folder's raw.jsonl, skipping blank lines. */
 export function readRecords(dir) {
   const file = path.join(dir, 'raw.jsonl');
   if (!fs.existsSync(file)) return [];
@@ -23,11 +24,13 @@ export function readRecords(dir) {
     .map((l) => JSON.parse(l));
 }
 
+/** `k/n` as a percentage with its Wilson 95% interval, or 'n/a' when n is 0. */
 const pct = (k, n) => {
   if (!n) return 'n/a';
   const [lo, hi] = wilson(k, n);
   return `${k}/${n} (${Math.round((100 * k) / n)}%, ${Math.round(lo * 100)}–${Math.round(hi * 100)})`;
 };
+/** Format a number to `digits` places, or 'n/a' when it is missing or not finite. */
 const fmt = (v, digits = 0) =>
   v === null || v === undefined
     ? 'n/a'
@@ -37,6 +40,7 @@ const fmt = (v, digits = 0) =>
       });
 const med = (rows, get, digits = 0) => fmt(median(rows.map(get)), digits);
 
+/** A Markdown table from a header row and data rows. */
 function table(head, rows) {
   return [
     `| ${head.join(' | ')} |`,
@@ -45,6 +49,7 @@ function table(head, rows) {
   ].join('\n');
 }
 
+/** Group records into a Map by the value at `key`, keeping first-seen order. */
 function group(records, key) {
   const m = new Map();
   for (const r of records) {
@@ -55,12 +60,14 @@ function group(records, key) {
   return m;
 }
 
+/** Total input tokens for a run, cache reads and writes included, or null when the agent didn't report them. */
 const totalInput = (r) => {
   const a = r.agent ?? {};
   if (a.inputTokens === null || a.inputTokens === undefined) return null;
   return a.inputTokens + (a.cacheReadTokens ?? 0) + (a.cacheWriteTokens ?? 0);
 };
 
+/** Neutral metrics for a group of runs: task pass rate, build pass rate, axe-clean rate and median violations. */
 function neutralRow(label, rs) {
   const built = rs.filter((r) => r.score?.build?.ok);
   const axeClean = built.filter((r) => r.score?.axe && r.score.axe.seriousOrCritical === 0);
@@ -84,6 +91,7 @@ function neutralRow(label, rs) {
   ];
 }
 
+/** Cost metrics for a group of runs: median cost, tokens, turns and duration. */
 function costRow(label, rs) {
   const costs = rs.map((r) => r.agent?.costUsd).filter((c) => typeof c === 'number');
   return [
@@ -104,6 +112,7 @@ function costRow(label, rs) {
   ];
 }
 
+/** Velocity-specific metrics for a group of runs: CSP present, CSP violations and hreflang alternates. */
 function velocityRow(label, rs) {
   const built = rs.filter((r) => r.score?.build?.ok && r.score?.velocitySpecific);
   const withCsp = built.filter((r) => r.score.velocitySpecific.cspPresent);
@@ -128,6 +137,7 @@ function velocityRow(label, rs) {
   ];
 }
 
+/** Write summary.md for a results folder from its raw.jsonl and meta.json. Returns the Markdown. */
 export function summarize(dir) {
   const records = readRecords(dir);
   const metaFile = path.join(dir, 'meta.json');

@@ -11,6 +11,7 @@ import { writeBaseline } from './check-agent.mjs';
 
 const SKIP = new Set(['node_modules', 'dist', '.git', '.astro', '.vercel', '.netlify', 'test-results', 'playwright-report']);
 
+/** Recursively copy `src` into `dest`, skipping build output and never descending into `stop` (the destination itself). */
 function copyDir(src, dest, stop = path.resolve(dest)) {
   fs.mkdirSync(dest, { recursive: true });
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
@@ -88,6 +89,7 @@ export function applyScaffold(dir, options) {
   return { applied, kept };
 }
 
+/** Delete files under `rel` that aren't in `keepFiles`, then remove directories left empty. */
 function pruneDir(root, rel, keepFiles) {
   const abs = path.join(root, rel);
   if (!fs.existsSync(abs)) return;

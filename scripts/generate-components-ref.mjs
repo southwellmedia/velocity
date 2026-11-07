@@ -37,15 +37,18 @@ const importPath = (file) => file.replace(/^src\//, '@/').replace(/\.tsx$/, '');
 /** Defaults longer than this are expressions worth reading in source, not values. */
 const MAX_DEFAULT = 40;
 
+/** Parse a .ts or .tsx source into a TypeScript AST with parent pointers. */
 function parse(file, source) {
   const kind = file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS;
   return ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, kind);
 }
 
+/** The frontmatter code of an .astro file, or '' when it has none. */
 function frontmatter(source) {
   return source.match(/^---\r?\n([\s\S]*?)\r?\n---/)?.[1] ?? '';
 }
 
+/** A node's JSDoc comment text, collapsed to one line. */
 function jsDoc(node) {
   const docs = node.jsDoc ?? [];
   const text = docs.map((d) => (typeof d.comment === 'string' ? d.comment : '')).join(' ');
@@ -93,6 +96,7 @@ function collectDefaults(sf) {
   return defaults;
 }
 
+/** Prop rows (name, type, required, note) for an interface or type-literal alias declaration. */
 function membersOf(sf, decl) {
   const members = ts.isInterfaceDeclaration(decl)
     ? decl.members
@@ -109,6 +113,7 @@ function membersOf(sf, decl) {
     }));
 }
 
+/** The types a props declaration extends: interface `extends` clauses or intersection members of a type alias. */
 function heritageOf(sf, decl) {
   if (ts.isInterfaceDeclaration(decl)) {
     return (decl.heritageClauses ?? []).flatMap((h) => h.types.map((t) => oneLine(t.getText(sf))));
@@ -183,6 +188,7 @@ function exportsNamed(root, file, name) {
   return new RegExp(`export\\s+(function|const)\\s+${name}\\b`).test(source);
 }
 
+/** The property assignment named `key` in an object literal, if any. */
 function propertyNamed(obj, key) {
   return obj.properties.find((p) => ts.isPropertyAssignment(p) && p.name.getText() === key);
 }
@@ -238,6 +244,7 @@ export function validateRegistry(registry) {
   return problems;
 }
 
+/** Markdown lines for a component's props table, inherited types and helper types. */
 function propsSection(props) {
   if (!props) return ['No props.', ''];
   const lines = [];
@@ -258,6 +265,7 @@ function propsSection(props) {
   return lines;
 }
 
+/** Markdown lines listing each CVA definition's variants, options and defaults. */
 function variantsSection(defs) {
   const lines = [];
   for (const def of defs) {
@@ -271,6 +279,7 @@ function variantsSection(defs) {
   return lines;
 }
 
+/** Build the reference from the registry and component sources. Returns { problems, output }; output is '' when the registry has problems. */
 export function generate(root = repoRoot) {
   const registry = JSON.parse(read(root, 'component-registry.json'));
   const problems = validateRegistry(registry);

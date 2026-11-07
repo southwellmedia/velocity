@@ -40,6 +40,7 @@ const combos = [
   { name: 'custom-locale', options: { demo: true, i18n: false, components: 'all' }, locales: ['en', 'de'] },
 ].filter((c) => typeof args.only !== 'string' || c.name.includes(args.only));
 
+/** Run a shell command synchronously. Returns { ok, seconds, output } with stdout and stderr combined. */
 function run(cmd, cwd, env = {}) {
   const started = Date.now();
   const result = spawnSync(cmd, { cwd, shell: true, encoding: 'utf8', env: { ...process.env, ...env } });

@@ -13,6 +13,7 @@ export function endpointUrl(port = DEFAULT_MOCK_PORT) {
   return `http://127.0.0.1:${port}${MOCK_PATH}`;
 }
 
+/** Start an HTTP server that records every request and answers 200 (204 to CORS preflight). Returns { url, port, requests, reset, stop }. */
 export async function startMockEndpoint(port = DEFAULT_MOCK_PORT) {
   const requests = [];
   const server = http.createServer((req, res) => {

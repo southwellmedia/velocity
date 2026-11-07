@@ -52,6 +52,7 @@ function finding(rule, { file, line, message, fix }) {
 
 const SKIP_DIRS = new Set(['node_modules', '.git', '.astro', 'dist', '.velocity-backup', 'test-results', 'playwright-report']);
 
+/** Project-relative paths of files under `rel` that pass `filter`, sorted, skipping build and dependency folders. */
 export function walk(root, rel = '', filter = () => true) {
   const abs = path.join(root, rel);
   if (!fs.existsSync(abs)) return [];
@@ -83,6 +84,7 @@ export function findDistDir(root) {
 
 const KEY_SHAPE = /^[a-zA-Z][\w-]*(\.[\w-]+)+$/;
 
+/** The string at a dotted `key` in a nested dictionary, or undefined when the path ends anywhere but a string. */
 function lookup(dict, key) {
   let node = dict;
   for (const part of key.split('.')) {
@@ -92,6 +94,7 @@ function lookup(dict, key) {
   return typeof node === 'string' ? node : undefined;
 }
 
+/** Every dotted key path in a nested dictionary that ends at a string. */
 export function leaves(dict, prefix = '') {
   return Object.entries(dict ?? {}).flatMap(([k, v]) =>
     v && typeof v === 'object' ? leaves(v, `${prefix}${k}.`) : typeof v === 'string' ? [`${prefix}${k}`] : [],
@@ -155,6 +158,7 @@ export function findKeyUses(root) {
   return uses;
 }
 
+/** i18n/missing-key: literal t() keys with no string in the default locale or Velocity's built-in UI strings. */
 export function checkMissingKeys(root, dicts) {
   const out = [];
   const seen = new Set();
@@ -176,6 +180,7 @@ export function checkMissingKeys(root, dicts) {
   return out;
 }
 
+/** i18n/untranslated: one finding per enabled locale listing the keys it falls back to English for. */
 export function checkUntranslated(dicts) {
   const out = [];
   const expected = [...new Set([...leaves(dicts.site[dicts.defaultLocale]), ...leaves(dicts.ui[dicts.defaultLocale])])];
@@ -206,6 +211,7 @@ export function checkUntranslated(dicts) {
 const TAG = /<([a-zA-Z][\w-]*)((?:\s+[^\s=>/]+(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+))?)*)\s*\/?>/g;
 const ATTR = /([^\s=>/]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
 
+/** Attributes of a tag's attribute source as a lower-cased name → value map (bare attributes map to ''). */
 function attrs(source) {
   const out = {};
   for (const m of source.matchAll(ATTR)) out[m[1].toLowerCase()] = m[2] ?? m[3] ?? m[4] ?? '';
@@ -225,6 +231,7 @@ function markupOnly(html) {
     });
 }
 
+/** The built file a URL path serves (exact file, `<path>/index.html` or `<path>.html`), or undefined. */
 export function pageForUrl(distRoot, pathname) {
   const clean = decodeURIComponent(pathname).replace(/^\/+/, '');
   const candidates = [clean, `${clean.replace(/\/$/, '')}/index.html`, `${clean.replace(/\/$/, '')}.html`];
@@ -380,6 +387,7 @@ const STUBS = [
   { pattern: /^\s*\/\/\s*TODO: subscribe the address/, name: () => 'newsletter' },
 ];
 
+/** forms/stub: Actions still carrying a `@velocity-stub` marker, or the TODO lines that projects before 2.3 shipped. */
 export function checkFormStubs(root) {
   const out = [];
   const seen = new Set();
@@ -421,6 +429,7 @@ export function writeBaseline(root) {
   return Object.keys(files).length;
 }
 
+/** ownership/edited: Velocity-owned files whose hash differs from the baseline. Skipped when there is no baseline. */
 export function checkOwnership(root) {
   const baselinePath = path.join(root, BASELINE);
   if (!fs.existsSync(baselinePath)) return { findings: [], skipped: true };
@@ -468,6 +477,7 @@ function blankExpressions(src) {
   return out;
 }
 
+/** Hardcoded text and UI attributes in an .astro template, ignoring frontmatter, scripts, styles, code and {expressions}. */
 export function findHardcoded(source) {
   const fm = source.match(/^---\r?\n[\s\S]*?\r?\n---/);
   const start = fm ? fm[0].length : 0;
@@ -489,6 +499,7 @@ export function findHardcoded(source) {
   return hits;
 }
 
+/** strings/hardcoded: warnings for every .astro file in the project-owned folders that hasn't opted out. */
 export function checkHardcoded(root) {
   const out = [];
   for (const dir of HARDCODED_DIRS) {
@@ -511,6 +522,7 @@ export function checkHardcoded(root) {
 // ---------------------------------------------------------------------------
 // Runner
 
+/** Run every rule against the project at `root`. Returns { ok, errors, warnings, findings, notes }; `strict` makes every finding an error. */
 export async function run(root, { strict = false } = {}) {
   const findings = [];
   const notes = [];
@@ -545,6 +557,7 @@ export async function run(root, { strict = false } = {}) {
   return { ok: errors === 0, errors, warnings: findings.length - errors, findings, notes };
 }
 
+/** Human-readable report: findings grouped by rule, at most 20 per rule, each group with its velocity.md reference and fix. */
 export function format(result) {
   const lines = [];
   const groups = Map.groupBy ? Map.groupBy(result.findings, (f) => f.rule) : new Map();

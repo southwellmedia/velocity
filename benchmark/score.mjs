@@ -196,6 +196,7 @@ export async function scoreProject(dir, taskIds, options = {}) {
   return out;
 }
 
+/** Print one task's score: required checks passed, build, axe and CSP results. */
 function printScore(id, s) {
   const c = s.completion;
   console.log(

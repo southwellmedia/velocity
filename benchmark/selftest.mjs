@@ -38,6 +38,7 @@ const mockPort = Number(args['mock-port'] ?? 4598);
 const results = [];
 const notes = [];
 
+/** Record and print one self-test assertion. */
 function expect(name, ok, detail = '') {
   results.push({ name, ok: Boolean(ok), detail });
   console.log(`  ${ok ? '✓' : '✗'} ${name}${detail ? ` — ${detail}` : ''}`);
@@ -128,6 +129,7 @@ console.log('\n1. Unit checks');
 
 // ------------------------------------------------------------------- 2
 const mock = await startMockEndpoint(mockPort);
+/** Score `dir` against every task, printing per-task results with --verbose. */
 const scoreAll = async (dir, label) => {
   const scores = await scoreProject(dir, taskIds, { mock, logDir: path.join(work, 'logs', label) });
   if (args.verbose) for (const [id, s] of Object.entries(scores)) printScore(id, s);

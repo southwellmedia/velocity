@@ -22,6 +22,7 @@ export const PRESETS = {
   cursor: 'cursor-agent -p {prompt} --model {model} --force --output-format json',
 };
 
+/** Split an agent command template into argv and substitute {prompt}, {model} and {cwd} in each token, with no shell. */
 export function buildArgv(template, vars) {
   const tokens = splitCommand(template);
   if (!tokens.length) throw new Error('Empty agent command template');
@@ -119,6 +120,7 @@ export function parseAgentOutput(stdout) {
   return metrics;
 }
 
+/** Run the agent once in `cwd` with the prompt, logging to `logDir`. Returns exit status, timing and the usage it reported. */
 export async function runAgent({ template, prompt, model, cwd, timeoutMs, logDir }) {
   const argv = buildArgv(template, { prompt, model, cwd });
   const r = await run(argv[0], argv.slice(1), {

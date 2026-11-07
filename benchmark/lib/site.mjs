@@ -32,6 +32,7 @@ const PM = {
   bun: { install: ['bun', ['install']], build: ['bun', ['run', 'build']] },
 };
 
+/** Install dependencies with the project's package manager, then build. Returns { pm, ok, stage, installMs, buildMs, tail }, where stage is the step that ran last. */
 export async function installAndBuild(dir, { logDir, timeoutMs = 15 * 60_000 } = {}) {
   const pm = detectPackageManager(dir);
   const env = cleanEnv({ CI: 'true', ASTRO_TELEMETRY_DISABLED: '1' });
@@ -250,6 +251,7 @@ export async function inspect(context, url) {
   return record;
 }
 
+/** A normalized key for a URL's page: decoded path without trailing slash or index.html, so links and crawled pages match. */
 export function pathKey(url) {
   const u = new URL(url);
   const p = decodeURI(u.pathname)

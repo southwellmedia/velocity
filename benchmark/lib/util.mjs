@@ -41,6 +41,7 @@ export function run(
   return new Promise((resolve) => {
     const started = Date.now();
     let stdout = '';
+    let settled = false;
     let stderr = '';
     let timedOut = false;
     let log;
@@ -74,7 +75,7 @@ export function run(
       const s = chunk.toString();
       if (which === 'out') stdout = (stdout + s).slice(-maxBuffer);
       else stderr = (stderr + s).slice(-maxBuffer);
-      log?.write(s);
+      if (!settled) log?.write(s);
     };
     child.stdout.on('data', append('out'));
     child.stderr.on('data', append('err'));
@@ -85,13 +86,19 @@ export function run(
     child.on('error', (error) => {
       stderr += String(error);
     });
-    child.on('close', (code, signal) => {
+    const finish = (code, signal) => {
+      if (settled) return;
+      settled = true;
       clearTimeout(timer);
       log?.end(
         `\n# exit ${code}${signal ? ` (${signal})` : ''}${timedOut ? ' TIMEOUT' : ''} after ${Date.now() - started}ms\n`
       );
       resolve({ code: code ?? -1, signal, timedOut, stdout, stderr, ms: Date.now() - started });
-    });
+    };
+    child.on('close', finish);
+    // A leftover grandchild (say, a dev server the agent started) can hold the
+    // pipes open so 'close' never fires; settle shortly after the process exits.
+    child.on('exit', (code, signal) => setTimeout(() => finish(code, signal), 2000).unref());
     if (input !== undefined) child.stdin.end(input);
     else child.stdin.end();
   });
@@ -122,6 +129,7 @@ export function start(cmd, args, { cwd, env } = {}) {
   };
 }
 
+/** Terminate a child and its process group (SIGTERM, then SIGKILL after a grace period). */
 function killTree(child) {
   try {
     if (process.platform !== 'win32') process.kill(-child.pid, 'SIGTERM');
@@ -143,6 +151,7 @@ function killTree(child) {
   }, 3000).unref();
 }
 
+/** Quote a string for a POSIX shell, leaving safe strings bare. Used only for logging commands. */
 export function shellQuote(s) {
   return /^[\w@%+=:,./-]+$/.test(s) ? s : `'${String(s).replace(/'/g, `'\\''`)}'`;
 }
@@ -194,6 +203,7 @@ export async function freePort() {
   });
 }
 
+/** Poll `url` until it answers, the process dies (`isAlive` false) or the timeout passes. Returns whether it answered. */
 export async function waitForHttp(url, { timeoutMs = 60_000, isAlive = () => true } = {}) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
@@ -211,6 +221,7 @@ export async function waitForHttp(url, { timeoutMs = 60_000, isAlive = () => tru
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/** The median of the finite numbers in `values`, or null when there are none. */
 export function median(values) {
   const v = values.filter((x) => typeof x === 'number' && Number.isFinite(x)).sort((a, b) => a - b);
   if (!v.length) return null;
@@ -249,6 +260,7 @@ export function loadChromium() {
   );
 }
 
+/** The AxeBuilder class from @axe-core/playwright, resolved from this repo, or null when it isn't installed. */
 export function loadAxeBuilder() {
   try {
     const mod = requireFromRepo('@axe-core/playwright');
@@ -269,6 +281,7 @@ export function detectPackageManager(dir) {
   return 'npm';
 }
 
+/** Recursively collect files under `dir` that pass `filter`, skipping node_modules and .git. */
 export function walkFiles(dir, filter = () => true, out = []) {
   if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

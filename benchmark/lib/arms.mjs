@@ -30,11 +30,13 @@ export const AGENT_FILES = [
 /** package.json scripts that belong to the benchmark and must not reach a project. */
 const BENCH_SCRIPTS = /^bench(:|$)/;
 
+/** Parse a 'demo=false,i18n=true,components=all' spec into scaffold options. */
 export function parseVelocityOptions(spec = 'demo=false,i18n=false,components=all') {
   const o = Object.fromEntries(spec.split(',').map((kv) => kv.split('=')));
   return { demo: o.demo === 'true', i18n: o.i18n === 'true', components: o.components ?? 'all' };
 }
 
+/** Await a run() result and throw with its output tail unless it exited 0 without timing out. */
 async function must(promise, what) {
   const r = await promise;
   if (r.code !== 0 || r.timedOut)
@@ -44,6 +46,7 @@ async function must(promise, what) {
   return r;
 }
 
+/** Scaffold a Velocity project at `dest` from `ref` (a clean checkout, so uncommitted edits don't leak in). Returns the commit used. */
 async function createVelocity(dest, { ref = 'HEAD', velocityOptions, logDir }) {
   const src = fs.mkdtempSync(path.join(os.tmpdir(), 'velocity-src-'));
   let commit = null;
@@ -151,6 +154,7 @@ const MINIMAL_FALLBACK = {
     '# Astro Starter Kit: Minimal\n\n```sh\nnpm create astro@latest -- --template minimal\n```\n\n| Command | Action |\n| :-- | :-- |\n| `npm install` | Installs dependencies |\n| `npm run dev` | Starts local dev server at `localhost:4321` |\n| `npm run build` | Build your production site to `./dist/` |\n| `npm run preview` | Preview your build locally, before deploying |\n',
 };
 
+/** The last meaningful lines of a failed command's output, for error messages. */
 function createErrorSummary(r) {
   const lines = `${r.stdout}\n${r.stderr}`
     .split('\n')
@@ -165,6 +169,7 @@ function createErrorSummary(r) {
   return (useful.length ? useful : lines.slice(-6)).slice(0, 6).join('\n');
 }
 
+/** Create a plain Astro project at `dest` with `npm create astro` (minimal template), or the local fallback when allowed. */
 async function createAstro(
   dest,
   { createAstroVersion = 'latest', allowFallback = false, fallbackAstroVersion, logDir }

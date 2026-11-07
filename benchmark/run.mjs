@@ -23,6 +23,7 @@ import { scoreProject } from './score.mjs';
 import { summarize } from './summarize.mjs';
 
 const args = parseArgs();
+/** Normalize a comma-separated CLI value or an array into a list of trimmed, non-empty strings. */
 const list = (v) =>
   typeof v === 'string'
     ? v
@@ -42,6 +43,7 @@ function mulberry32(seed) {
   };
 }
 
+/** A fresh results folder for today and this agent, suffixed when one already exists. */
 function resultsDir(agentName) {
   const date = new Date().toISOString().slice(0, 10);
   const base = path.join(BENCH_DIR, 'results', `${date}-${agentName}`);
@@ -50,6 +52,7 @@ function resultsDir(agentName) {
   return dir;
 }
 
+/** Plan the task × arm × repeat runs (or resume a previous plan), run each agent in a fresh project copy, score it and append to raw.jsonl. */
 async function main() {
   const resume = typeof args.resume === 'string' ? path.resolve(args.resume) : null;
   const prior = resume ? JSON.parse(fs.readFileSync(path.join(resume, 'meta.json'), 'utf8')) : null;
