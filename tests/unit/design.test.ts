@@ -538,3 +538,46 @@ describe('font checks when applying a direction', () => {
     expect((design.fontsReport(heavy).findings as { message: string }[]).some((f) => /only draws 300–600/.test(f.message))).toBe(true);
   });
 });
+
+describe('custom directions (--spec)', () => {
+  it('--new writes a spec from a preset, and --spec applies it unvaried', () => {
+    const root = project({ installed: allFonts, files: { 'src/config/site.config.ts': "export default { name: \"Rosa's Bakery\" };" } });
+    const made = run(root, 'direction', '--new', 'rosas', '--base', 'warm-local');
+    expect(made.code, made.out).toBe(0);
+    const spec = JSON.parse(read(root, 'src/styles/direction.json'));
+    expect(spec).toMatchObject({ id: 'rosas', name: "Rosa's Bakery", basedOn: 'warm-local' });
+    expect(spec.variation).toBeUndefined();
+    expect(run(root, 'direction', '--new', 'again').out).toMatch(/already exists/);
+
+    spec.brand = { hue: 140, chroma: 0.6 };
+    spec.controls['--theme-radius-button'] = '0.25rem';
+    fs.writeFileSync(path.join(root, 'src/styles/direction.json'), JSON.stringify(spec));
+    const applied = run(root, 'direction', '--spec');
+    expect(applied.code, applied.out).toBe(0);
+    const theme = read(root, 'src/styles/theme.css');
+    expect(theme).toContain('/* @velocity-direction rosas */');
+    expect(theme).toContain('--brand-hue: 140;');
+    expect(theme).toContain('--theme-radius-button: 0.25rem;');
+    expect(design.tokensReport(root).contrast.every((p: Pair) => p.pass)).toBe(true);
+  });
+
+  it('names every problem in a spec instead of writing a broken theme', () => {
+    const root = project({ installed: allFonts });
+    const before = read(root, 'src/styles/theme.css');
+    fs.writeFileSync(
+      path.join(root, 'src/styles/direction.json'),
+      JSON.stringify({ id: 'Bad Name', name: 'x', feel: 'y', brand: { hue: 400, chroma: 2 }, neutral: { chroma: 0.2 }, primary: 'blue', invert: 'neutral', fonts: { display: { family: 'Nunito' } }, controls: { '--theme-radius-md': 'big', '--color': 'red', '--theme-section-space': 3 }, light: { '--background': 'red; } body { x' } }),
+    );
+    const { code, out } = run(root, 'direction', '--spec');
+    expect(code).toBe(1);
+    for (const field of ['"id"', '"brand.hue"', '"brand.chroma"', '"neutral.chroma"', '"primary"', '"fonts.body.family"', '"controls.--theme-radius-md"', '"controls.--color"', '"controls.--theme-section-space"', '"light.--background"']) {
+      expect(out).toContain(field);
+    }
+    expect(read(root, 'src/styles/theme.css')).toBe(before);
+    expect(run(root, 'direction', '--spec', 'missing.json').out).toMatch(/doesn't exist/);
+  });
+
+  it('every preset is itself a valid spec', () => {
+    for (const d of Object.values(directions)) expect(design.validateSpec(d), d.id).toEqual([]);
+  });
+});

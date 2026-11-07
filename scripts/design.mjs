@@ -11,6 +11,8 @@
  *   npm run design -- fonts --suggest "warm, old-fashioned"   # curated pairings for a voice, covering the site's languages
  *   npm run design -- direction --base warm-local --pairing lora-nunito-sans
  *   npm run design -- direction --list                     # the five directions
+ *   npm run design -- direction --new rosas --base warm-local   # write src/styles/direction.json to make your own
+ *   npm run design -- direction --spec                     # apply src/styles/direction.json
  *   npm run design -- tokens                               # resolved tokens + contrast matrix (light and dark)
  *   npm run design -- tokens --json
  *   npm run design -- fonts                                # packages ↔ astro.config.mjs ↔ --theme-font-* tokens
@@ -697,6 +699,85 @@ export function defaultSeed(root) {
 }
 
 // ---------------------------------------------------------------------------
+// Custom directions: a project's own spec, checked like the presets
+
+export const SPEC_FILE = 'src/styles/direction.json';
+const TOKEN_NAME = /^--[a-z][\w-]*$/;
+const CONTROL_RULES = {
+  '--theme-radius-sm': 'length', '--theme-radius-md': 'length', '--theme-radius-lg': 'length', '--theme-radius-xl': 'length',
+  '--theme-radius-button': 'length', '--theme-heading-weight': [100, 1000], '--theme-button-weight': [100, 1000],
+  '--theme-heading-tracking': 'em', '--theme-body-leading': [1.1, 2.2], '--theme-section-space': [0.6, 1.6],
+  '--theme-heading-scale': [0.7, 1.4], '--theme-display-scale': [0.7, 1.4],
+  '--theme-shadow-sm': 'any', '--theme-shadow-md': 'any', '--theme-shadow-lg': 'any', '--theme-shadow-xl': 'any',
+};
+
+/**
+ * Problems with a direction spec, as messages naming the field and the allowed values.
+ * The same shape as the presets in .agents/design/directions/.
+ */
+export function validateSpec(spec) {
+  const errors = [];
+  const need = (cond, msg) => cond || errors.push(msg);
+  if (!spec || typeof spec !== 'object') return ['The spec must be a JSON object.'];
+  need(typeof spec.id === 'string' && /^[a-z][\w-]*$/.test(spec.id), '"id" must be a short lowercase name, such as "rosas-bakery".');
+  need(typeof spec.name === 'string' && spec.name.trim(), '"name" is required.');
+  need(typeof spec.feel === 'string' && spec.feel.trim(), '"feel" is required: a few words for how the site should feel.');
+  const hue = spec.brand?.hue;
+  need(Number.isFinite(hue) && hue >= 0 && hue < 360, '"brand.hue" must be a number from 0 to 359 (OKLCH hue).');
+  need(Number.isFinite(spec.brand?.chroma) && spec.brand.chroma >= 0 && spec.brand.chroma <= 1.3, '"brand.chroma" must be 0 to 1.3 (1 is Velocity\'s default saturation, 0 is grey).');
+  const nc = spec.neutral?.chroma ?? 0;
+  need(Number.isFinite(nc) && nc >= 0 && nc <= 0.04, '"neutral.chroma" must be 0 to 0.04: how much the greys are tinted.');
+  if (spec.neutral?.hue !== undefined) need(Number.isFinite(spec.neutral.hue) && spec.neutral.hue >= 0 && spec.neutral.hue < 360, '"neutral.hue" must be 0 to 359.');
+  need(['brand', 'neutral'].includes(spec.primary), '"primary" must be "brand" (brand-coloured buttons) or "neutral".');
+  need(['brand', 'neutral'].includes(spec.invert), '"invert" must be "brand" (brand-tinted contrast bands) or "neutral".');
+  for (const role of ['display', 'body']) {
+    const f = spec.fonts?.[role];
+    need(f && typeof f.family === 'string' && f.family.trim(), `"fonts.${role}.family" is required, such as "Fraunces".`);
+    if (f?.fallbacks) need(Array.isArray(f.fallbacks) && f.fallbacks.every((x) => ['serif', 'sans-serif', 'monospace'].includes(x)), `"fonts.${role}.fallbacks" must list serif, sans-serif or monospace.`);
+  }
+  for (const [k, v] of Object.entries(spec.controls ?? {})) {
+    const rule = CONTROL_RULES[k];
+    if (!rule) {
+      errors.push(`"controls.${k}" isn't a theme control. Use: ${Object.keys(CONTROL_RULES).join(', ')}.`);
+      continue;
+    }
+    const str = String(v).trim();
+    if (rule === 'length') need(/^(0|[\d.]+(rem|px)|9999px)$/.test(str), `"controls.${k}" must be a length such as 0.5rem, 8px or 9999px.`);
+    else if (rule === 'em') need(/^-?[\d.]+em$/.test(str) && Math.abs(parseFloat(str)) <= 0.1, `"controls.${k}" must be an em value from -0.1em to 0.1em.`);
+    else if (Array.isArray(rule)) need(Number(str) >= rule[0] && Number(str) <= rule[1], `"controls.${k}" must be from ${rule[0]} to ${rule[1]}.`);
+    else need(!/[;{}]/.test(str), `"controls.${k}" can't contain ; { or }.`);
+  }
+  for (const mode of ['light', 'dark']) {
+    for (const [k, v] of Object.entries(spec[mode] ?? {})) {
+      need(TOKEN_NAME.test(k) && !/[;{}]/.test(String(v)), `"${mode}.${k}" must be a CSS custom property with a plain value.`);
+    }
+  }
+  return errors;
+}
+
+/** A spec with the defaults presets carry, so it builds like one. */
+function completeSpec(spec) {
+  return {
+    ...spec,
+    suits: spec.suits ?? '',
+    neutral: { chroma: 0, ...spec.neutral },
+    fonts: {
+      ...spec.fonts,
+      display: { fallbacks: ['sans-serif'], ...spec.fonts.display },
+      body: { fallbacks: ['sans-serif'], ...spec.fonts.body },
+      installedFallback: spec.fonts.installedFallback ?? { display: { family: 'Outfit', fallbacks: ['sans-serif'] }, body: { family: 'Manrope', fallbacks: ['sans-serif'] } },
+    },
+    controls: { ...spec.controls },
+  };
+}
+
+/** A starting spec from a preset, for a project to make its own. */
+export function newSpec(preset, id, name) {
+  const { variation: _variation, pairings: _pairings, rhythm: _rhythm, imagery: _imagery, ...rest } = preset;
+  return { ...rest, id, name, feel: preset.feel, suits: `Made for ${name}`, basedOn: preset.id };
+}
+
+// ---------------------------------------------------------------------------
 // Font catalogue: curated pairings, script coverage and weights
 
 const FONT_CATALOG_PATHS = ['.agents/design/fonts.json', 'variants/agents/.agents/design/fonts.json'];
@@ -950,10 +1031,50 @@ function cmdList(root, log) {
 export function cmdDirection(root, args, log = console.log) {
   if (args.list) return cmdList(root, log);
   const directions = loadDirections(root);
-  const direction = directions[args.base];
-  if (!direction) {
-    log(`Unknown direction "${args.base ?? ''}". Choose one with --base: ${Object.keys(directions).join(', ')}.`);
-    return 1;
+
+  // --new writes a spec from a preset for the project to make its own; --spec applies one.
+  if (args.new) {
+    const preset = directions[args.base ?? 'editorial'];
+    const file = typeof args.spec === 'string' ? args.spec : SPEC_FILE;
+    if (!preset) {
+      log(`Unknown direction "${args.base}". Start from one of: ${Object.keys(directions).join(', ')}.`);
+      return 1;
+    }
+    if (fs.existsSync(path.join(root, file)) && !args.force) {
+      log(`${file} already exists. Edit it, or add --force to start again from ${preset.id}.`);
+      return 1;
+    }
+    const id = typeof args.new === 'string' ? args.new : slug(defaultSeed(root)) || 'custom';
+    fs.mkdirSync(path.dirname(path.join(root, file)), { recursive: true });
+    fs.writeFileSync(path.join(root, file), JSON.stringify(newSpec(preset, id, typeof args.name === 'string' ? args.name : defaultSeed(root)), null, 2) + '\n');
+    log(`Wrote ${file} from ${preset.name}. Change it to fit the brief (see .agents/design.md → Start fresh), then apply it:`);
+    log(`  npm run design -- direction --spec ${file}`);
+    return 0;
+  }
+
+  let direction;
+  if (args.spec) {
+    const file = typeof args.spec === 'string' ? args.spec : SPEC_FILE;
+    let spec;
+    try {
+      spec = JSON.parse(readIf(root, file) || 'null');
+    } catch (error) {
+      log(`${file} isn't valid JSON: ${error.message}`);
+      return 1;
+    }
+    const problems = spec ? validateSpec(spec) : [`${file} doesn't exist. Create one with: npm run design -- direction --new <name> --base <preset>`];
+    if (problems.length) {
+      log(`${file} can't be applied:`);
+      for (const p of problems) log(`  ${p}`);
+      return 1;
+    }
+    direction = completeSpec(spec);
+  } else {
+    direction = directions[args.base];
+    if (!direction) {
+      log(`Unknown direction "${args.base ?? ''}". Choose one with --base: ${Object.keys(directions).join(', ')}, or apply your own with --spec.`);
+      return 1;
+    }
   }
   if (args.brand && !/^#?([0-9a-f]{3}|[0-9a-f]{6})$/i.test(args.brand)) {
     log(`--brand must be a hex colour such as "#c2410c", got "${args.brand}".`);
@@ -976,7 +1097,8 @@ export function cmdDirection(root, args, log = console.log) {
     body: typeof args.body === 'string' ? args.body : undefined,
     pairing,
     fallbackFonts: Boolean(args['fallback-fonts']),
-    seed: typeof args.seed === 'string' ? args.seed : defaultSeed(root),
+    // A project's own spec is already its own; vary it only when asked.
+    seed: typeof args.seed === 'string' ? args.seed : args.spec ? 'preset' : defaultSeed(root),
     sources,
   };
   // Build once to learn the fonts, then again with their weight ranges so weights stay drawable.
@@ -1006,7 +1128,8 @@ export function cmdDirection(root, args, log = console.log) {
   if (missing.length) {
     log(`${direction.name} uses ${missing.map((f) => f.family).join(' and ')}, which ${missing.length > 1 ? "aren't" : "isn't"} installed. Nothing was written.`);
     log(`Install, then run this command again:\n  ${pmAdd(root)} ${missing.map((f) => `@fontsource-variable/${f.pkg}`).join(' ')}`);
-    log(`Or keep to installed fonts: npm run design -- direction --base ${direction.id}${args.brand ? ` --brand "${args.brand}"` : ''} --fallback-fonts`);
+    const source = args.spec ? `--spec${typeof args.spec === 'string' ? ` ${args.spec}` : ''}` : `--base ${direction.id}`;
+    log(`Or keep to installed fonts: npm run design -- direction ${source}${args.brand ? ` --brand "${args.brand}"` : ''} --fallback-fonts`);
     return 1;
   }
 
@@ -1255,6 +1378,8 @@ function cmdCompare(root, args, log) {
 const HELP = `Usage: npm run design -- <command>
 
   direction --base <id> [--brand <hex>] [--seed <text>|preset] [--pairing <id> | --pair <n>] [--display <family>] [--body <family>] [--fallback-fonts] [--dry-run]
+  direction --spec [file]  (default src/styles/direction.json)
+  direction --new <id> [--base <preset>] [--spec <file>] [--force]
   direction --list
   tokens [--json]
   fonts [--fix] [--json]

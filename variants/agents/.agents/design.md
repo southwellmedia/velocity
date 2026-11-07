@@ -45,6 +45,28 @@ npm run design -- direction --base warm-local --brand "#c2410c"
 - Then set `branding.colors.themeColor` in `src/config/site.config.ts` to the brand colour, so share images match.
 - Run `npm run design -- fonts --fix` to stop loading families the new direction no longer uses.
 
+## Start fresh: your own direction
+
+When no preset fits the brief, or the user wants something specific (a brand book, a site they admire), write the site's own direction instead of bending a preset:
+
+```bash
+npm run design -- direction --new rosas --base warm-local   # writes src/styles/direction.json from the closest preset
+npm run design -- direction --spec                          # applies it
+```
+
+`src/styles/direction.json` is the project's file; upgrades never touch it. It has the same fields as the presets in `.agents/design/directions/`:
+
+| Field | What it sets |
+|---|---|
+| `brand.hue`, `brand.chroma` | Brand colour as OKLCH hue (0–359) and saturation (1 is Velocity's default, 0 grey). `--brand "<hex>"` overrides both |
+| `neutral.chroma`, `neutral.hue` | How much the greys are tinted (0–0.04) and towards which hue (defaults to the brand's) |
+| `primary`, `invert` | `brand` or `neutral` buttons, and contrast bands |
+| `fonts.display`, `fonts.body` | `{ "family": "Fraunces", "fallbacks": ["serif"] }`; take them from a catalogue pairing |
+| `controls` | Radii, heading weight and tracking, body leading, section spacing, heading and display scale, shadows (see Theme controls) |
+| `light`, `dark` | Any semantic token to override per mode, such as `"--background-secondary": "oklch(96% 0.02 80)"` |
+
+`--spec` checks every field and names any problem instead of writing a broken theme. The usual guarantees still hold: every text pair passes AA (brand shades are adjusted and reported), weights stay inside what the fonts draw, and the body font must have the letters of every enabled language. A spec isn't varied by a seed unless you pass `--seed`, since it's already the site's own. Record in the brief that the site uses its own direction, and why.
+
 ## Read the result without a browser
 
 - `npm run design -- tokens` prints the fonts, theme controls, type scale, every colour token in light and dark, and the contrast matrix. It exits 1 if any pair is below AA. `--json` for machine-readable output.

@@ -16,7 +16,7 @@ Examples use npm. Use the package manager this project was installed with.
 | Health check | `GET http://localhost:<port>/_astro/status` |
 | Full validation | `npm run validate` (lint → check → unit tests → build → agent-ready check) |
 | Agent-ready check | `npm run check:agent` after a build; `-- --json` for machine-readable output |
-| Design | `npm run design -- direction --list`, `-- direction --base <id> --brand "#hex"`, `-- tokens` (contrast matrix), `-- fonts`. See `.agents/design.md` |
+| Design | `npm run design -- direction --list`, `-- direction --base <id> --brand "#hex"`, `-- direction --spec` (the site's own), `-- fonts --suggest "<voice>"`, `-- tokens` (contrast matrix), `-- compare <other site>`. See `.agents/design.md` |
 | Unit tests | `npm test` |
 | E2E + a11y | `npm run build && npm run test:e2e` |
 
