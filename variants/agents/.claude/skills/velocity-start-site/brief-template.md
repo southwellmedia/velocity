@@ -27,14 +27,13 @@ Status: draft
 
 ## Design
 
+<!-- How the site should look and feel, and the decisions behind it: palette, type, imagery,
+     layout ideas, anything distinctive. Free-form; the lines below are filled by the CLI if used. -->
+
 - Direction:
 - Why:
 - Brand colour:
 - Fonts:
-- Radius and density:
-- Imagery:
-- Section rhythm:
-  - Home:
 
 ## Languages
 

@@ -1,8 +1,6 @@
-# Section recipes
+# Example sections
 
-Maintained by Velocity and replaced on upgrade. Working sources for common sections live in `.agents/design/sections/`. They're references: borrow a structure, a detail or the accessible markup, but design the site's sections from its art direction (`.agents/design.md`) rather than assembling a page from these. A page built only from recipes looks like every other site built from them.
-
-To use one, copy it into `src/components/sections/` and change it as much as the design needs. Keep its `@velocity-section` stamp if it stays close to the source, so `check:agent` can tell you when Velocity ships a fix; drop the stamp once it's yours. Each takes its copy as props, and its `@requires` line names the components it needs (restore a missing one with `velocity-add-component`).
+Maintained by Velocity and replaced on upgrade. Working, accessible sources for common sections live in `.agents/design/sections/`. They're optional: copy one into `src/components/sections/` and change it as much as you like, borrow a detail, or ignore them and design your own. Each takes its copy as props, and its `@requires` line names the Velocity components it uses. Keep its `@velocity-section` stamp only if you want `check:agent` to tell you when Velocity ships a fix to the original.
 
 ## Sections
 
@@ -24,7 +22,3 @@ To use one, copy it into `src/components/sections/` and change it as much as the
 | `HoursAndLocation` | Opening hours, address, phone | `card`, `inline` | section, table, icon | Placeholders unless supplied |
 
 `PageHeader` (inner page titles), `Section` (any section with a heading), `MediaSlot` and `NewsletterForm` in `src/components/patterns/` are used as they are. The components in `src/components/landing/` are Velocity's own marketing; don't use them.
-
-## Page structure
-
-There are no blueprints on purpose: structure comes from the business. Lead with what a visitor most needs to see (the work, the place, the offer, the people), follow with what earns trust, close with the primary action. Vary how sections open, and don't repeat a section shape twice in a row. Inner pages open with `PageHeader` or a page-specific header of your own, so each page keeps one `<h1>`.

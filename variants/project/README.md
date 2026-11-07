@@ -14,7 +14,7 @@ The site runs at http://localhost:4321.
 
 ## Make it yours
 
-The fastest way: open the project in your AI coding agent (Claude Code, Codex, Cursor, …) and ask it to **"Set up this site for my business"**. Its `velocity-start-site` skill interviews you, writes a brief and an art direction to `.agents/site.md` that later sessions follow, designs pages for your business (its own styles live in `src/styles/site.css`, which upgrades never touch), and lists anything it couldn't know as a placeholder instead of inventing it.
+The fastest way: open the project in your AI coding agent (Claude Code, Codex, Cursor, …) and ask it to **"Set up this site for my business"**. Its `velocity-start-site` skill interviews you, writes a brief to `.agents/site.md` that later sessions follow, designs the site for your business (its styles live in `src/styles/site.css`, which upgrades never touch; Velocity's components are optional), and lists anything it couldn't know as a placeholder instead of inventing it.
 
 Want a quick look first? `npm run design -- direction --list` shows five ready-made themes; apply one with `npm run design -- direction --base warm-local --brand "#c2410c"`.
 

@@ -595,7 +595,7 @@ export function checkOwnership(root) {
       file: rel,
       message: 'This file is Velocity-owned and the next upgrade replaces it, losing the edit.',
       fix: primitive
-        ? 'Undo the edit and wrap the primitive instead (wrap, never fork): build the look in a section in src/components/sections/ that renders this component and passes classes or props. See .agents/design.md → The layers. If the primitive genuinely can\'t be bent far enough, tell the user it\'s a Velocity issue.'
+        ? 'Copy the component into a folder you own (such as src/components/sections/), make the change in the copy, point your imports at it and restore this file. Upgrades replace src/components/ui/ and src/components/hero/.'
         : 'Make the change in a file you own (src/components/site/, src/views/, src/components/patterns/, src/styles/theme.css, translations), or tell the user the edit will need reapplying after upgrades.',
     }));
   }
