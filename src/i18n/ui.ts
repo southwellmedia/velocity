@@ -111,6 +111,7 @@ const en = {
   },
   footer: {
     rights: '© {year} {name}. All rights reserved.',
+    builtWith: 'Built with Velocity',
   },
 };
 
@@ -219,6 +220,7 @@ const es: DeepPartial<UIStrings> = {
   },
   footer: {
     rights: '© {year} {name}. Todos los derechos reservados.',
+    builtWith: 'Hecho con Velocity',
   },
 };
 
@@ -323,6 +325,7 @@ const fr: DeepPartial<UIStrings> = {
   },
   footer: {
     rights: '© {year} {name}. Tous droits réservés.',
+    builtWith: 'Créé avec Velocity',
   },
 };
 

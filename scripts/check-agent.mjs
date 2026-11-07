@@ -387,23 +387,48 @@ const STUBS = [
   { pattern: /^\s*\/\/\s*TODO: subscribe the address/, name: () => 'newsletter' },
 ];
 
-/** forms/stub: Actions still carrying a `@velocity-stub` marker, or the TODO lines that projects before 2.3 shipped. */
+/** The endpoint variable that turns each stubbed form's forwarding on (src/lib/form-delivery.ts). */
+const STUB_ENDPOINTS = { contact: 'CONTACT_FORM_ENDPOINT', newsletter: 'NEWSLETTER_ENDPOINT' };
+
+/** Variables set in the environment or in the project's .env file. */
+function envVars(root) {
+  const vars = new Set(Object.keys(process.env).filter((k) => process.env[k]));
+  const file = path.join(root, '.env');
+  if (fs.existsSync(file)) {
+    for (const m of fs.readFileSync(file, 'utf8').matchAll(/^\s*(?:export\s+)?([A-Z_][A-Z0-9_]*)\s*=\s*(\S.*)?$/gm)) {
+      if (m[2] && !/^["']{2}$/.test(m[2].trim())) vars.add(m[1]);
+    }
+  }
+  return vars;
+}
+
+/**
+ * forms/stub: Actions still on their discard path, marked `@velocity-stub` (or
+ * carrying the TODO lines projects before 2.3 shipped), unless the endpoint
+ * that enables forwarding is set here.
+ */
 export function checkFormStubs(root) {
   const out = [];
   const seen = new Set();
+  const env = envVars(root);
   for (const file of walk(root, 'src/actions', (f) => /\.(ts|js|mjs)$/.test(f))) {
     read(root, file)
       .split('\n')
       .forEach((text, i) => {
         for (const stub of STUBS) {
           const m = text.match(stub.pattern);
-          if (!m || seen.has(stub.name(m))) continue;
-          seen.add(stub.name(m));
+          const name = m && stub.name(m);
+          if (!m || seen.has(name)) continue;
+          seen.add(name);
+          const endpoint = STUB_ENDPOINTS[name];
+          if (endpoint && env.has(endpoint) && stub === STUBS[0]) continue;
           out.push(finding('forms/stub', {
             file,
             line: i + 1,
-            message: `actions.${stub.name(m)} reports success but delivers nothing. Visitors think their message was sent.`,
-            fix: 'Connect a provider (see the velocity-connect-forms skill), send a real test message, then delete the @velocity-stub line. Secrets go through astro:env.',
+            message: endpoint
+              ? `actions.${name} discards submissions unless ${endpoint} is set where the server runs (it isn't set here), yet visitors are told their message was sent.`
+              : `actions.${name} reports success but delivers nothing. Visitors think their message was sent.`,
+            fix: 'Set the endpoint variable named above in .env and on the host, or wire a provider (see the velocity-connect-forms skill) and delete the @velocity-stub line. Either way, send a real test message first. Secrets go through astro:env.',
           }));
         }
       });

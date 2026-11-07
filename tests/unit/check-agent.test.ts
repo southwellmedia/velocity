@@ -152,6 +152,16 @@ describe('check:agent', () => {
     ]);
   });
 
+  it('forms/stub: stays quiet when the endpoint that turns forwarding on is set', async () => {
+    const root = project({
+      'src/actions/index.ts': '// @velocity-stub contact\n// @velocity-stub newsletter\n',
+      '.env': 'CONTACT_FORM_ENDPOINT=https://hooks.example.com/contact\nNEWSLETTER_ENDPOINT=""\n',
+    });
+    const stubs = await findings(root, 'forms/stub');
+    expect(stubs.map((f) => f.message.split(' ')[0])).toEqual(['actions.newsletter']);
+    expect(stubs[0].message).toContain('NEWSLETTER_ENDPOINT');
+  });
+
   it('ownership/edited: warns when a Velocity-owned file changed since the baseline', async () => {
     const root = project({
       'velocity-manifest.json': JSON.stringify({ files: { safe: ['src/lib/'] } }),

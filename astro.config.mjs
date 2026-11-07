@@ -85,6 +85,7 @@ export default defineConfig({
       PUBLIC_GA_MEASUREMENT_ID: envField.string({ context: 'client', access: 'public', optional: true }),
       PUBLIC_GTM_ID: envField.string({ context: 'client', access: 'public', optional: true }),
       CONTACT_FORM_ENDPOINT: envField.string({ context: 'server', access: 'secret', optional: true }),
+      NEWSLETTER_ENDPOINT: envField.string({ context: 'server', access: 'secret', optional: true }),
       NEWSLETTER_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
       GOOGLE_SITE_VERIFICATION: envField.string({ context: 'server', access: 'public', optional: true }),
       BING_SITE_VERIFICATION: envField.string({ context: 'server', access: 'public', optional: true }),

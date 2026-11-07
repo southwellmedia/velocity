@@ -8,7 +8,7 @@
 
 <p align="center">
   <a href="https://astro.build"><img src="https://img.shields.io/badge/Astro-7.4-bc52ee?logo=astro&logoColor=white" alt="Astro" /></a>
-  <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind-4.0-38bdf8?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" /></a>
+  <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind-4.3-38bdf8?logo=tailwindcss&logoColor=white" alt="Tailwind CSS" /></a>
   <a href="https://www.typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.9-3178c6?logo=typescript&logoColor=white" alt="TypeScript" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22c55e" alt="License" /></a>
 </p>
@@ -18,13 +18,12 @@
 ## What's Included
 
 - **Built for AI coding agents** — project rules and skills for Claude Code, Codex, Cursor and other tools, in every project
-- **58 components** across 7 categories — all accessible, typed, and dark-mode ready
+- **46 components** — 33 UI primitives in 8 categories, 10 composed patterns, a hero and layout pieces; all accessible, typed, and dark-mode ready
 - **Design token system** with OKLCH colors, fluid typography, and two built-in themes
 - **SEO toolkit** — meta tags, JSON-LD, sitemap, robots.txt, and auto-generated OG images
 - **Content collections** — type-safe blog, pages, authors, and FAQs with Zod validation
-- **API routes** — contact form and newsletter endpoints with validation
 - **React islands** — optional client-side interactivity where needed
-- **Astro Actions** — type-safe contact and newsletter forms with server-side validation
+- **Astro Actions** — type-safe contact and newsletter forms with server-side validation, forwarded to an endpoint you configure
 - **Deploy anywhere** — adapter auto-detected for Vercel, Netlify, Cloudflare, or Node; pages stay static
 - **Route caching** — Astro 7 cache providers wired to Vercel/Netlify CDNs, in-memory elsewhere
 - **Site search** — Pagefind index built on every production build, no search server
@@ -101,8 +100,8 @@ tests/
 src/
   actions/        # Astro Actions (contact, newsletter)
   components/
-    ui/           # 31 UI components (form, data-display, feedback, overlay, etc.)
-    patterns/     # 7 composed patterns (ContactForm, SearchInput, StatCard, etc.)
+    ui/           # 33 UI components (form, data-display, feedback, overlay, etc.)
+    patterns/     # 10 composed patterns (ContactForm, SearchInput, StatCard, etc.)
     layout/       # Header, Footer, ThemeToggle, Analytics
     blog/         # ArticleHero, BlogCard, ShareButtons, RelatedPosts
     landing/      # Credibility, TechStack, FeatureTabs, and more
@@ -138,6 +137,17 @@ Velocity is multilingual out of the box and single-language by default.
 3. That's it. `/es/…` pages, the language switcher, `hreflang` alternates, a localized sitemap, per-language search and localized OG images are generated automatically. Translated URL slugs are optional (`routes` in `src/config/nav.config.ts`).
 
 Built-in UI strings (navigation, blog, forms, search) live in `src/i18n/ui.ts` for en, es and fr. Override any of them in your translations file. Blog posts go in `src/content/blog/<locale>/`, and a post with the same file name in two locales is linked as a translation. `npm create velocity-astro --i18n` sets up English, Spanish and French for you.
+
+---
+
+## Forms
+
+The contact and newsletter forms validate on the server with Astro Actions. Delivery is up to you:
+
+- Set `CONTACT_FORM_ENDPOINT` and/or `NEWSLETTER_ENDPOINT` in `.env` to forward each submission as JSON to your own endpoint (a webhook, serverless function, Zapier, Formspree…). `NEWSLETTER_API_KEY`, when set, is sent as a Bearer token. If the endpoint fails, the form shows its error message.
+- Or replace the forwarding in `src/actions/index.ts` with your provider's SDK (Resend, Postmark, Mailchimp, a CRM).
+
+Until one of these is set up, submissions are discarded and the server logs a warning, so a missing setup is easy to spot.
 
 ---
 
@@ -189,6 +199,6 @@ MIT — see [LICENSE](LICENSE) for details.
 
 ---
 
-**Links**: [Docs](https://github.com/southwellmedia/velocity-docs) | [CLI](https://github.com/southwellmedia/create-velocity-astro) | [Astro](https://docs.astro.build) | [Tailwind v4](https://tailwindcss.com/docs)
+**Links**: [Docs](https://docs.deployvelocity.com) | [CLI](https://github.com/southwellmedia/create-velocity-astro) | [Astro](https://docs.astro.build) | [Tailwind v4](https://tailwindcss.com/docs)
 
 **Built by [Southwell Media](https://southwellmedia.com)**

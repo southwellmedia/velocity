@@ -159,6 +159,14 @@ describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (
     }
   });
 
+  it("starts projects with their own identity, not Velocity's", () => {
+    const config = fs.readFileSync(path.join(dir, 'src/config/site.config.ts'), 'utf8');
+    expect(config).toMatch(/name: 'My Site'/);
+    expect(config).toMatch(/socialLinks: \[\]/);
+    expect(config).not.toMatch(/author: 'Southwell Media'|github\.com\/southwellmedia'/);
+    expect(fs.readFileSync(path.join(dir, 'README.md'), 'utf8')).toMatch(/^# My Site/);
+  });
+
   it('enables the right locales', () => {
     const locales = fs.readFileSync(path.join(dir, 'src/i18n/locales.mjs'), 'utf8');
     expect(locales.includes("'es'")).toBe(options.i18n);

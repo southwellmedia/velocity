@@ -1,7 +1,7 @@
 {
   "name": "velocity",
-  "version": "2.3.0",
-  "description": "Southwell Astro Boilerplate - A production-ready starter template built on Astro 7 and Tailwind CSS v4",
+  "version": "2.4.0",
+  "description": "A production-ready starter built on Astro 7 and Tailwind CSS v4",
   "type": "module",
   "author": "Southwell Media",
   "license": "MIT",
@@ -74,6 +74,7 @@
   "devDependencies": {
     "@astrojs/check": "0.9.12",
     "@axe-core/playwright": "^4.14.0",
+    "@emnapi/runtime": "1.11.3",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
     "@tailwindcss/typography": "^0.5.20",

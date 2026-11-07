@@ -6,9 +6,13 @@
  *   pnpm test:scaffold --e2e            # …plus the Playwright suite in each full-component project
  *   pnpm test:scaffold --only=min-i18n  # filter by name: (demo|min)-(en|i18n)-(all|none) or custom-locale
  *   pnpm test:scaffold --out=./.matrix  # where projects are created (default: OS temp dir)
+ *   pnpm test:scaffold --fresh          # install without the lockfile, as a real project does
  *
  * Projects are produced by scripts/scaffold.mjs, the reference implementation
  * of the contract in variants/README.md, so this is what users get.
+ *
+ * One difference: create-velocity-astro ships no lockfile, so a new project resolves
+ * today's dependencies, not the ones this repo has locked. --fresh tests that.
  */
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
@@ -43,7 +47,8 @@ const combos = [
 /** Run a shell command synchronously. Returns { ok, seconds, output } with stdout and stderr combined. */
 function run(cmd, cwd, env = {}) {
   const started = Date.now();
-  const result = spawnSync(cmd, { cwd, shell: true, encoding: 'utf8', env: { ...process.env, ...env } });
+  // `input` closes stdin, so a tool that prompts fails here instead of waiting forever
+  const result = spawnSync(cmd, { cwd, shell: true, encoding: 'utf8', input: '', env: { ...process.env, ...env } });
   return {
     ok: result.status === 0,
     seconds: ((Date.now() - started) / 1000).toFixed(0),
@@ -79,8 +84,23 @@ for (const { name, options, locales } of combos) {
         return { ok: broken.length === 0, seconds: '0', output: broken.join('\n') };
       },
     ],
-    ['install', () => run('pnpm install --frozen-lockfile --prefer-offline', dir, { CI: 'true' })],
-    ['check', () => run(`${bin('astro/bin/astro.mjs')} check`, dir)],
+    [
+      'install',
+      () => {
+        if (!args.fresh) return run('pnpm install --frozen-lockfile --prefer-offline', dir, { CI: 'true' });
+        fs.rmSync(path.join(dir, 'pnpm-lock.yaml'), { force: true });
+        return run('pnpm install --no-frozen-lockfile', dir, { CI: 'true' });
+      },
+    ],
+    [
+      'check',
+      () => {
+        // astro check can exit 0 after failing to load @astrojs/check, so also
+        // require the summary it prints once diagnostics have actually run.
+        const r = run(`${bin('astro/bin/astro.mjs')} check`, dir);
+        return { ...r, ok: r.ok && /^Result \(\d+ files?\)/m.test(r.output) };
+      },
+    ],
     ['build', () => run(`${bin('astro/bin/astro.mjs')} build`, dir, { DEPLOY_TARGET: 'node' })],
     // A fresh project must pass its own agent-ready check (warnings, such as the form stubs, are expected).
     ['agent', () => run('node scripts/check-agent.mjs', dir)],

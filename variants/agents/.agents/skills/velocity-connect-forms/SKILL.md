@@ -7,7 +7,9 @@ description: Connect this Velocity site's contact and newsletter forms to a real
 
 **First, read the Project notes in `AGENTS.md`.** They describe this site's own conventions and take priority over the examples here.
 
-`ContactForm` and `NewsletterForm` submit to the `contact` and `newsletter` Actions in `src/actions/index.ts`. Until they are connected, both handlers report success and deliver nothing. Each stub carries a marker line, `// @velocity-stub contact` or `// @velocity-stub newsletter`, and `npm run check:agent` reports every form that still has one.
+`ContactForm` and `NewsletterForm` submit to the `contact` and `newsletter` Actions in `src/actions/index.ts`. Each Action forwards submissions as JSON to `CONTACT_FORM_ENDPOINT` or `NEWSLETTER_ENDPOINT` when that variable is set (with `NEWSLETTER_API_KEY` as a Bearer token), through `postJson` in `src/lib/form-delivery.ts`. With neither, it reports success, discards the submission and logs a warning. That discard path carries a marker line, `// @velocity-stub contact` or `// @velocity-stub newsletter`, and `npm run check:agent` reports it while the endpoint isn't set.
+
+**If the user already has a webhook or form service** (Zapier, Make, Formspree, a serverless function), the endpoint route needs no code: set the variable in `.env` and on the host, then skip to step 6. On Vercel, Netlify and Cloudflare, set it in the platform's environment settings. A self-hosted Node server doesn't load `.env` by itself, so start it with `node --env-file=.env dist/server/entry.mjs`. Otherwise, wire a provider as below.
 
 Actions run on the server through the deploy adapter, while every page stays prerendered. Don't add `output: 'server'`.
 
@@ -87,7 +89,7 @@ contact: defineAction({
 - Send to the site owner and put the visitor's address in `reply_to`. Don't send to the visitor's address, or the form becomes an open relay.
 - `CONTACT_FROM_EMAIL` must be on a domain verified in Resend. Resend's `onboarding@resend.dev` sender only delivers to the Resend account owner's own address, which is fine for a first test.
 - Log the status and provider response with `console.error`, but never the API key. Remove the `import.meta.env.DEV` `console.log` of the submission, which logs personal data.
-- For a webhook, `POST` JSON to `CONTACT_FORM_ENDPOINT` and throw an `ActionError` unless `response.ok`.
+- For a webhook, you don't need this code: the Action already forwards to `CONTACT_FORM_ENDPOINT`. Replace that forwarding only when you switch to a provider.
 
 ## 4. Wire the newsletter Action
 
@@ -95,7 +97,7 @@ Use the same shape: keep `if (website) return { success: true };`, check the key
 
 ## 5. Remove the markers
 
-Delete the `// @velocity-stub contact` line once the contact Action really delivers, and `// @velocity-stub newsletter` once the newsletter Action does. Delete the TODO comment each stub carried. Remove a marker only for a handler that delivers.
+When you replace an Action's forwarding with a provider, remove its discard path, `warnUndelivered` call and `// @velocity-stub` line along with it, so a missing key throws an `ActionError` instead of dropping submissions. In projects created before 2.3, delete the TODO comment the stub carried instead. If you used the endpoint route, leave the marker: `check:agent` stays quiet while the endpoint is set. Remove a marker only for a handler that delivers.
 
 ## 6. Send a real message
 

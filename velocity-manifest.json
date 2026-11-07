@@ -1,5 +1,5 @@
 {
-  "version": "2.3.0",
+  "version": "2.4.0",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -129,6 +129,7 @@
       "@tailwindcss/typography": "^0.5.20"
     },
     "addDev": {
+      "@emnapi/runtime": "1.11.3",
       "@typescript-eslint/parser": "8.72.1",
       "@axe-core/playwright": "^4.14.0"
     }
@@ -462,9 +463,9 @@
     },
     {
       "fromVersion": "1.0.0",
-      "toVersion": "2.3.0",
+      "toVersion": "2.4.0",
       "title": "Agent-ready check",
-      "description": "npm run check:agent scans your source and build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links, forms still on their stubs, edits to Velocity-owned files and hardcoded text. It now runs at the end of npm run validate; if you customized validate, append && node scripts/check-agent.mjs yourself. To have it warn about edits to Velocity-owned files, run npm run check:agent -- --write-baseline once this upgrade is done and commit .velocity/baseline.json. Your contact and newsletter Actions are yours, so they weren't changed; check:agent still finds their original TODOs."
+      "description": "npm run check:agent scans your source and build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links, forms still on their stubs, edits to Velocity-owned files and hardcoded text. It now runs at the end of npm run validate; if you customized validate, append && node scripts/check-agent.mjs yourself. create-velocity-astro 2.1 and later record .velocity/baseline.json during the upgrade, so it can warn about edits to Velocity-owned files; with an older CLI, run npm run check:agent -- --write-baseline once and commit the file. Your contact and newsletter Actions are yours, so they weren't changed; check:agent still finds their original TODOs."
     }
   ],
   "scaffold": {
@@ -475,6 +476,10 @@
       {
         "id": "agents",
         "overlay": "variants/agents"
+      },
+      {
+        "id": "project",
+        "overlay": "variants/project"
       },
       {
         "id": "i18n",
