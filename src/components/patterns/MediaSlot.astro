@@ -80,6 +80,7 @@ const name = label ?? t('media.photo');
     <div
       role="img"
       aria-label={t('media.placeholder', { name })}
+      data-media-placeholder={name}
       class="bg-muted text-foreground-muted flex size-full flex-col items-center justify-center gap-2 p-4 text-center"
     >
       <Icon name={icon} size="lg" />

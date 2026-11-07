@@ -32,7 +32,7 @@ const quickLinks = getNavItems()
       <div class="max-w-2xl mx-auto text-center">
         <!-- Animated 404 -->
         <div class="relative mb-8">
-          <div class="error-code font-display text-[10rem] md:text-[14rem] lg:text-[18rem] font-bold leading-none tracking-tighter select-none">
+          <div class="error-code font-display font-bold leading-none tracking-tighter select-none">
             <span class="inline-block error-digit" style="animation-delay: 0s;">4</span>
             <span class="inline-block error-digit text-transparent bg-clip-text bg-gradient-to-br from-brand-400 via-brand-500 to-brand-600" style="animation-delay: 0.1s;">0</span>
             <span class="inline-block error-digit" style="animation-delay: 0.2s;">4</span>
@@ -86,6 +86,8 @@ const quickLinks = getNavItems()
   .error-code {
     color: var(--foreground);
     opacity: 0.15;
+    /* Decorative digits, larger than the type scale: 10rem on phones up to 18rem */
+    font-size: clamp(10rem, 28vw, 18rem);
   }
 
   .error-digit {

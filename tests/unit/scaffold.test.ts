@@ -29,6 +29,7 @@ function agentDocs(dir: string) {
   return [
     path.join(dir, 'AGENTS.md'),
     path.join(dir, '.agents/velocity.md'),
+    path.join(dir, '.agents/design.md'),
     ...fs.readdirSync(skills).map((name) => path.join(skills, name, 'SKILL.md')),
   ];
 }
@@ -153,8 +154,8 @@ describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (
       expect(text, doc).not.toMatch(/check:registry|test:scaffold|variants\//);
       const paths = backticked(text)
         .filter((ref) => /^(src|tests|integrations|\.agents)\//.test(ref))
-        // Worked examples and templates aren't real paths
-        .filter((ref) => !/[<*…]|pricing|\/Name/i.test(ref));
+        // Worked examples and templates aren't real paths, and the site brief is written by the agent
+        .filter((ref) => !/[<*…]|pricing|\/Name/i.test(ref) && ref !== '.agents/site.md');
       for (const rel of paths) expect(fs.existsSync(path.join(dir, rel)), `${doc}: ${rel}`).toBe(true);
     }
   });
@@ -180,6 +181,12 @@ describe('template extension points', () => {
     expect(fs.existsSync(path.join(process.cwd(), file))).toBe(true);
     expect(manifest.files.protected).toContain(file);
     expect(manifest.files.seed).toContain(file);
+  });
+
+  it('gives projects a sections folder that upgrades add but never touch', () => {
+    expect(fs.existsSync(path.join(process.cwd(), 'src/components/sections/README.md'))).toBe(true);
+    expect(manifest.files.protected).toContain('src/components/sections/');
+    expect(manifest.files.seed).toContain('src/components/sections/README.md');
   });
 
   it.each(['Section', 'PageHeader', 'MediaSlot'])('adds the %s pattern to upgraded projects', (name) => {

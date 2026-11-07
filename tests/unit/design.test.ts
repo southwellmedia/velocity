@@ -284,3 +284,47 @@ describe('npm run design -- fonts', () => {
     expect(design.fontsReport(root).unused).toEqual(['Manrope']);
   });
 });
+
+describe('section sources', () => {
+  const SECTIONS = path.join(REPO, 'variants/agents/.agents/design/sections');
+  const files = fs.readdirSync(SECTIONS).filter((f) => f.endsWith('.astro')).sort();
+  const registry = JSON.parse(fs.readFileSync(path.join(REPO, 'component-registry.json'), 'utf8')).components as Record<string, { files: string[] }>;
+  const entryFor = (file: string) => Object.entries(registry).find(([, c]) => c.files.includes(file))?.[0];
+  const recipes = fs.readFileSync(path.join(REPO, 'variants/agents/.agents/recipes.md'), 'utf8');
+
+  it('match the recipes.md index one to one', () => {
+    const listed = [...recipes.matchAll(/^\| `(\w+)` \|/gm)].map((m) => `${m[1]}.astro`).sort();
+    expect(listed).toEqual(files);
+  });
+
+  it.each(files)('%s carries a stamp, imports only registry components and declares them in @requires', (file) => {
+    const text = fs.readFileSync(path.join(SECTIONS, file), 'utf8');
+    const stamp = /@velocity-section (\w+)@(\d+\.\d+\.\d+)/.exec(text);
+    expect(stamp?.[1]).toBe(file.replace('.astro', ''));
+    const imports = [...text.matchAll(/from '@\/components\/([^']+)'/g)].map((m) => `src/components/${m[1]}`);
+    const entries = imports.map((rel) => {
+      const entry = entryFor(rel);
+      expect(entry, `${file} imports ${rel}, which isn't in component-registry.json`).toBeDefined();
+      return entry;
+    });
+    const requires = /@requires ([^\n]+)/.exec(text)?.[1].split(',').map((s) => s.trim()).filter((s) => s !== 'none') ?? [];
+    expect(requires.sort()).toEqual([...new Set(entries)].sort());
+    // Copy comes in as props: no t() lookups of the project's own keys.
+    expect(text).not.toMatch(/\bt\(/);
+  });
+
+  it('pass check:agent design rules from their copied location', async () => {
+    // @ts-expect-error plain ESM script without type declarations
+    const check = await import('../../scripts/check-agent.mjs');
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'sections-'));
+    dirs.push(root);
+    fs.mkdirSync(path.join(root, 'src/components/sections'), { recursive: true });
+    fs.mkdirSync(path.join(root, '.agents'), { recursive: true });
+    fs.writeFileSync(path.join(root, '.agents/site.md'), '# Brief\n');
+    for (const f of files) fs.copyFileSync(path.join(SECTIONS, f), path.join(root, 'src/components/sections', f));
+    const source = check.checkDesignSource(root) as { rule: string; file: string; line: number; message: string }[];
+    expect(source.map((f) => `${f.file}:${f.line} ${f.message}`)).toEqual([]);
+    const hardcoded = await check.checkHardcoded(root);
+    expect(hardcoded.map((f: { file: string; line: number; message: string }) => `${f.file}:${f.line} ${f.message}`)).toEqual([]);
+  });
+});

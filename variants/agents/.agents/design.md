@@ -7,7 +7,7 @@ Maintained by Velocity and replaced on upgrade. How to give a site its own look 
 | Layer | Where | Owner |
 |---|---|---|
 | Pages | `src/views/`, `src/pages/` | Project |
-| Sections | `src/components/sections/` (create it) and `src/components/site/` | Project |
+| Sections | `src/components/sections/` and `src/components/site/` | Project |
 | Direction | the marked block in `src/styles/theme.css` | Project |
 | Primitives | `src/components/ui/`, `src/components/hero/` | Velocity, replaced on upgrade |
 | Tokens and base themes | `src/styles/tokens/`, `src/styles/themes/`, `global.css` | Velocity, replaced on upgrade |
@@ -64,6 +64,10 @@ Set these in `theme.css` on `:root` only (they're computed once there, so a loca
 | `--theme-radius-sm` … `-xl`, `--theme-radius-button` | 4–10px | Every `rounded-*` class and every Button |
 | `--theme-shadow-sm` … `-xl` | soft | Every `shadow-*` class |
 | `--theme-button-weight` | 600 | Button label weight |
+
+## Build pages from sections
+
+Compose each page from sections in `src/components/sections/`. Start from a recipe: `.agents/recipes.md` indexes the working sources in `.agents/design/sections/` (heroes, feature grids, steps, testimonials, pricing, FAQ, team, contact, hours) and gives a home-page blueprint per business type. Copy a source, keep its `@velocity-section` stamp, and adapt it. When nothing fits, write a new section the same way: props for copy, primitives and tokens only, a `class` prop passed through, and the rules below.
 
 ## Rules for pages and sections
 

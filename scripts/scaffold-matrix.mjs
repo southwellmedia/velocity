@@ -4,7 +4,7 @@
  *
  *   pnpm test:scaffold                  # 8 combinations + a custom-language project: install, astro check, build, check:agent
  *   pnpm test:scaffold --e2e            # …plus the Playwright suite in each full-component project
- *   pnpm test:scaffold --only=min-i18n  # filter by name: (demo|min)-(en|i18n)-(all|none) or custom-locale
+ *   pnpm test:scaffold --only=min-i18n  # filter by name: (demo|min)-(en|i18n)-(all|none), custom-locale or sections
  *   pnpm test:scaffold --out=./.matrix  # where projects are created (default: OS temp dir)
  *   pnpm test:scaffold --fresh          # install without the lockfile, as a real project does
  *
@@ -42,6 +42,8 @@ const combos = [
   ),
   // Adding a language is one edit to locales.mjs, even one with no built-in strings.
   { name: 'custom-locale', options: { demo: true, i18n: false, components: 'all' }, locales: ['en', 'de'] },
+  // Every section source, copied where projects put them, with a brief and a direction applied.
+  { name: 'sections', options: { demo: false, i18n: false, components: 'all' }, sections: true },
 ].filter((c) => typeof args.only !== 'string' || c.name.includes(args.only));
 
 /** Run a shell command synchronously. Returns { ok, seconds, output } with stdout and stderr combined. */
@@ -63,7 +65,37 @@ const bin = (pkgBin) => `${node} ${JSON.stringify(path.join('node_modules', pkgB
 const results = [];
 let port = 4400;
 
-for (const { name, options, locales } of combos) {
+/**
+ * Set a project up the way an agent following .agents/recipes.md would: every section
+ * source copied into src/components/sections/, fixture pages that render them all,
+ * a site brief, and a design direction (with installed fonts, so no network).
+ */
+function addSections(dir) {
+  const sources = path.join(dir, '.agents/design/sections');
+  const target = path.join(dir, 'src/components/sections');
+  fs.mkdirSync(target, { recursive: true });
+  for (const file of fs.readdirSync(sources)) fs.copyFileSync(path.join(sources, file), path.join(target, file));
+  fs.cpSync(path.join(root, 'variants/fixtures/sections'), path.join(dir, 'src/pages/fixture'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.agents/site.md'), '# Site brief\n\nStatus: test fixture\n');
+  return run(`${node} scripts/design.mjs direction --base warm-local --fallback-fonts`, dir);
+}
+
+/** check:agent must report nothing about the sections: no design rules, no hardcoded text. */
+function sectionFindings(dir) {
+  const r = run(`${node} scripts/check-agent.mjs --json`, dir);
+  let result;
+  try {
+    result = JSON.parse(r.output.slice(r.output.indexOf('{')));
+  } catch {
+    return { ...r, ok: false };
+  }
+  const bad = result.findings.filter(
+    (f) => (f.rule.startsWith('design/') && f.severity !== 'notice') || (f.rule === 'strings/hardcoded' && f.file.startsWith('src/components/sections/')),
+  );
+  return { ok: r.ok && bad.length === 0, seconds: r.seconds, output: bad.map((f) => `${f.rule} ${f.file}:${f.line ?? ''} ${f.message}`).join('\n') || r.output };
+}
+
+for (const { name, options, locales, sections } of combos) {
   const dir = path.join(out, name);
   process.stdout.write(`\n▶ ${name}\n`);
   const { applied } = scaffoldProject(root, dir, options);
@@ -92,6 +124,7 @@ for (const { name, options, locales } of combos) {
         return run('pnpm install --no-frozen-lockfile', dir, { CI: 'true' });
       },
     ],
+    ...(sections ? [['sections', () => addSections(dir)]] : []),
     [
       'check',
       () => {
@@ -104,6 +137,7 @@ for (const { name, options, locales } of combos) {
     ['build', () => run(`${bin('astro/bin/astro.mjs')} build`, dir, { DEPLOY_TARGET: 'node' })],
     // A fresh project must pass its own agent-ready check (warnings, such as the form stubs, are expected).
     ['agent', () => run('node scripts/check-agent.mjs', dir)],
+    ...(sections ? [['section rules', () => sectionFindings(dir)]] : []),
   ];
   if (args.e2e && options.components === 'all') {
     const e2ePort = String(port++);
