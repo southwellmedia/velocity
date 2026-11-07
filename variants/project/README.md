@@ -14,12 +14,12 @@ The site runs at http://localhost:4321.
 
 ## Make it yours
 
-- **Site details:** `src/config/site.config.ts` (name, description, URL, social links)
+- **Site details:** `src/config/site.config.ts` (name, description, social links). Canonical and social-card URLs come from `SITE_URL`, so set it to your production URL in `.env` and in the environment that runs the build.
 - **Logo and favicon:** `src/assets/branding/` and `public/favicon.svg`
 - **Navigation:** `src/config/nav.config.ts`
 - **Home page:** `src/views/HomeView.astro`
 - **Colors and theme:** `src/styles/theme.css`
-- **Forms:** set `CONTACT_FORM_ENDPOINT` / `NEWSLETTER_ENDPOINT` in `.env`, or wire your provider in `src/actions/index.ts`. Until you do, submissions are discarded and the server logs a warning.
+- **Forms:** set `CONTACT_FORM_ENDPOINT` / `NEWSLETTER_ENDPOINT` in `.env`, or wire your provider in `src/actions/index.ts`. Hosting platforms read these from their environment settings. A self-hosted Node server doesn't load `.env` by itself: start it with `node --env-file=.env dist/server/entry.mjs` or set the variables in its environment. Until delivery is configured, submissions are discarded and the server logs a warning.
 
 ## Commands
 

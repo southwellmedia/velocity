@@ -7,6 +7,17 @@
  * Resend, Postmark or a CRM SDK, goes in the action itself.
  */
 
+/**
+ * A failed delivery. Carries only the HTTP status (when the endpoint answered),
+ * never the endpoint URL, which can contain a token.
+ */
+export class DeliveryError extends Error {
+  constructor(readonly status?: number) {
+    super(status ? `Form endpoint responded with ${status}` : 'Form endpoint could not be reached');
+    this.name = 'DeliveryError';
+  }
+}
+
 /** How long to wait for an endpoint before treating the submission as failed. */
 const TIMEOUT_MS = 10_000;
 
@@ -23,14 +34,17 @@ export async function postJson(
 ): Promise<void> {
   const response = await fetchImpl(endpoint, {
     method: 'POST',
+    // A redirect would be followed as a GET without the body, and a 2xx from
+    // that would report a submission that never arrived.
+    redirect: 'error',
     headers: { 'content-type': 'application/json', accept: 'application/json', ...headers },
     body: JSON.stringify(body),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
 
-  if (!response.ok) {
-    throw new Error(`Form endpoint responded with ${response.status} ${response.statusText}`.trim());
-  }
+  // Release the connection; only the status matters.
+  await response.body?.cancel().catch(() => {});
+  if (!response.ok) throw new DeliveryError(response.status);
 }
 
 const warned = new Set<string>();

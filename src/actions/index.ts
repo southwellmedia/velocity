@@ -1,7 +1,7 @@
 import { ActionError, defineAction } from 'astro:actions';
 import { CONTACT_FORM_ENDPOINT, NEWSLETTER_API_KEY, NEWSLETTER_ENDPOINT } from 'astro:env/server';
 import { contactSchema, newsletterSchema } from '@/lib/forms';
-import { postJson, warnUndelivered } from '@/lib/form-delivery';
+import { postJson, warnUndelivered, DeliveryError } from '@/lib/form-delivery';
 
 /**
  * Astro Actions — type-safe server functions for Velocity's forms.
@@ -73,7 +73,9 @@ async function deliver(form: string, send: () => Promise<void>): Promise<void> {
   try {
     await send();
   } catch (error) {
-    console.error(`[actions.${form}] delivery failed`, error);
+    // Log only the status: a fetch error's message can include the endpoint URL and any token in it.
+    const status = error instanceof DeliveryError ? error.status : undefined;
+    console.error(`[actions.${form}] delivery failed${status ? ` (HTTP ${status})` : ' (endpoint unreachable or timed out)'}`);
     throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: `The ${form} form could not be delivered.` });
   }
 }
