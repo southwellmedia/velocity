@@ -41,6 +41,10 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 - `integrations/`: local Astro integrations for deploy target detection and the Pagefind search index.
 - `component-registry.json`: reference list of the components Velocity ships, including ones not installed here. You don't need to add your own components to it.
 
+## The site brief
+
+If `.agents/site.md` exists, read it before changing pages, copy or styles: it records what the site is, its design direction and section rhythm, the facts the user gave, and what's still a placeholder. When you change the site, update its Sitemap, Design, Placeholders and Decisions log. It's the project's file; upgrades never touch it. The `velocity-start-site` skill creates it.
+
 ## Who owns which files
 
 `create-velocity-astro upgrade` follows `velocity-manifest.json → files`. Check it before making a change you want to keep.
@@ -54,7 +58,7 @@ New files you add inside Velocity's folders stay in place. Only files Velocity s
 
 ## Before you say you're done
 
-Run `npm run validate`, which ends with `check:agent`, then `npm run build && npm run test:e2e` for accessibility and CSP in a real browser. `check:agent` scans the source and the build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links and anchors, pages that exist in only one language on a multilingual site, forms still on their stubs, edits to Velocity-owned files, hardcoded user-facing text, remaining placeholders, the scaffold's default identity, and the design rules below. Each finding prints the file, the rule below that it breaks, and the fix. Errors fail; warnings are worth fixing or explaining to the user, and notices are information only. A file that is deliberately single-language can opt out of the hardcoded-text warning with a `velocity-allow-hardcoded` comment, and a page in `src/pages/` can opt out of the one-language-only warning with a `velocity-single-language` comment.
+If the site has a brief, every placeholder `check:agent` lists must be in its Placeholders section, and every design warning you leave must have a Decisions log entry. Run `npm run validate`, which ends with `check:agent`, then `npm run build && npm run test:e2e` for accessibility and CSP in a real browser. `check:agent` scans the source and the build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links and anchors, pages that exist in only one language on a multilingual site, forms still on their stubs, edits to Velocity-owned files, hardcoded user-facing text, remaining placeholders, the scaffold's default identity, and the design rules below. Each finding prints the file, the rule below that it breaks, and the fix. Errors fail; warnings are worth fixing or explaining to the user, and notices are information only. A file that is deliberately single-language can opt out of the hardcoded-text warning with a `velocity-allow-hardcoded` comment, and a page in `src/pages/` can opt out of the one-language-only warning with a `velocity-single-language` comment.
 
 ## Rules
 

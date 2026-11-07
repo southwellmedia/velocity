@@ -1,6 +1,6 @@
 ---
 name: velocity-rebrand
-description: Rebrand this Velocity site with a new brand color, theme, fonts, logo, favicon, site name and share-image color. Use when asked to change the brand, colors, typography, logo or site name, or to make the site match a style guide.
+description: Rebrand this Velocity site with a new brand color, theme, fonts, logo, favicon, site name and share-image color. Use when asked to change the brand, colors, typography, logo or site name, or to make the site match a style guide. For a whole new look (bolder, quieter, different type or spacing) use the design directions in .agents/design.md; to set up or rebuild the whole site use velocity-start-site.
 ---
 
 # Rebrand the site

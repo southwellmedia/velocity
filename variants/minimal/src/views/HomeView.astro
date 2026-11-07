@@ -27,6 +27,7 @@ const [before, after] = t('starter.description').split('{file}');
       <p class="text-foreground-muted mx-auto mt-6 max-w-2xl text-lg">
         {before}<code class="bg-secondary text-foreground rounded px-2 py-1 text-sm">src/views/HomeView.astro</code>{after}
       </p>
+      <p class="text-foreground-muted mx-auto mt-3 max-w-2xl">{t('starter.agent')}</p>
       <div class="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
         <Button href={localizeRoute('blog', locale)} size="lg">
           {t('starter.readBlog')}

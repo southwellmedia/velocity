@@ -123,12 +123,30 @@ describe('agent files', () => {
     for (const rel of listed("Velocity's")) expect(manifest.files.safe, rel).toContain(rel);
   });
 
+  it('velocity-start-site removes exactly the demo the minimal scaffold leaves out', () => {
+    const skill = read('.agents/skills/velocity-start-site/SKILL.md');
+    const block = /<!-- demo-paths:start -->([\s\S]*?)<!-- demo-paths:end -->/.exec(skill)?.[1] ?? '';
+    const listed = backticked(block);
+    const minimal = manifest.scaffold.variants.find((v: { id: string }) => v.id === 'minimal');
+    expect(listed).toEqual(minimal.remove);
+    for (const rel of listed) expect(fs.existsSync(path.join(root, rel)), rel).toBe(true);
+  });
+
+  it('velocity-start-site has a brief template with the headings the skill and CLI rely on', () => {
+    const template = read('.agents/skills/velocity-start-site/brief-template.md');
+    const headings = [...template.matchAll(/^## (.+)$/gm)].map((m) => m[1]);
+    expect(headings).toEqual(['Business', 'Audience', 'Primary action', 'Voice', 'Brand', 'Design', 'Languages', 'Sitemap', 'Facts', 'Placeholders', 'Assumptions', 'Decisions log']);
+    expect(template).toMatch(/^Status: draft$/m);
+  });
+
   it('commits project skills but ignores local Claude state', () => {
     const gitignore = fs.readFileSync(path.join(root, '.gitignore'), 'utf8');
     expect(gitignore).toMatch(/^!\.claude\/skills\/$/m);
     expect(gitignore).not.toMatch(/^\.claude\/$/m);
   });
 });
+
+const demoPaths: string[] = manifest.scaffold.variants.find((v: { id: string }) => v.id === 'minimal').remove;
 
 describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (options) => {
   const dir = path.join(tmp, `${options.demo ? 'demo' : 'min'}-${options.i18n ? 'i18n' : 'en'}-${options.components}`);
@@ -137,6 +155,14 @@ describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (
   it('applies the expected variants', () => {
     expect(applied.includes('i18n')).toBe(options.i18n);
     expect(applied.includes('minimal')).toBe(!options.demo);
+  });
+
+  it("matches velocity-start-site's starting-state signals", () => {
+    const home = fs.readFileSync(path.join(dir, 'src/views/HomeView.astro'), 'utf8');
+    const demo = fs.existsSync(path.join(dir, 'src/pages/components.astro')) || home.includes('@/components/landing/');
+    expect(demo).toBe(options.demo);
+    expect(home.includes('Home page (starter)')).toBe(!options.demo);
+    expect(fs.existsSync(path.join(dir, '.agents/site.md'))).toBe(false);
   });
 
   it('has no imports pointing at removed files', () => {
@@ -150,12 +176,17 @@ describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (
   it('gives agents instructions that fit the project', () => {
     expect(fs.existsSync(path.join(dir, '.claude/skills/velocity-add-page/SKILL.md'))).toBe(true);
     for (const doc of agentDocs(dir)) {
-      const text = fs.readFileSync(doc, 'utf8');
+      // The demo-removal list names files only demo projects have.
+      const text = fs.readFileSync(doc, 'utf8').replace(/<!-- demo-paths:start -->[\s\S]*?<!-- demo-paths:end -->/, '');
       expect(text, doc).not.toMatch(/check:registry|test:scaffold|variants\//);
       const paths = backticked(text)
         .filter((ref) => /^(src|tests|integrations|\.agents)\//.test(ref))
         // Worked examples and templates aren't real paths, and the site brief is written by the agent
-        .filter((ref) => !/[<*…]|pricing|\/Name/i.test(ref) && ref !== '.agents/site.md');
+        .filter((ref) => !/[<*…]|pricing|\/Name/i.test(ref) && ref !== '.agents/site.md')
+        // Created when the first photo is added (see MediaSlot)
+        .filter((ref) => ref !== 'src/assets/photos/')
+        // Demo files are named as signals of a demo project; minimal projects don't have them.
+        .filter((ref) => options.demo || !demoPaths.includes(ref));
       for (const rel of paths) expect(fs.existsSync(path.join(dir, rel)), `${doc}: ${rel}`).toBe(true);
     }
   });
