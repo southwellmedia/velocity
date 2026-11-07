@@ -38,9 +38,12 @@
       "src/components/hero/",
       ".agents/velocity.md",
       ".agents/components.md",
+      ".agents/design/",
+      ".agents/design.md",
       ".agents/skills/",
       ".claude/skills/",
-      "scripts/check-agent.mjs"
+      "scripts/check-agent.mjs",
+      "scripts/design.mjs"
     ],
     "protected": [
       "astro.config.mjs",
@@ -573,6 +576,7 @@
       "scripts/generate-components-ref.mjs",
       "tests/unit/components-ref.test.ts",
       "tests/unit/check-agent.test.ts",
+      "tests/unit/design.test.ts",
       "tests/unit/scaffold.test.ts",
       ".github/workflows/scaffold.yml"
     ],
@@ -611,6 +615,9 @@
       },
       "check:agent": {
         "value": "node scripts/check-agent.mjs"
+      },
+      "design": {
+        "value": "node scripts/design.mjs"
       }
     }
   }

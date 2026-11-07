@@ -24,6 +24,10 @@ Change the `@import` line to switch themes. Every theme defines the same semanti
 
 ## 2. Set the brand color
 
+For a whole new look (type, shape, spacing and colour together), apply a design direction instead of steps 2 and 3: `npm run design -- direction --base <id> --brand "#hex"` writes the theme and registers the fonts, and checks contrast. See `.agents/design.md`. Use this skill for a quick swap of brand colour, fonts, logo or name.
+
+- After changing colours by hand, `npm run design -- tokens` prints the contrast of every text/surface pair in light and dark and exits 1 if any is below AA. After changing fonts, `npm run design -- fonts` checks the package, the `fonts` entry and the tokens agree.
+
 The `brand-50` to `brand-900` scale is computed in OKLCH from `--brand-hue`. Convert the brand's hex color to OKLCH and take its hue (the h value, 0 to 360). Then override it after the import:
 
 ```css

@@ -16,6 +16,7 @@ Examples use npm. Use the package manager this project was installed with.
 | Health check | `GET http://localhost:<port>/_astro/status` |
 | Full validation | `npm run validate` (lint → check → unit tests → build → agent-ready check) |
 | Agent-ready check | `npm run check:agent` after a build; `-- --json` for machine-readable output |
+| Design | `npm run design -- direction --list`, `-- direction --base <id> --brand "#hex"`, `-- tokens` (contrast matrix), `-- fonts`. See `.agents/design.md` |
 | Unit tests | `npm test` |
 | E2E + a11y | `npm run build && npm run test:e2e` |
 
@@ -26,7 +27,7 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 ## Where things live
 
 - `src/components/site/`: this site's `SiteHeader` and `SiteFooter`. Every layout renders them, so change the header or footer here, never in `src/layouts/` or `src/components/layout/`.
-- `src/styles/theme.css`: picks the active theme. Themes load last, so they can override any token. `--brand-hue` recolours the brand scale.
+- `src/styles/theme.css`: picks the active theme. Themes load last, so they can override any token. `--brand-hue` recolours the brand scale. `npm run design -- direction` writes a design direction into it as a marked block. Read `.agents/design.md` before changing the site's look: it covers directions, theme controls and the design rules for pages and sections.
 - `src/views/`: page content. `src/pages/*.astro` are thin wrappers that render a view with a locale, and `src/pages/[lang]/` holds the localized wrappers. The 404 page's content is `src/views/NotFoundView.astro`, so customize it there, not in `src/pages/404.astro`.
 - `src/components/ui/`: design-system primitives, one folder per component with a `*.variants.ts` file using CVA. Read `.agents/components.md` before using or building a component: it lists every component Velocity ships with its purpose, props, variants, an example and what to use instead.
 - `src/components/patterns/`: compositions of primitives, such as `SearchInput`.

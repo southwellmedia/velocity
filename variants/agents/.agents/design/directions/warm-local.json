@@ -1,0 +1,63 @@
+{
+  "id": "warm-local",
+  "name": "Warm local",
+  "feel": "Friendly, approachable",
+  "suits": "trades, cafés, salons, bakeries",
+  "rhythm": "split hero with photo → hours and location → 3-column services → testimonials → invert CTA",
+  "imagery": "Real photos of the place, people and work; warm crops, rounded corners",
+  "brand": {
+    "hue": 50,
+    "chroma": 1.0
+  },
+  "neutral": {
+    "chroma": 0.014
+  },
+  "primary": "brand",
+  "invert": "brand",
+  "fonts": {
+    "display": {
+      "family": "Nunito",
+      "fallbacks": [
+        "sans-serif"
+      ]
+    },
+    "body": {
+      "family": "Nunito",
+      "fallbacks": [
+        "sans-serif"
+      ]
+    },
+    "installedFallback": {
+      "display": {
+        "family": "Outfit",
+        "fallbacks": [
+          "sans-serif"
+        ]
+      },
+      "body": {
+        "family": "Manrope",
+        "fallbacks": [
+          "sans-serif"
+        ]
+      }
+    }
+  },
+  "controls": {
+    "--theme-heading-weight": "800",
+    "--theme-heading-tracking": "-0.01em",
+    "--theme-body-leading": "1.65",
+    "--theme-heading-scale": "1",
+    "--theme-display-scale": "1",
+    "--theme-section-space": "1",
+    "--theme-radius-sm": "0.5rem",
+    "--theme-radius-md": "0.75rem",
+    "--theme-radius-lg": "1rem",
+    "--theme-radius-xl": "1.5rem",
+    "--theme-radius-button": "9999px",
+    "--theme-button-weight": "700",
+    "--theme-shadow-sm": "0 1px 2px rgba(60, 30, 0, 0.06)",
+    "--theme-shadow-md": "0 4px 12px rgba(60, 30, 0, 0.08)",
+    "--theme-shadow-lg": "0 10px 24px rgba(60, 30, 0, 0.1)",
+    "--theme-shadow-xl": "0 24px 48px rgba(60, 30, 0, 0.14)"
+  }
+}

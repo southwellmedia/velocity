@@ -21,7 +21,7 @@
   --brand-200: oklch(87% 0.07 295);
   --brand-300: oklch(77% 0.13 295);
   --brand-400: oklch(68% 0.2 295);
-  --brand-500: oklch(58% 0.25 295);
+  --brand-500: oklch(63% 0.25 295);
   --brand-600: oklch(50% 0.22 295);
   --brand-700: oklch(42% 0.18 295);
   --brand-800: oklch(34% 0.14 295);
@@ -136,7 +136,7 @@
   --foreground: oklch(94% 0.012 285);
   --foreground-secondary: oklch(75% 0.02 285);
   --foreground-muted: oklch(60% 0.018 285); /* 5:1 on cards, AA */
-  --foreground-subtle: oklch(45% 0.015 285);
+  --foreground-subtle: oklch(60% 0.015 285); /* 4.6:1 on cards, AA */
 
   --border: oklch(20% 0.035 285);
   --border-strong: oklch(28% 0.03 285);
@@ -155,7 +155,7 @@
   --accent-light: oklch(18% 0.06 295);
 
   --muted: oklch(18% 0.03 285);
-  --muted-foreground: oklch(55% 0.018 285);
+  --muted-foreground: oklch(60% 0.018 285);
 
   --card: oklch(14% 0.035 285);
   --card-border: oklch(20% 0.035 285);
@@ -177,6 +177,11 @@
   --success-light: oklch(18% 0.05 145);
   --warning-light: oklch(18% 0.05 85);
   --error-light: oklch(18% 0.05 25);
+  --info-light: oklch(18% 0.05 260);
+  --success-foreground: oklch(85% 0.12 145); /* text on the status -light surfaces — WCAG AA */
+  --warning-foreground: oklch(88% 0.12 85);
+  --error-foreground: oklch(85% 0.09 25);
+  --info-foreground: oklch(85% 0.08 260);
 
   /* Inverted section */
   --surface-invert: oklch(14% 0.035 285);
@@ -184,7 +189,7 @@
   --surface-invert-tertiary: oklch(24% 0.028 285);
   --on-invert: oklch(94% 0.012 285);
   --on-invert-secondary: oklch(75% 0.02 285);
-  --on-invert-muted: oklch(55% 0.018 285);
+  --on-invert-muted: oklch(62% 0.018 285);
   --border-invert: oklch(24% 0.028 285);
   --border-invert-strong: oklch(32% 0.025 285);
 
