@@ -7,7 +7,7 @@
  * Those files are yours and are never overwritten.
  *
  * Adding a language? Its UI strings fall back to English until you add them
- * (here or in your translations file).
+ * to src/i18n/translations/<locale>.ts (upgrades replace this file).
  */
 
 const en = {

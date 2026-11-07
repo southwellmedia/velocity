@@ -44,7 +44,9 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 `create-velocity-astro upgrade` follows `velocity-manifest.json → files`. Check it before making a change you want to keep.
 
 - **Yours, never overwritten:** `src/components/site/`, `src/styles/theme.css`, `src/config/collections.ts`, `src/views/`, `src/pages/`, `src/content/`, `src/assets/`, `src/config/nav.config.ts`, `src/config/site.config.ts`, `src/components/patterns/`, `src/i18n/translations/`, `src/i18n/locales.mjs`, `src/actions/`, `tests/`, `astro.config.mjs`.
-- **Velocity's, overwritten on upgrade:** `src/components/ui/`, `src/components/layout/`, `src/layouts/`, `src/lib/`, `src/styles/tokens/`, `src/styles/themes/`, `src/styles/global.css`, `src/i18n/ui.ts`, `src/content.config.ts`, `integrations/`. Edited files are saved to `.velocity-backup/` first, but the edits must then be reapplied by hand. `npm run check:agent` warns when a Velocity-owned file differs from `.velocity/baseline.json`, which records them as scaffolded or last upgraded.
+- **Velocity's, overwritten on upgrade:** `src/components/ui/`, `src/components/layout/`, `src/layouts/`, `src/lib/`, `src/styles/tokens/`, `src/styles/themes/`, `src/styles/global.css`, `src/i18n/ui.ts`, `src/content.config.ts`, `integrations/`. Edited files are saved to `.velocity-backup/` first, but the edits must then be reapplied by hand.
+
+`npm run check:agent` warns when a Velocity-owned file differs from `.velocity/baseline.json`, which records those files as scaffolded or last upgraded.
 
 New files you add inside Velocity's folders stay in place. Only files Velocity ships are replaced. The same applies to skills: `velocity-*` skills are replaced on upgrade, so add project-specific skills under a different name. If a task requires editing a Velocity-owned file, tell the user that upgrades will replace the edit.
 
@@ -54,7 +56,7 @@ Run `npm run validate`, which ends with `check:agent`, then `npm run build && np
 
 ## Rules
 
-- **No hardcoded user-facing strings.** Use `const t = useTranslations(locale)` in views and `useTranslations(getLocale(Astro))` in components. Add new strings to `src/i18n/translations/<locale>.ts`, not `src/i18n/ui.ts`. Keys in translations override `ui.ts`, and missing keys fall back to English. A key missing from English renders as the raw key; `npm run check:agent` reports it with the file and line.
+- **No hardcoded user-facing strings.** Use `const t = useTranslations(locale)` in views and `useTranslations(getLocale(Astro))` in components. Add new strings to `src/i18n/translations/<locale>.ts`, not `src/i18n/ui.ts`. Keys in translations override `ui.ts`, and missing keys fall back to English. `ui.ts` only translates en, es and fr, so for any other locale translate its keys into `translations/<locale>.ts` (see the `velocity-add-locale` skill). A key missing from English renders as the raw key; `npm run check:agent` reports it with the file and line.
 - **Internal links** go through `localizeRoute` or `localizePath`.
 - **Colors:** use semantic Tailwind classes (`bg-background`, `text-foreground-muted`, `bg-brand-600`), never raw colors.
 - **Static first.** Pages are prerendered. Only Actions, and anything explicitly marked `export const prerender = false`, run on the server. Don't add `output: 'server'`.
@@ -68,5 +70,5 @@ Run `npm run validate`, which ends with `check:agent`, then `npm run build && np
 - **Search:** only content inside `data-pagefind-body` is indexed. `PageLayout` and `BlogLayout` already set it, so mark any new content layout the same way.
 - **Fonts:** register families in `fonts` in `astro.config.mjs`. `BaseLayout` renders every registered family and preloads the first. Don't `@import` font CSS.
 - **Accessibility is tested.** Routes in `src/config/nav.config.ts` are picked up by `tests/e2e/site.ts` automatically, and each must pass axe WCAG 2 A/AA with no serious or critical violations. Axe runs on each route's default-locale URL, and every route must load in every enabled locale.
-- **Forms:** `ContactForm` and `NewsletterForm` submit to Actions in `src/actions/index.ts` that report success but deliver nothing until you finish their TODOs. Connect a provider before relying on them, then delete the `@velocity-stub` line; `npm run check:agent` warns until you do.
+- **Forms:** `ContactForm` and `NewsletterForm` submit to Actions in `src/actions/index.ts` that report success but deliver nothing until you finish their TODOs. Each stub carries a `// @velocity-stub contact|newsletter` line, and `npm run check:agent` warns until it's gone. Follow the `velocity-connect-forms` skill, and never report a form as working without a real send through the provider.
 - **Secrets** go through `astro:env` (`env.schema` in `astro.config.mjs`), never `import.meta.env` directly.
