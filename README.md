@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Astro 7 Boilerplate</strong> — A production-ready starter template built on Astro 7 and Tailwind CSS v4.
+  <strong>Astro 7 Starter Kit</strong> — production-ready, built on Astro 7 and Tailwind CSS v4, with first-class support for AI coding agents.
 </p>
 
 <p align="center">

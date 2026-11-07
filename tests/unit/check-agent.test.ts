@@ -96,11 +96,13 @@ describe('check:agent', () => {
   it('i18n/untranslated: warns about English fallbacks, including built-in UI strings', async () => {
     const root = project({
       'src/i18n/locales.mjs': "export const defaultLocale = 'en';\nexport const locales = ['en', 'de'];\n",
-      'src/i18n/translations/de.ts': "export default { pricing: { title: 'Preise' } };\n",
+      'src/i18n/translations/en.ts': "export default { pricing: { title: 'Pricing', titleEm: '' } };\n",
+      'src/i18n/translations/de.ts': "export default { pricing: { title: 'Preise', titleEm: '' } };\n",
     });
     const [f] = await findings(root, 'i18n/untranslated');
     expect(f).toMatchObject({ severity: 'warning', file: 'src/i18n/translations/de.ts' });
     expect(f.message).toContain('nav.home');
+    expect(f.message).not.toContain('titleEm');
     expect(f.fix).toContain('not src/i18n/ui.ts');
   });
 
@@ -138,6 +140,53 @@ describe('check:agent', () => {
     const messages = (await findings(root, 'links/broken')).map((f) => f.message);
     expect(messages).toHaveLength(3);
     expect(messages.join('\n')).toMatch(/\/pricing[\s\S]*#nope[\s\S]*\/logo\.svg/);
+  });
+
+  it('i18n/single-locale-page: flags pages with no other-language versions on a multilingual site', async () => {
+    const alternates = '<link rel="alternate" hreflang="es-ES" href="/es/">';
+    const files = {
+      'src/i18n/locales.mjs': "export const defaultLocale = 'en';\nexport const locales = ['en', 'es'];\n",
+      'src/i18n/translations/es.ts': "export default { pricing: { title: 'Precios' } };\n",
+      'src/i18n/ui.ts': "export const ui = { en: { nav: { home: 'Home' } }, es: { nav: { home: 'Inicio' } } };\n",
+      'dist/index.html': page(alternates),
+      'dist/pricing/index.html': page('<h1>Pricing</h1>'),
+      'dist/404.html': page('<h1>Not found</h1>'),
+      'dist/blog/hello/index.html': page('<meta property="og:type" content="article"><h1>Post</h1>'),
+      'src/pages/legal.astro': `<!-- ${check.SINGLE_LANGUAGE} -->\n<h1>Legal</h1>\n`,
+      'dist/legal/index.html': page('<h1>Legal</h1>'),
+    };
+    const [f, ...rest] = await findings(project(files), 'i18n/single-locale-page');
+    expect(rest).toEqual([]);
+    expect(f).toMatchObject({ severity: 'warning', file: 'dist/pricing/index.html' });
+    expect(f.message).toContain('/es/');
+
+    const single = project({ 'dist/pricing/index.html': page('<h1>Pricing</h1>') });
+    expect(await findings(single, 'i18n/single-locale-page')).toEqual([]);
+  });
+
+  it('links/broken: accepts server-rendered routes, redirects and a base path', async () => {
+    const root = project({
+      'src/pages/dashboard.astro': '---\nexport const prerender = false;\n---\n<p>Dashboard</p>\n',
+      'src/pages/users/[id].astro': '---\nexport const prerender = false;\n---\n',
+      'src/pages/api/ping.ts': 'export const prerender = false;\nexport const GET = () => new Response();\n',
+      'astro.config.mjs':
+        "export default { redirects: { '/moved': { status: 301, destination: '/' }, '/old': '/' }, site: 'https://x.dev' };\n",
+      'dist/index.html': page(
+        '<a href="/dashboard">a</a><a href="/users/42">b</a><a href="/api/ping">c</a><a href="/old">d</a><a href="/moved">e</a><a href="/users">missing</a>',
+      ),
+    });
+    const broken = (await findings(root, 'links/broken')).map((f) => f.message);
+    expect(broken).toHaveLength(1);
+    expect(broken[0]).toContain('/users');
+
+    const withBase = project({
+      'dist/index.html': page(
+        '<link rel="stylesheet" href="/docs/_astro/site.css"><a href="/docs">home</a><a href="/docs/about/">ok</a><a href="/docs/nope/">bad</a>',
+      ),
+      'dist/about/index.html': page('<h1>About</h1>'),
+      'dist/_astro/site.css': '',
+    });
+    expect((await findings(withBase, 'links/broken')).map((f) => f.message)).toEqual([expect.stringContaining('/docs/nope/')]);
   });
 
   it('forms/stub: warns on marked stubs and on the TODOs older projects shipped', async () => {
@@ -186,6 +235,47 @@ describe('check:agent', () => {
         [6, 'aria-label='],
         [5, 'Choose a plan'],
       ]);
+    });
+
+    it('scans pages, components in any folder and React islands', async () => {
+      const root = project({
+        'package.json': '{}',
+        'src/pages/pricing.astro': '<h1>Simple pricing</h1>\n',
+        'src/components/pricing/PlanCard.astro': '<button aria-label="Choose this plan">Choose</button>\n',
+        'src/components/pricing/Toggle.tsx':
+          'export default function Toggle() {\n  return <button title="Billing">Switch to yearly&nbsp;</button>;\n}\n',
+        'src/components/pricing/Sep.tsx': 'export const Sep = () => <span>&middot;</span>;\n',
+      });
+      const hits = (await findings(root, 'strings/hardcoded')).map((f) => `${f.file}:${f.line} ${f.message.split('"')[1]}`);
+      expect(hits).toEqual(
+        expect.arrayContaining([
+          'src/pages/pricing.astro:1 Simple pricing',
+          'src/components/pricing/PlanCard.astro:1 aria-label=',
+          'src/components/pricing/Toggle.tsx:2 title=',
+          'src/components/pricing/Toggle.tsx:2 Switch to yearly&nbsp;',
+        ]),
+      );
+    });
+
+    it("leaves Velocity's own files alone, but not files a project adds or edits there", async () => {
+      const root = project({
+        'velocity-manifest.json': JSON.stringify({ files: { safe: ['src/components/ui/'] } }),
+        'src/components/ui/Card/Card.astro': '<p>Velocity text</p>\n',
+        'src/components/ui/Edited/Edited.astro': '<p>Original</p>\n',
+      });
+      check.writeBaseline(root);
+      fs.writeFileSync(path.join(root, 'src/components/ui/Edited/Edited.astro'), '<p>Edited by the project</p>\n');
+      fs.mkdirSync(path.join(root, 'src/components/ui/PlanBadge'), { recursive: true });
+      fs.writeFileSync(path.join(root, 'src/components/ui/PlanBadge/PlanBadge.astro'), '<span>Most popular</span>\n');
+      const files = (await findings(root, 'strings/hardcoded')).map((f) => f.file).sort();
+      expect(files).toEqual(['src/components/ui/Edited/Edited.astro', 'src/components/ui/PlanBadge/PlanBadge.astro']);
+    });
+
+    it('ignores content hidden from everyone, such as a honeypot field', async () => {
+      const root = project({
+        'src/views/Form.astro': '<div class="hidden" aria-hidden="true">\n  <label>Website <input name="website" /></label>\n</div>\n',
+      });
+      expect(await findings(root, 'strings/hardcoded')).toEqual([]);
     });
 
     it('lets a deliberately single-language file opt out', async () => {

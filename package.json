@@ -1,6 +1,6 @@
 {
   "name": "velocity",
-  "version": "2.4.0",
+  "version": "2.4.1",
   "description": "A production-ready starter built on Astro 7 and Tailwind CSS v4",
   "type": "module",
   "author": "Southwell Media",
@@ -14,7 +14,7 @@
     "typescript",
     "blog",
     "starter",
-    "boilerplate",
+    "starter-kit",
     "seo"
   ],
   "repository": {

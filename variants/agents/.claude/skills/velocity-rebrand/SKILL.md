@@ -20,6 +20,8 @@ Make every change in files the project owns: `src/styles/theme.css`, `astro.conf
 
 Change the `@import` line to switch themes. Every theme defines the same semantic tokens, so components keep working.
 
+**Default light or dark:** set `defaultTheme: 'light'` or `'dark'` in `src/config/site.config.ts` to fix the theme for visitors who haven't used the toggle; `'system'` (the default) follows their operating system. Don't edit `src/layouts/theme-script.js`, which upgrades replace.
+
 ## 2. Set the brand color
 
 The `brand-50` to `brand-900` scale is computed in OKLCH from `--brand-hue`. Convert the brand's hex color to OKLCH and take its hue (the h value, 0 to 360). Then override it after the import:
