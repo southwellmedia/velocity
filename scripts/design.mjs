@@ -321,6 +321,10 @@ export const PAIRS = [
   { fg: '--on-invert-muted', bg: '--surface-invert', min: 4.5 },
   { fg: '--on-invert-muted', bg: '--surface-invert-secondary', min: 4.5 },
   ...['success', 'warning', 'error', 'info'].map((s) => ({ fg: `--${s}-foreground`, bg: `--${s}-light`, min: 4.5 })),
+  ...['1', '2'].flatMap((n) => [
+    ...['--background', '--background-secondary', '--card', `--accent-${n}-soft`].map((bg) => ({ fg: `--accent-${n}-ink`, bg, min: 4.5 })),
+    ...['--surface-invert', '--surface-invert-secondary'].map((bg) => ({ fg: `--accent-${n}-bright`, bg, min: 4.5, note: 'in invert bands' })),
+  ]),
   { fg: '--brand-500', bg: '--background', min: 3, note: 'large text only' },
   { fg: '--brand-500', bg: '--surface-invert', min: 4.5, note: 'eyebrows in invert bands' },
   { fg: '--brand-600', bg: '--background', min: 4.5, mode: 'light' },
@@ -352,6 +356,81 @@ export function resolveMode(sources, mode) {
     return { ...p, mode, ratio: round(ratio, 2), pass: ratio >= p.min };
   });
   return { vars, color, pairs };
+}
+
+// ---------------------------------------------------------------------------
+// Palettes: accent colours and a ground, generated from the brand colour
+
+/** Accent slot tokens for both modes from [{ hue, chroma }]; ink and bright are adjusted for contrast later. */
+export function accentTokens(accents = []) {
+  const light = {};
+  const dark = {};
+  accents.slice(0, 2).forEach(({ hue, chroma }, i) => {
+    const n = i + 1;
+    const c = Math.min(0.2, Math.max(0, chroma));
+    light[`--accent-${n}`] = oklch(72, c, hue);
+    light[`--accent-${n}-soft`] = oklch(94, c * 0.28, hue);
+    light[`--accent-${n}-ink`] = oklch(48, Math.max(c, 0.04), hue);
+    light[`--accent-${n}-bright`] = oklch(80, c * 0.8, hue);
+    dark[`--accent-${n}`] = oklch(70, c, hue);
+    dark[`--accent-${n}-soft`] = oklch(30, c * 0.35, hue);
+    dark[`--accent-${n}-ink`] = oklch(80, c * 0.8, hue);
+    dark[`--accent-${n}-bright`] = oklch(80, c * 0.8, hue);
+  });
+  return { light, dark };
+}
+
+const wrapHue = (h) => Math.round(((h % 360) + 360) % 360);
+
+/**
+ * Candidate palettes for a brand colour: two accents and a ground (the neutral tint), per harmony.
+ * The engine checks every one; the agent picks the one that fits the art direction or adjusts it.
+ */
+export function generatePalettes(hex) {
+  const { l, c, h } = hexToOklch(hex);
+  const strong = round(Math.min(0.15, Math.max(0.09, c * 0.9)), 3);
+  const quiet = round(Math.min(0.09, Math.max(0.05, c * 0.5)), 3);
+  const cool = h >= 150 && h <= 300;
+  const palettes = [
+    {
+      id: 'complementary',
+      name: 'Complementary',
+      note: 'One accent opposite the brand for energy, a quieter neighbour of it, on a ground tinted towards the accent.',
+      neutral: { hue: wrapHue(h + 180), chroma: 0.01 },
+      accents: [{ hue: wrapHue(h + 180), chroma: strong }, { hue: wrapHue(h + 220), chroma: quiet }],
+    },
+    {
+      id: 'earthy',
+      name: 'Earthy',
+      note: 'Terracotta and sand on a warm cream ground: calm and human, good for care, food and craft.',
+      neutral: { hue: 85, chroma: 0.012 },
+      accents: [{ hue: 35, chroma: 0.12 }, { hue: 80, chroma: 0.07 }],
+    },
+    {
+      id: 'analogous',
+      name: 'Analogous',
+      note: 'Neighbours of the brand on either side, on a ground tinted with the brand: cohesive and quiet.',
+      neutral: { hue: wrapHue(h), chroma: 0.01 },
+      accents: [{ hue: wrapHue(h + 35), chroma: strong }, { hue: wrapHue(h - 35), chroma: quiet }],
+    },
+    {
+      id: 'split',
+      name: 'Split complementary',
+      note: 'Two accents either side of the opposite hue on a near-neutral ground: lively without clashing.',
+      neutral: { hue: wrapHue(h), chroma: 0.004 },
+      accents: [{ hue: wrapHue(h + 150), chroma: strong }, { hue: wrapHue(h + 210), chroma: quiet }],
+    },
+    {
+      id: 'triad',
+      name: 'Triad',
+      note: 'Three evenly spaced hues: bold and playful, for brands that want colour everywhere.',
+      neutral: { hue: wrapHue(h), chroma: 0.006 },
+      accents: [{ hue: wrapHue(h + 120), chroma: strong }, { hue: wrapHue(h + 240), chroma: strong }],
+    },
+  ];
+  // Lead with the harmonies that usually suit the brand's temperature.
+  const order = cool ? ['earthy', 'complementary', 'split', 'analogous', 'triad'] : ['analogous', 'split', 'complementary', 'earthy', 'triad'];
+  return { brand: { hex, hue: round(h, 1), chroma: round(c, 3), lightness: round(l, 3) }, palettes: order.map((id) => palettes.find((p) => p.id === id)) };
 }
 
 // ---------------------------------------------------------------------------
@@ -455,7 +534,7 @@ export function brandFromHex(hex) {
  * Build a direction: tokens for both modes, fonts and controls, with brand steps adjusted
  * until every pair passes AA. Returns { css, fonts, adjustments, failures }.
  */
-export function buildDirection(direction, { brand, display, body, pairing, fallbackFonts = false, seed, weights, sources = [] } = {}) {
+export function buildDirection(direction, { brand, display, body, pairing, palette, fallbackFonts = false, seed, weights, sources = [] } = {}) {
   const varied = varyDirection(direction, seed, { brandLocked: Boolean(brand) });
   direction = varied.direction;
   // A catalogue pairing ({ display, body } with fallbacks); --display/--body still win.
@@ -478,7 +557,15 @@ export function buildDirection(direction, { brand, display, body, pairing, fallb
   clamp('--theme-button-weight', weights?.body, 'the body font');
   const { hue, chroma } = brand ? brandFromHex(brand) : { hue: direction.brand.hue, chroma: direction.brand.chroma };
   const scale = brandScale(hue, chroma);
-  const semantic = semanticTokens(direction, hue);
+  // A palette sets the ground (neutral tint) and the two accent slots; a spec's own accents work the same way.
+  if (palette?.neutral) direction = { ...direction, neutral: { ...palette.neutral } };
+  const accents = accentTokens(palette?.accents ?? direction.accents ?? []);
+  const base = semanticTokens(direction, hue);
+  const withAccents = () => ({
+    light: { ...base.light, ...Object.fromEntries(Object.entries(accents.light).map(([k, v]) => [k, formatOklch(v)])), ...(direction.light ?? {}) },
+    dark: { ...base.dark, ...Object.fromEntries(Object.entries(accents.dark).map(([k, v]) => [k, formatOklch(v)])), ...(direction.dark ?? {}) },
+  });
+  let semantic = withAccents();
 
   const pick = (role) => {
     const chosen = role === 'display' ? display : body;
@@ -505,13 +592,27 @@ export function buildDirection(direction, { brand, display, body, pairing, fallb
       ...fontTokens,
       ...direction.controls,
     };
+    semantic = withAccents();
     return { shared, css: toCss(direction, { hue, brand, seed, choices: varied.choices }, shared, semantic, fonts) };
   };
   const directionOf = {};
-  for (let pass = 0; pass < 60; pass++) {
+  for (let pass = 0; pass < 200; pass++) {
     const { css } = render();
     const results = ['light', 'dark'].flatMap((mode) => resolveMode([...sources, css], mode).pairs);
-    const fixable = results.filter((r) => !r.pass).find((f) => [f.fg, f.bg].some((t) => /^--brand-\d+$/.test(t)) || brandRef(semantic, f));
+    const failing = results.filter((r) => !r.pass);
+    // Accent ink and bright colours move in lightness, per mode, like brand steps.
+    const accentFix = failing.find((f) => accents[f.mode][f.fg]);
+    if (accentFix) {
+      const token = accents[accentFix.mode][accentFix.fg];
+      const other = resolveMode([...sources, css], accentFix.mode).color(accentFix.bg);
+      const darker = luminance(other) > luminance(token);
+      const key = `${accentFix.mode}:${accentFix.fg}`;
+      if (directionOf[key] !== undefined && directionOf[key] !== darker) break;
+      directionOf[key] = darker;
+      token.l = clamp01(token.l + (darker ? -0.01 : 0.01));
+      continue;
+    }
+    const fixable = failing.find((f) => [f.fg, f.bg].some((t) => /^--brand-\d+$/.test(t)) || brandRef(semantic, f));
     if (!fixable) break;
     const mode = fixable.mode;
     const resolved = resolveMode([...sources, css], mode);

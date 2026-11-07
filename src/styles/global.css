@@ -61,6 +61,14 @@
 
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-accent-1: var(--accent-1);
+  --color-accent-1-soft: var(--accent-1-soft);
+  --color-accent-1-ink: var(--accent-1-ink);
+  --color-accent-1-bright: var(--accent-1-bright);
+  --color-accent-2: var(--accent-2);
+  --color-accent-2-soft: var(--accent-2-soft);
+  --color-accent-2-ink: var(--accent-2-ink);
+  --color-accent-2-bright: var(--accent-2-bright);
 
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
@@ -248,6 +256,8 @@
     --color-ring: var(--on-invert);
     --color-primary: var(--on-invert);
     --color-primary-foreground: var(--surface-invert);
+    --color-accent-1-ink: var(--accent-1-bright);
+    --color-accent-2-ink: var(--accent-2-bright);
   }
 
   .dark .invert-section {
@@ -270,6 +280,8 @@
     --color-ring: var(--on-invert);
     --color-primary: var(--on-invert);
     --color-primary-foreground: var(--surface-invert);
+    --color-accent-1-ink: var(--accent-1-bright);
+    --color-accent-2-ink: var(--accent-2-bright);
   }
 
   /* Container */

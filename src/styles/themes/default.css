@@ -55,6 +55,18 @@
   --accent-hover: var(--brand-600);
   --accent-light: var(--brand-100);
 
+  /* Accent slots: two extra colours for decoration (base), tinted surfaces (soft), text on
+     the page and on soft surfaces (ink), and text in invert bands (bright). npm run design --
+     palette generates them from the brand colour; these defaults follow the brand and grays. */
+  --accent-1: var(--brand-500);
+  --accent-1-soft: var(--brand-100);
+  --accent-1-ink: var(--brand-700);
+  --accent-1-bright: var(--brand-300);
+  --accent-2: var(--gray-500);
+  --accent-2-soft: var(--gray-100);
+  --accent-2-ink: var(--gray-700);
+  --accent-2-bright: var(--gray-300);
+
   --muted: var(--gray-100);
   --muted-foreground: var(--gray-500);     /*  5.5:1 on white — WCAG AA  */
 
@@ -124,6 +136,14 @@
    Dark Mode - The Vercel signature look
    ------------------------------------------------------------------------- */
 .dark {
+
+  /* Accent slots in dark mode */
+  --accent-1-soft: var(--brand-900);
+  --accent-1-ink: var(--brand-300);
+  --accent-1-bright: var(--brand-300);
+  --accent-2-soft: var(--gray-800);
+  --accent-2-ink: var(--gray-300);
+  --accent-2-bright: var(--gray-300);
   --background: var(--gray-950);
   --background-secondary: var(--gray-900);
   --background-tertiary: var(--gray-800);
