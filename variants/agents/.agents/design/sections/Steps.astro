@@ -1,0 +1,48 @@
+---
+/* @velocity-section Steps@2.5.0
+ * How it works, as numbered steps across or down the page.
+ * Three to five steps; each title is an action ("Book a visit", not "Booking").
+ * @requires section
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import { cn } from '@/lib/cn';
+
+interface Step {
+  title: string;
+  text: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  items: Step[];
+  layout?: 'horizontal' | 'vertical';
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, items, layout = 'horizontal', tone = 'default', class: className } = Astro.props;
+---
+
+<Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  <ol class={cn(layout === 'horizontal' ? 'grid gap-10 md:grid-cols-3 lg:grid-flow-col lg:auto-cols-fr' : 'max-w-2xl space-y-10')}>
+    {items.map((step, i) => (
+      <li class={cn('relative', layout === 'vertical' && 'border-border border-l-2 pl-8')}>
+        <span
+          class={cn(
+            'font-display bg-primary text-primary-foreground inline-flex size-10 items-center justify-center rounded-full text-sm font-bold',
+            layout === 'vertical' ? 'absolute top-0 -left-5' : 'mb-5'
+          )}
+          aria-hidden="true"
+        >
+          {i + 1}
+        </span>
+        <h3 class={cn('font-display text-foreground text-xl font-semibold', layout === 'vertical' && 'pt-2')}>{step.title}</h3>
+        <p class="text-foreground-secondary mt-2">{step.text}</p>
+      </li>
+    ))}
+  </ol>
+</Section>

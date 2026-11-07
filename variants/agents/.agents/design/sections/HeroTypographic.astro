@@ -1,0 +1,45 @@
+---
+/* @velocity-section HeroTypographic@2.5.0
+ * Type-only opening band: a large statement, a lead and actions, no image. Holds the page's only <h1>.
+ * Use when there are no photos yet: it looks finished without one, unlike a placeholder.
+ * @requires button
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Button from '@/components/ui/form/Button/Button.astro';
+import { cn } from '@/lib/cn';
+
+interface Action {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  primary?: Action;
+  secondary?: Action;
+  /** A short line under the actions, such as where or when */
+  note?: string;
+  class?: string;
+}
+
+const { eyebrow, title, lead, primary, secondary, note, class: className } = Astro.props;
+---
+
+<section class={cn('border-border border-b pt-[var(--space-page-top)] pb-[var(--space-section-lg)]', className)}>
+  <div class="mx-auto max-w-6xl px-6">
+    {eyebrow && <p class="text-foreground-muted mb-6 text-sm font-semibold tracking-widest uppercase">{eyebrow}</p>}
+    <h1 class="font-display text-foreground max-w-5xl text-6xl leading-none tracking-tight text-balance md:text-7xl">{title}</h1>
+    <div class="mt-10 grid gap-8 md:grid-cols-3 md:items-end">
+      {lead && <p class="text-foreground-secondary text-lg md:col-span-2 md:text-xl">{lead}</p>}
+      {(primary || secondary) && (
+        <div class="flex flex-wrap gap-4 md:justify-end">
+          {primary && <Button href={primary.href} size="lg">{primary.label}</Button>}
+          {secondary && <Button href={secondary.href} size="lg" variant="ghost" trailingIcon="arrow-right">{secondary.label}</Button>}
+        </div>
+      )}
+    </div>
+    {note && <p class="text-foreground-muted mt-8 text-sm">{note}</p>}
+  </div>
+</section>

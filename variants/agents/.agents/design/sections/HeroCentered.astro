@@ -1,0 +1,52 @@
+---
+/* @velocity-section HeroCentered@2.5.0
+ * Centred opening band with optional wide photo or product shot below. Holds the page's only <h1>.
+ * Use for products and launches, or when one strong statement matters more than an image.
+ * @requires button, badge, media-slot
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Button from '@/components/ui/form/Button/Button.astro';
+import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import MediaSlot from '@/components/patterns/MediaSlot.astro';
+import { cn } from '@/lib/cn';
+
+interface Action {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  primary?: Action;
+  secondary?: Action;
+  /** 'media' adds a wide image under the copy */
+  layout?: 'plain' | 'media';
+  photo?: string;
+  alt?: string;
+  mediaLabel?: string;
+  class?: string;
+}
+
+const { eyebrow, title, lead, primary, secondary, layout = 'plain', photo, alt = '', mediaLabel, class: className } = Astro.props;
+---
+
+<section class={cn('pt-[var(--space-page-top-sm)] pb-[var(--space-section-md)]', className)}>
+  <div class="mx-auto max-w-6xl px-6 text-center">
+    <div class="mx-auto max-w-3xl">
+      {eyebrow && <Badge variant="brand" pill class="mb-6">{eyebrow}</Badge>}
+      <h1 class="font-display text-foreground text-5xl leading-tight tracking-tight text-balance md:text-6xl">{title}</h1>
+      {lead && <p class="text-foreground-secondary mx-auto mt-6 max-w-2xl text-lg md:text-xl">{lead}</p>}
+      {(primary || secondary) && (
+        <div class="mt-10 flex flex-wrap justify-center gap-4">
+          {primary && <Button href={primary.href} size="lg" trailingIcon="arrow-right">{primary.label}</Button>}
+          {secondary && <Button href={secondary.href} size="lg" variant="outline">{secondary.label}</Button>}
+        </div>
+      )}
+    </div>
+    {layout === 'media' && (
+      <MediaSlot photo={photo} alt={alt} label={mediaLabel} ratio="16/10" priority class="border-border mt-16 rounded-xl border shadow-xl" />
+    )}
+  </div>
+</section>

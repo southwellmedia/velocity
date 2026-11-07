@@ -1,6 +1,6 @@
 ---
 name: velocity-add-page
-description: Add a new page or route to this Velocity site, with its view, locale wrappers, nav entry and translated copy. Use when asked to create a page such as Pricing, Team or FAQ, or to add a route to the site.
+description: Add a new page or route to this Velocity site, with its view, locale wrappers, nav entry and translated copy. Use when asked to create a page such as Pricing, Team or FAQ, or to add a route to the site. To set up or rebuild the whole site, use velocity-start-site.
 ---
 
 # Add a page

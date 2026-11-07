@@ -1,0 +1,61 @@
+---
+/* @velocity-section ContactBand@2.5.0
+ * Contact form beside the ways to reach the business, with an optional map.
+ * Only details the user supplied. Pass mapAddress only for a real street address.
+ * The form posts to the contact Action, which stays a stub until a provider is connected
+ * (velocity-connect-forms); say so in the handoff.
+ * @requires section, contact-form, icon, google-map
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import ContactForm from '@/components/patterns/ContactForm.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import GoogleMap from '@/components/ui/data-display/GoogleMap/GoogleMap.astro';
+
+interface Detail {
+  icon: 'mail' | 'phone' | 'map-pin' | 'clock' | 'calendar';
+  label: string;
+  value: string;
+  href?: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  details?: Detail[];
+  /** A real street address; renders a consent-gated map under the details */
+  mapAddress?: string;
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, details = [], mapAddress, tone = 'secondary', class: className } = Astro.props;
+---
+
+<Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  <div class="grid gap-12 lg:grid-cols-5">
+    <div class="lg:col-span-2">
+      <ul class="space-y-6">
+        {details.map((detail) => (
+          <li class="flex gap-4">
+            <span class="bg-background text-foreground border-border inline-flex size-11 shrink-0 items-center justify-center rounded-lg border" aria-hidden="true">
+              <Icon name={detail.icon} size="md" />
+            </span>
+            <div>
+              <p class="text-foreground-muted text-sm">{detail.label}</p>
+              <p class="text-foreground font-medium">
+                {detail.href ? <a href={detail.href} class="hover:text-accent-hover underline-offset-4 hover:underline">{detail.value}</a> : detail.value}
+              </p>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {mapAddress && <GoogleMap address={mapAddress} size="sm" class="mt-8 rounded-lg" />}
+    </div>
+    <div class="bg-card border-card-border rounded-xl border p-6 md:p-8 lg:col-span-3">
+      <ContactForm />
+    </div>
+  </div>
+</Section>

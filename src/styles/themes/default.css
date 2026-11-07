@@ -132,7 +132,7 @@
   --foreground: var(--gray-50);             /* 19.3:1 on gray-950 — WCAG AAA */
   --foreground-secondary: var(--gray-300); /* 13.1:1 on gray-950 — WCAG AAA */
   --foreground-muted: var(--gray-400);     /*  6.0:1 on gray-950 — WCAG AA  */
-  --foreground-subtle: oklch(58% 0 0);     /*  ~4.6:1 on gray-950 — WCAG AA  */
+  --foreground-subtle: oklch(60% 0 0);     /*  5.1:1 on gray-950, 4.6:1 on gray-900 — WCAG AA */
 
   --border: var(--gray-800);
   --border-strong: var(--gray-700);
@@ -171,6 +171,11 @@
   --success-light: oklch(25% 0.05 145);
   --warning-light: oklch(25% 0.05 85);
   --error-light: oklch(25% 0.05 25);
+  --info-light: oklch(25% 0.05 260);
+  --success-foreground: oklch(85% 0.12 145); /* text on the status -light surfaces — WCAG AA */
+  --warning-foreground: oklch(88% 0.12 85);
+  --error-foreground: oklch(85% 0.09 25);
+  --info-foreground: oklch(85% 0.08 260);
 
   /* Inverted section in dark mode - slightly elevated for contrast */
   --surface-invert: var(--gray-900);

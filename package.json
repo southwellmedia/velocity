@@ -1,6 +1,6 @@
 {
   "name": "velocity",
-  "version": "2.4.1",
+  "version": "2.5.0",
   "description": "A production-ready starter built on Astro 7 and Tailwind CSS v4",
   "type": "module",
   "author": "Southwell Media",
@@ -40,6 +40,7 @@
     "test:e2e": "playwright test",
     "validate": "eslint . && astro check && vitest run && astro build && node scripts/check-agent.mjs",
     "check:agent": "node scripts/check-agent.mjs",
+    "design": "node scripts/design.mjs",
     "test:scaffold": "node scripts/scaffold-matrix.mjs",
     "check:registry": "node scripts/check-registry.mjs",
     "check:components": "node scripts/generate-components-ref.mjs --check",

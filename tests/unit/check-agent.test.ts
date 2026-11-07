@@ -284,6 +284,165 @@ describe('check:agent', () => {
     });
   });
 
+  describe('content/placeholder', () => {
+    it('finds markers in copy and content, with file and line', async () => {
+      const root = project({
+        'src/i18n/translations/en.ts': "export default { pricing: { title: 'Pricing', price: '[[placeholder: monthly price]]' } };\n",
+        'src/content/team/rosa.json': '{\n  "bio": "[[placeholder: Rosa\'s bio]]"\n}\n',
+      });
+      const hits = (await findings(root, 'content/placeholder')).map((f) => [f.file, f.line, f.message]);
+      expect(hits).toContainEqual(['src/i18n/translations/en.ts', 1, 'Placeholder still in the copy: "monthly price".']);
+      expect(hits).toContainEqual(['src/content/team/rosa.json', 2, 'Placeholder still in the copy: "Rosa\'s bio".']);
+    });
+
+    it('lists text and image placeholders per built page, in any locale', async () => {
+      const root = project({
+        'src/i18n/ui.ts':
+          "export const ui = { en: { media: { placeholder: 'Image placeholder: {name}' } }, es: { media: { placeholder: 'Espacio para imagen: {name}' } } };\n",
+        'dist/index.html': page('<p>Open [[placeholder: opening hours]]</p><div role="img" aria-label="Image placeholder: Shop front" data-media-placeholder="Shop front"></div>'),
+        'dist/es/index.html': page('<div role="img" aria-label="Espacio para imagen: Equipo"></div>'),
+        'dist/about/index.html': page('<img src="/logo.svg" alt="Logo"><div role="img" aria-label="Chart of sales"></div>'),
+      });
+      const byFile = Object.fromEntries((await findings(root, 'content/placeholder')).map((f) => [f.file, f.message]));
+      expect(byFile['dist/index.html']).toBe('/ shows 1 text placeholder(s) (opening hours) and 1 image placeholder(s) (Shop front).');
+      expect(byFile['dist/es/index.html']).toBe('/es/ shows 1 image placeholder(s) (Equipo).');
+      expect(byFile['dist/about/index.html']).toBeUndefined();
+    });
+  });
+
+  describe('config/default-identity', () => {
+    it("flags the scaffold's name, author and email, and an example.com build", async () => {
+      const root = project({
+        'src/config/site.config.ts': "export const siteConfig = {\n  name: 'My Site',\n  author: 'Your Name',\n  email: 'hello@example.com',\n};\n",
+        'dist/index.html': page('<link rel="canonical" href="https://example.com/"><h1>Home</h1>'),
+      });
+      const hits = (await findings(root, 'config/default-identity')).map((f) => [f.file, f.line]);
+      expect(hits).toEqual([
+        ['src/config/site.config.ts', 2],
+        ['src/config/site.config.ts', 3],
+        ['src/config/site.config.ts', 4],
+        ['dist/index.html', undefined],
+      ]);
+    });
+
+    it('is quiet once the identity is real', async () => {
+      const root = project({
+        'src/config/site.config.ts': "export const siteConfig = { name: \"Rosa's Bakery\", author: 'Rosa', email: 'rosa@rosas.example' };\n",
+        'dist/index.html': page('<link rel="canonical" href="https://rosas.example/"><h1>Home</h1>'),
+      });
+      expect(await findings(root, 'config/default-identity')).toEqual([]);
+    });
+  });
+
+  it('design/multiple-h1: flags built pages with more than one <h1>', async () => {
+    const root = project({
+      'dist/index.html': page('<h1>Home</h1><section><h1>Services</h1></section><script>"<h1>"</script>'),
+      'dist/about/index.html': page('<h1>About</h1><h2>Team</h2>'),
+    });
+    const hits = await findings(root, 'design/multiple-h1');
+    expect(hits.map((f) => [f.file, f.message])).toEqual([['dist/index.html', '/ has 2 <h1> elements; screen readers and search engines expect one.']]);
+  });
+
+  describe('design/raw-color and design/arbitrary-value', () => {
+    const view =
+      '---\nconst themeColor = "#ff0000";\n---\n' +
+      '<section class="bg-blue-500 text-white md:hover:bg-brand-600 py-[73px] gap-[var(--space-section-gap)]">\n' +
+      '  <p class="text-[22px] text-[#333] bg-[rgb(0,0,0)] w-[600px]">x</p>\n' +
+      '  <div style="color: #123456"></div>\n' +
+      '  {/* velocity-allow: client logo colour from their brand guide */}\n' +
+      '  <span class="text-red-600">ok</span>\n' +
+      '</section>\n<style>\n  .x { background: oklch(50% 0.1 20); color: var(--foreground); }\n</style>\n';
+
+    it('stay quiet until the project has a brief', async () => {
+      const root = project({ 'src/views/HomeView.astro': view });
+      expect(await findings(root, 'design/raw-color')).toEqual([]);
+      expect(await findings(root, 'design/arbitrary-value')).toEqual([]);
+    });
+
+    it('flag fixed colours and off-scale values in views, sections and site/, with an opt-out', async () => {
+      const root = project({
+        '.agents/site.md': '# Brief\n',
+        'src/views/HomeView.astro': view,
+        'src/components/sections/Hero.astro': '<div class="px-[13px]"></div>\n',
+        'src/components/ui/Card/Card.astro': '<div class="bg-blue-500"></div>\n',
+      });
+      const colors = (await findings(root, 'design/raw-color')).map((f) => [f.file, f.line, f.message.split('"')[1]]);
+      expect(colors).toEqual([
+        ['src/views/HomeView.astro', 4, 'bg-blue-500'],
+        ['src/views/HomeView.astro', 4, 'text-white'],
+        ['src/views/HomeView.astro', 5, 'text-[#333]'],
+        ['src/views/HomeView.astro', 5, 'bg-[rgb(0,0,0)]'],
+        ['src/views/HomeView.astro', 6, '#123456'],
+        ['src/views/HomeView.astro', 11, 'oklch(50% 0.1 20)'],
+      ]);
+      const values = (await findings(root, 'design/arbitrary-value')).map((f) => [f.file, f.line, f.message.split('"')[1]]);
+      expect(values).toEqual([
+        ['src/components/sections/Hero.astro', 1, 'px-[13px]'],
+        ['src/views/HomeView.astro', 4, 'py-[73px]'],
+        ['src/views/HomeView.astro', 5, 'text-[22px]'],
+      ]);
+      const [f] = await findings(root, 'design/raw-color');
+      expect(f.fix).toMatch(/velocity-allow/);
+      expect(f.ref).toBe('.agents/velocity.md → Rules → Design');
+    });
+  });
+
+  describe('design/default-theme', () => {
+    const scaffoldTheme = "/* Active theme. @import './themes/midnight.css'; */\n@import './themes/default.css';\n";
+
+    it('flags a site with a brief still on the scaffold theme', async () => {
+      const root = project({ '.agents/site.md': '# Brief\n', 'src/styles/theme.css': scaffoldTheme });
+      const [f] = await findings(root, 'design/default-theme');
+      expect(f).toMatchObject({ file: 'src/styles/theme.css', severity: 'warning' });
+      expect(f.fix).toMatch(/npm run design -- direction/);
+    });
+
+    it('is quiet without a brief, or once the theme has a direction or overrides', async () => {
+      expect(await findings(project({ 'src/styles/theme.css': scaffoldTheme }), 'design/default-theme')).toEqual([]);
+      const themed = scaffoldTheme + ':root { --brand-hue: 250; }\n';
+      expect(await findings(project({ '.agents/site.md': '# Brief\n', 'src/styles/theme.css': themed }), 'design/default-theme')).toEqual([]);
+    });
+  });
+
+  describe('design/section-outdated', () => {
+    const source = (version: string) =>
+      `---\n/* @velocity-section Testimonials@${version}\n * @changed 2.5.1: quotes use <blockquote> with <cite>\n * @changed 2.6.0: grid layout gains a 2-column option\n */\n---\n<section></section>\n`;
+
+    it('is a notice listing what changed since the copy, and never fails --strict', async () => {
+      const root = project({
+        '.agents/design/sections/Testimonials.astro': source('2.6.0'),
+        'src/components/sections/Testimonials.astro': source('2.5.0').replace('<section>', '<section class="mine">'),
+        'src/components/sections/Menu.astro': '<section class="menu"></section>\n',
+      });
+      const [f, ...rest] = await findings(root, 'design/section-outdated');
+      expect(rest).toEqual([]);
+      expect(f).toMatchObject({ file: 'src/components/sections/Testimonials.astro', severity: 'notice' });
+      expect(f.message).toBe('Testimonials was copied at 2.5.0; Velocity now ships 2.6.0. Changes: 2.5.1: quotes use <blockquote> with <cite>; 2.6.0: grid layout gains a 2-column option.');
+      const strict = await check.run(root, { strict: true });
+      expect(strict.findings.find((x: Finding) => x.rule === 'design/section-outdated').severity).toBe('notice');
+      expect(strict.ok).toBe(true);
+    });
+
+    it('is quiet when the copy is current', async () => {
+      const root = project({
+        '.agents/design/sections/Testimonials.astro': source('2.5.0'),
+        'src/components/sections/Testimonials.astro': source('2.5.0'),
+      });
+      expect(await findings(root, 'design/section-outdated')).toEqual([]);
+    });
+  });
+
+  it('ownership/edited: an edited primitive gets the wrap-not-fork fix', async () => {
+    const root = project({
+      'velocity-manifest.json': JSON.stringify({ files: { safe: ['src/components/ui/'] } }),
+      'src/components/ui/Card/Card.astro': '<div><slot /></div>\n',
+    });
+    check.writeBaseline(root);
+    fs.writeFileSync(path.join(root, 'src/components/ui/Card/Card.astro'), '<div class="rounded-full"><slot /></div>\n');
+    const [f] = await findings(root, 'ownership/edited');
+    expect(f.fix).toMatch(/src\/components\/sections\//);
+  });
+
   it('--strict turns warnings into errors', async () => {
     const root = project({ 'src/actions/index.ts': '// @velocity-stub contact\n' });
     expect((await check.run(root)).ok).toBe(true);
