@@ -7,9 +7,19 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # New projects have no lockfile, so a dependency's release can break them with no
+  # change here. Checks that every day, not only when this repo changes.
+  schedule:
+    - cron: '0 9 * * *'
+
+# Neither job writes to the repository. Fresh installs run code from packages
+# resolved today, so they get a read-only token that isn't left in git config.
+permissions:
+  contents: read
 
 concurrency:
-  group: scaffold-${{ github.ref }}
+  # Separate groups, so a scheduled run never cancels a push run on main
+  group: scaffold-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -18,6 +28,7 @@ jobs:
   # suite inside each full-component project, so a change that breaks a
   # variant fails here, not in a user's terminal.
   matrix:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -32,3 +43,18 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Scaffold, check, build and test every variant
         run: pnpm test:scaffold --e2e --out=${{ runner.temp }}/velocity-matrix
+
+  # Installs the way a new project does: no lockfile, today's dependencies.
+  fresh-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      - name: Scaffold and check with no lockfile
+        run: node scripts/scaffold-matrix.mjs --fresh --only=min-en-all --out=${{ runner.temp }}/velocity-fresh
