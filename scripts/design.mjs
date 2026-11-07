@@ -271,6 +271,8 @@ export function themeSources(root, themeCss = readIf(root, THEME_FILE)) {
     readIf(root, 'src/styles/tokens/spacing.css'),
     readIf(root, `src/styles/themes/${baseTheme(themeCss)}.css`),
     themeCss,
+    // The site's own layer loads last (global.css), so its tokens win.
+    readIf(root, 'src/styles/site.css'),
   ];
 }
 
@@ -690,7 +692,8 @@ export function cmdDirection(root, args, log = console.log) {
   }
   const themeCss = readIf(root, THEME_FILE);
   const withoutBlock = applyBlock(themeCss, '').trimEnd() + '\n';
-  const sources = themeSources(root, withoutBlock).slice(0, -1).concat(withoutBlock);
+  // Check against everything except this direction's own block: theme.css without it, then site.css.
+  const sources = themeSources(root, withoutBlock);
   const built = buildDirection(direction, {
     brand: args.brand && (args.brand.startsWith('#') ? args.brand : `#${args.brand}`),
     display: typeof args.display === 'string' ? args.display : undefined,

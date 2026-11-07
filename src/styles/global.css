@@ -14,8 +14,9 @@
 @plugin '@tailwindcss/typography';
 @import './tokens/spacing.css';
 
-/* Last, so a theme can override any token above. */
+/* Last, so a theme can override any token above, and the site's own styles override the theme. */
 @import './theme.css';
+@import './site.css';
 
 /* Fonts are self-hosted via the Astro Fonts API — see `fonts` in astro.config.mjs
    and <Font /> in BaseLayout. Themes reference --font-manrope / --font-outfit /

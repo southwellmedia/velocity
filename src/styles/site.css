@@ -1,0 +1,23 @@
+/* =============================================================================
+   Site styles
+   =============================================================================
+   This site's own colours, devices and component styles: everything the design
+   needs beyond Velocity's tokens. Yours: upgrades never overwrite this file.
+
+   - Define every colour as a custom property with a light value on :root and a
+     dark value on .dark, then use it as var(--…) in components. Colour literals
+     in components are what break dark mode; check:agent warns about them.
+   - Name your tokens after what they are for: --site-ground, --site-accent,
+     --site-accent-ink (text), --site-gloss.
+   - Anything goes for the look: gradients, patterns, shapes, exact sizes, custom
+     type. Keep text at WCAG AA contrast in both modes (npm run design -- tokens
+     checks Velocity's tokens; axe in npm run test:e2e checks the rendered page).
+
+   See .agents/design.md.
+   ============================================================================= */
+
+:root {
+}
+
+.dark {
+}

@@ -1,80 +1,77 @@
 # Designing a Velocity site
 
-Maintained by Velocity and replaced on upgrade. How to give a site its own look inside Velocity's tokens and primitives, so it still takes upgrades. Everything here works from code: no browser or screenshots needed.
+Maintained by Velocity and replaced on upgrade. How to design a site that looks like the business it's for, while keeping what Velocity guarantees: accessible contrast in light and dark, translatable copy, CSP and upgrades that don't undo your work.
 
-## The layers
+**Design freely; the guardrails are for correctness, not taste.** Write the CSS the design needs, in the project's own files. The only design rule `check:agent` enforces is that colours are tokens with a dark-mode value.
 
-| Layer | Where | Owner |
+## Where design lives
+
+| What | Where | Owner |
 |---|---|---|
 | Pages | `src/views/`, `src/pages/` | Project |
-| Sections | `src/components/sections/` and `src/components/site/` | Project |
-| Direction | the marked block in `src/styles/theme.css` | Project |
-| Primitives | `src/components/ui/`, `src/components/hero/` | Velocity, replaced on upgrade |
+| Sections | `src/components/sections/`, `src/components/site/` (header and footer) | Project |
+| The site's own colours, devices and styles | `src/styles/site.css` (loads last, so it wins) | Project |
+| Base theme choice and any quick theme | `src/styles/theme.css` | Project |
+| Primitives (Button, Card, Accordion, forms…) | `src/components/ui/`, `src/components/patterns/` | Velocity's `ui/`; patterns are yours |
 | Tokens and base themes | `src/styles/tokens/`, `src/styles/themes/`, `global.css` | Velocity, replaced on upgrade |
 
-The direction sets tokens, sections compose primitives, pages compose sections. Nothing above the line edits anything below it. When a primitive needs a different look, wrap it in a section and pass classes (`Card` and the other primitives merge a `class` prop). Never edit `ui/` or `hero/`: `check:agent` reports it (`ownership/edited`) and the next upgrade discards it. If a primitive can't be bent far enough, tell the user it's a Velocity issue.
+Never edit `src/components/ui/` or `src/components/hero/`: upgrades replace them and `check:agent` reports the edit. Use primitives where they bring behaviour (forms, accordion, dialog, buttons), pass them classes, or write your own markup. A section in `src/components/sections/` can look like anything.
 
-## Choose a direction first
+## 1. Art-direct before you build
 
-Decide the look once, before building pages. List the directions with `npm run design -- direction --list`.
+Write the art direction into `.agents/site.md` → Design before any page is built. Work from the business outwards, not from a template inwards:
 
-| Direction | Suits | Feel | Fonts | Shape and density |
-|---|---|---|---|---|
-| `editorial` | Agencies, consultants, writers | Calm, type-led | Fraunces + Source Sans 3 | Tiny radii, airy spacing, almost no shadow |
-| `warm-local` | Trades, cafés, salons, bakeries | Friendly, approachable | Nunito | Large radii, pill buttons, warm tinted surfaces, brand invert bands |
-| `clinical` | Clinics, legal, finance | Trustworthy, clear | Figtree | Medium radii, cool neutrals, generous whitespace, smaller headings |
-| `bold-product` | SaaS, apps, launches | Confident, high contrast | Space Grotesk + Manrope | Medium radii, tight large headings, dense, brand invert bands |
-| `minimal-portfolio` | Designers, photographers, freelancers | Quiet, image-led | DM Sans | Square corners, flat, monochrome, wide spacing |
+- **Subject and feeling.** What it's like to be this business's customer, in a sentence. For example, an auto detailer: "a showroom at night: deep, glossy, precise, the car is the hero".
+- **References.** Sites, brands, places or objects that feel right, if the user gave any. Say what to take from each.
+- **Ground and palette.** Start from the brand colour and decide how the page is coloured, not just which buttons are. Choose:
+  - the ground: warm cream, deep near-black, cool paper, or a tinted mid-tone;
+  - one or two accent colours with a job each: a highlight, a tinted surface, labels;
+  - where colour lives: bands, photography, type, or small details.
+  
+  Avoid white plus one brand colour on the buttons: that's what every template does.
+- **Type.** A pairing with a clear voice (see Fonts below), a real contrast in scale between display and body (hero headings far larger than body text), and how headings behave: tight and heavy, light and wide, italic accents.
+- **Imagery.** Photography-led (how it's cropped, framed, overlapped), illustration (simple inline SVG drawn with your tokens), or type-led. Decide what the page looks like before the photos exist.
+- **Motif, the signature.** One or two devices that belong to this business and recur: a gloss highlight across dark panels, a paint-swatch strip, a chalkboard list, oversized numerals, an arch, ruled document lines. Design it; don't pick it from a list.
+- **Layout ideas per page.** What leads, what follows, what breaks the grid. Name the sections you'll design, not recipe names.
 
-Each direction file (`.agents/design/directions/<id>.json`) also records the section rhythm it favours (`rhythm`) and how it handles images (`imagery`). Read them when planning pages.
+Show the user the art direction in a few lines with the sitemap, and wait for a go-ahead. In a headless run, write it and proceed.
 
-Pick from the business type and the three words the user gave for the feel. Adapt by changing the brand colour and fonts; keep the direction's proportions (radii, spacing, type scale).
+## 2. Build it
 
-## Apply it
+- **Tokens first, in `src/styles/site.css`.** Define the palette, grounds, gradients and device colours as custom properties: a light value on `:root`, a dark value on `.dark`. Then use them everywhere as `var(--site-…)`, in Tailwind arbitrary values (`bg-[var(--site-ground)]`) or in classes you define in `site.css`. You can also override Velocity's semantic tokens there (`--background`, `--foreground`, `--primary`…) so primitives follow the art direction.
+- **Design sections for this business** in `src/components/sections/`. Copy arrives as props (the view calls `t()`); take a `class` prop. Write the markup and CSS the design needs: exact sizes, overlaps, layered panels, full-bleed bands, sticky columns, gradients, patterns. Tailwind and `site.css` are both fine.
+- **Recipes are references, not a starting point.** `.agents/recipes.md` lists working sources for common sections. Borrow a structure or a detail; don't assemble a page from them.
+- **Dark mode is designed, not inverted.** Give every token a dark value that keeps the feeling: a tinted deep ground instead of near-black, accents that still glow, photography that sits well on it.
+- **No photos yet?** Design the empty state on purpose: type-led compositions, colour fields, simple SVG illustration with token fills (classes in `site.css` such as `.site-hill { fill: var(--site-hill); }`), or `MediaSlot` placeholders styled to fit. Never stock or generated images unless the user asks.
+- **Motion** is welcome where it adds meaning; respect `prefers-reduced-motion` (wrap transitions in `@media (prefers-reduced-motion: no-preference)` or rely on the global rule).
 
-```bash
-npm run design -- direction --base warm-local --brand "#c2410c"
-```
+### Composing a section
 
-- `--brand` takes the user's brand colour. The engine keeps its hue and saturation and fits it to Velocity's lightness scale, so every step stays accessible.
-- `--display` and `--body` swap the fonts (`--display Fraunces --body "Source Sans 3"`). Use at most two families.
-- The command writes one block marked `@velocity-direction` at the end of `src/styles/theme.css` and registers the fonts in `fonts` in `astro.config.mjs`. Re-running replaces the block; put hand edits after the end marker.
-- It checks every text/surface pair in light and dark against WCAG AA, darkens brand steps where needed and says what it changed. If a combination can't pass, it writes nothing.
-- **Fonts:** if a font package isn't installed, it prints the install command and writes nothing. Ask the user before installing. If they decline, add `--fallback-fonts` to keep to installed families, and note it in `.agents/site.md`.
-- Then set `branding.colors.themeColor` in `src/config/site.config.ts` to the brand colour, so share images match.
-- Run `npm run design -- fonts --fix` to stop loading families the new direction no longer uses.
+- **Width:** `max-w-6xl` for most, a reading measure for text, full bleed for bands and imagery that should break the grid.
+- **Grid:** split by importance (1/3 + 2/3, 5/7, asymmetric), not evenly; equal thirds only for truly equal items.
+- **Alignment:** left-aligned by default; centre only short, standalone statements.
+- **Opening:** decide per section whether it needs a heading, an eyebrow or a lead. Varying this is what stops a page reading like a template.
+- **Emphasis:** one focal point per section: a photo, a big number, a quote, a button. Use scale and space before colour.
+- **Structure:** lists are `ul`/`ol`, quotes `figure` + `blockquote` + `figcaption`, headings in page order (`h2` per section, `h3` inside), one `<h1>` per page. A region that scrolls sideways needs `tabindex="0"`, `role="region"` and a label.
 
-## Read the result without a browser
+### Avoid the template tells
 
-- `npm run design -- tokens` prints the fonts, theme controls, type scale, every colour token in light and dark, and the contrast matrix. It exits 1 if any pair is below AA. `--json` for machine-readable output.
-- `npm run design -- fonts` checks the three places a font lives agree: the package is installed, it's registered in `astro.config.mjs`, and the `--theme-font-*` tokens point at it. A mismatch means text silently falls back to a system font.
+- every section opening with the same small uppercase eyebrow, heading and lead;
+- rows of three equal cards, a 3×2 grid of icon cards, numbered steps in circles, three review cards, then a centred dark CTA band: the default landing page;
+- white ground with the brand colour only on buttons;
+- small, light body text and timid heading sizes;
+- the same section shape twice in a row.
 
-The token check covers token pairs only. Text over images and opacity classes such as `bg-brand-500/10` aren't covered, so `npm run build && npm run test:e2e` (axe) stays the final word when a browser is available.
+## 3. Verify
 
-## Theme controls
+- `npm run validate`: lint, types, tests, build and `check:agent`. Fix errors.
+- `npm run design -- tokens`: contrast of Velocity's colour pairs in light and dark after your overrides. For your own `site.css` colours, check text against the grounds it sits on (aim for 4.5:1, 3:1 for large text); `npm run build && npm run test:e2e` runs axe on every page and catches what the token check can't see.
+- If a browser and screenshots are available, look at each page in light and dark, desktop and mobile, against the art direction. Fix what reads as template.
 
-Set these in `theme.css` on `:root` only (they're computed once there, so a local override has no effect). Directions set them for you.
+## Fonts
 
-| Control | Default | Effect |
-|---|---|---|
-| `--theme-section-space` | `1` | Multiplies the section padding tokens (`--space-section-*`). Below 1 is denser, above 1 airier |
-| `--theme-heading-scale` | `1` | Multiplies `text-2xl` to `text-4xl` (section headings) |
-| `--theme-display-scale` | `1` | Multiplies `text-5xl` to `text-7xl` (hero and page titles) |
-| `--theme-heading-weight`, `--theme-heading-tracking`, `--theme-body-leading` | 700, -0.02em, 1.6 | Heading weight and letter-spacing, body line height |
-| `--theme-radius-sm` … `-xl`, `--theme-radius-button` | 4–10px | Every `rounded-*` class and every Button |
-| `--theme-shadow-sm` … `-xl` | soft | Every `shadow-*` class |
-| `--theme-button-weight` | 600 | Button label weight |
+Register families in `fonts` in `astro.config.mjs` with `fontsourceVariable()` (install `@fontsource-variable/<name>` first; ask the user before installing). Point `--theme-font-sans` and `--theme-font-display` at them in `site.css` or `theme.css`. Use at most two families. `npm run design -- fonts` checks that the package, the config entry and the tokens agree; `-- fonts --fix` stops loading families nothing uses. Choose for voice: a characterful display face with a quiet body face usually beats one neutral family. Avoid the most common defaults (Inter, Roboto, Open Sans) unless the brand uses them.
 
-## Build pages from sections
+## Quick themes (optional)
 
-Compose each page from sections in `src/components/sections/`. Start from a recipe: `.agents/recipes.md` indexes the working sources in `.agents/design/sections/` (heroes, feature grids, steps, testimonials, pricing, FAQ, team, contact, hours) and gives a home-page blueprint per business type. Copy a source, keep its `@velocity-section` stamp, and adapt it. When nothing fits, write a new section the same way: props for copy, primitives and tokens only, a `class` prop passed through, and the rules below.
-
-## Rules for pages and sections
-
-- **Colour:** semantic classes only (`bg-background-secondary`, `text-foreground-muted`, `bg-brand-600`, `border-border`). No hex, `rgb()`, `oklch()` or Tailwind palette classes (`bg-blue-500`) in views or sections: they ignore dark mode and the direction.
-- **Type:** use the scale (`text-sm` … `text-7xl`), never arbitrary sizes such as `text-[22px]`. One `<h1>` per page, in the Hero or PageHeader. Headings in order. Long text gets a measure (`max-w-prose`).
-- **Space:** spacing tokens and Tailwind's scale, never arbitrary values such as `py-[73px]`. Use `Section` for page sections so `--theme-section-space` applies.
-- **Rhythm:** alternate backgrounds (`bg-background`, `bg-background-secondary`), at most two `invert-section` contrast bands per page, and no two neighbouring sections with the same layout.
-- **Hierarchy:** one primary Button per section. Eyebrow, heading and lead paragraph, in that order.
-- **Images:** render every image through `MediaSlot`, so a missing photo shows a labelled placeholder instead of a broken image. Don't put a placeholder in the first screen: a typographic hero looks finished without a photo. Never use stock or generated images unless the user asks.
-- **Motion:** respect `prefers-reduced-motion` (the global rule finishes animations instantly; don't override it).
+For a user who wants something fast and has no strong look in mind, `npm run design -- direction --base <id> --brand "<hex>"` writes one of five ready-made themes (`--list` shows them) into `theme.css`, with contrast checked. A direction chosen when the project was created is a starting point too: keep its fonts and colour if they fit the art direction, and restyle freely in `site.css`, which loads after it.

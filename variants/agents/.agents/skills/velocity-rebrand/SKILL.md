@@ -1,6 +1,6 @@
 ---
 name: velocity-rebrand
-description: Rebrand this Velocity site with a new brand color, theme, fonts, logo, favicon, site name and share-image color. Use when asked to change the brand, colors, typography, logo or site name, or to make the site match a style guide. For a whole new look (bolder, quieter, different type or spacing) use the design directions in .agents/design.md; to set up or rebuild the whole site use velocity-start-site.
+description: Rebrand this Velocity site with a new brand color, theme, fonts, logo, favicon, site name and share-image color. Use when asked to change the brand, colors, typography, logo or site name, or to make the site match a style guide. For a whole new look (bolder, quieter, different type or spacing) follow .agents/design.md; to set up or rebuild the whole site use velocity-start-site.
 ---
 
 # Rebrand the site
@@ -24,7 +24,7 @@ Change the `@import` line to switch themes. Every theme defines the same semanti
 
 ## 2. Set the brand color
 
-For a whole new look (type, shape, spacing and colour together), apply a design direction instead of steps 2 and 3: `npm run design -- direction --base <id> --brand "#hex"` writes the theme and registers the fonts, and checks contrast. See `.agents/design.md`. Use this skill for a quick swap of brand colour, fonts, logo or name.
+For a whole new look (type, shape, spacing and colour together), art-direct it and design it in `src/styles/site.css` and the sections, following `.agents/design.md`. Use this skill for a quick swap of brand colour, fonts, logo or name.
 
 - After changing colours by hand, `npm run design -- tokens` prints the contrast of every text/surface pair in light and dark and exits 1 if any is below AA. After changing fonts, `npm run design -- fonts` checks the package, the `fonts` entry and the tokens agree.
 

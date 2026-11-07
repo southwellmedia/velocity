@@ -214,6 +214,14 @@ describe('template extension points', () => {
     expect(manifest.files.seed).toContain(file);
   });
 
+  it('gives projects a styling layer of their own, loaded after the theme, that upgrades add but never replace', () => {
+    expect(fs.existsSync(path.join(process.cwd(), 'src/styles/site.css'))).toBe(true);
+    expect(manifest.files.protected).toContain('src/styles/site.css');
+    expect(manifest.files.seed).toContain('src/styles/site.css');
+    const global = fs.readFileSync(path.join(process.cwd(), 'src/styles/global.css'), 'utf8');
+    expect(global.indexOf("@import './site.css';")).toBeGreaterThan(global.indexOf("@import './theme.css';"));
+  });
+
   it('gives projects a sections folder that upgrades add but never touch', () => {
     expect(fs.existsSync(path.join(process.cwd(), 'src/components/sections/README.md'))).toBe(true);
     expect(manifest.files.protected).toContain('src/components/sections/');

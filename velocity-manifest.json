@@ -1,5 +1,5 @@
 {
-  "version": "2.5.0",
+  "version": "2.5.1",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -52,6 +52,7 @@
       "src/config/consent.config.ts",
       "src/config/collections.ts",
       "src/styles/theme.css",
+      "src/styles/site.css",
       "src/components/site/",
       "src/pages/",
       "src/content/",
@@ -78,6 +79,7 @@
       "src/components/site/",
       "src/config/collections.ts",
       "src/styles/theme.css",
+      "src/styles/site.css",
       "src/i18n/locales.mjs",
       "src/i18n/translations/",
       "src/actions/",

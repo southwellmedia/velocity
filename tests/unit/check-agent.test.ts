@@ -343,30 +343,29 @@ describe('check:agent', () => {
     expect(hits.map((f) => [f.file, f.message])).toEqual([['dist/index.html', '/ has 2 <h1> elements; screen readers and search engines expect one.']]);
   });
 
-  describe('design/raw-color and design/arbitrary-value', () => {
+  describe('design/untokenized-color', () => {
     const view =
       '---\nconst themeColor = "#ff0000";\n---\n' +
       '<section class="bg-blue-500 text-white md:hover:bg-brand-600 py-[73px] gap-[var(--space-section-gap)]">\n' +
-      '  <p class="text-[22px] text-[#333] bg-[rgb(0,0,0)] w-[600px]">x</p>\n' +
+      '  <p class="text-[22px] text-[#333] bg-[rgb(0,0,0)] w-[600px] bg-[var(--site-gloss)]">x</p>\n' +
       '  <div style="color: #123456"></div>\n' +
       '  {/* velocity-allow: client logo colour from their brand guide */}\n' +
       '  <span class="text-red-600">ok</span>\n' +
       '</section>\n<style>\n  .x { background: oklch(50% 0.1 20); color: var(--foreground); }\n</style>\n';
 
-    it('stay quiet until the project has a brief', async () => {
+    it('stays quiet until the project has a brief', async () => {
       const root = project({ 'src/views/HomeView.astro': view });
-      expect(await findings(root, 'design/raw-color')).toEqual([]);
-      expect(await findings(root, 'design/arbitrary-value')).toEqual([]);
+      expect(await findings(root, 'design/untokenized-color')).toEqual([]);
     });
 
-    it('flag fixed colours and off-scale values in views, sections and site/, with an opt-out', async () => {
+    it('flags colours written into views, sections and site/, with an opt-out, and points at site.css', async () => {
       const root = project({
         '.agents/site.md': '# Brief\n',
         'src/views/HomeView.astro': view,
-        'src/components/sections/Hero.astro': '<div class="px-[13px]"></div>\n',
         'src/components/ui/Card/Card.astro': '<div class="bg-blue-500"></div>\n',
+        'src/styles/site.css': ':root { --site-gloss: #0b1d24; }\n.dark { --site-gloss: #e6f6f8; }\n',
       });
-      const colors = (await findings(root, 'design/raw-color')).map((f) => [f.file, f.line, f.message.split('"')[1]]);
+      const colors = (await findings(root, 'design/untokenized-color')).map((f) => [f.file, f.line, f.message.split('"')[1]]);
       expect(colors).toEqual([
         ['src/views/HomeView.astro', 4, 'bg-blue-500'],
         ['src/views/HomeView.astro', 4, 'text-white'],
@@ -375,32 +374,36 @@ describe('check:agent', () => {
         ['src/views/HomeView.astro', 6, '#123456'],
         ['src/views/HomeView.astro', 11, 'oklch(50% 0.1 20)'],
       ]);
-      const values = (await findings(root, 'design/arbitrary-value')).map((f) => [f.file, f.line, f.message.split('"')[1]]);
-      expect(values).toEqual([
-        ['src/components/sections/Hero.astro', 1, 'px-[13px]'],
-        ['src/views/HomeView.astro', 4, 'py-[73px]'],
-        ['src/views/HomeView.astro', 5, 'text-[22px]'],
-      ]);
-      const [f] = await findings(root, 'design/raw-color');
+      const [f] = await findings(root, 'design/untokenized-color');
+      expect(f.fix).toMatch(/src\/styles\/site\.css/);
       expect(f.fix).toMatch(/velocity-allow/);
       expect(f.ref).toBe('.agents/velocity.md → Rules → Design');
+    });
+
+    it('no longer warns about exact sizes and positions', async () => {
+      const root = project({ '.agents/site.md': '# Brief\n', 'src/components/sections/Hero.astro': '<div class="px-[13px] text-[22px] top-[64%]"></div>\n' });
+      expect((await check.run(root)).findings.filter((x: Finding) => x.rule.startsWith('design/'))).toEqual([]);
     });
   });
 
   describe('design/default-theme', () => {
     const scaffoldTheme = "/* Active theme. @import './themes/midnight.css'; */\n@import './themes/default.css';\n";
+    const built = '# Site brief\n\nStatus: built\n';
 
-    it('flags a site with a brief still on the scaffold theme', async () => {
-      const root = project({ '.agents/site.md': '# Brief\n', 'src/styles/theme.css': scaffoldTheme });
+    it('flags a built site that still has the scaffold look', async () => {
+      const root = project({ '.agents/site.md': built, 'src/styles/theme.css': scaffoldTheme, 'src/styles/site.css': '/* Site styles */\n:root {\n}\n\n.dark {\n}\n' });
       const [f] = await findings(root, 'design/default-theme');
       expect(f).toMatchObject({ file: 'src/styles/theme.css', severity: 'warning' });
-      expect(f.fix).toMatch(/npm run design -- direction/);
+      expect(f.fix).toMatch(/site\.css/);
     });
 
-    it('is quiet without a brief, or once the theme has a direction or overrides', async () => {
-      expect(await findings(project({ 'src/styles/theme.css': scaffoldTheme }), 'design/default-theme')).toEqual([]);
+    it('is quiet on a fresh or planned project, and once the site has a look of its own', async () => {
+      // A fresh CLI project: brief seeded, nothing built yet.
+      expect(await findings(project({ '.agents/site.md': '# Site brief\n\nStatus: seeded by CLI\n', 'src/styles/theme.css': scaffoldTheme }), 'design/default-theme')).toEqual([]);
+      expect(await findings(project({ '.agents/site.md': '# Site brief\n\nStatus: planned\n', 'src/styles/theme.css': scaffoldTheme }), 'design/default-theme')).toEqual([]);
       const themed = scaffoldTheme + ':root { --brand-hue: 250; }\n';
-      expect(await findings(project({ '.agents/site.md': '# Brief\n', 'src/styles/theme.css': themed }), 'design/default-theme')).toEqual([]);
+      expect(await findings(project({ '.agents/site.md': built, 'src/styles/theme.css': themed }), 'design/default-theme')).toEqual([]);
+      expect(await findings(project({ '.agents/site.md': built, 'src/styles/theme.css': scaffoldTheme, 'src/styles/site.css': ':root { --site-gloss: #0b1d24; }\n' }), 'design/default-theme')).toEqual([]);
     });
   });
 

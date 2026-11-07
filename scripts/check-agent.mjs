@@ -25,9 +25,8 @@
  *   content/placeholder    a [[placeholder: …]] marker or an empty MediaSlot still on a page (warning)
  *   config/default-identity  site.config.ts still has the scaffold's name, author or email, or the build uses example.com (warning)
  *   design/multiple-h1     a built page with more than one <h1>                       (warning)
- *   design/raw-color       hex/rgb/oklch literals or palette classes in views, sections or site/ (warning, once .agents/site.md exists)
- *   design/arbitrary-value arbitrary spacing or type values such as py-[73px]         (warning, once .agents/site.md exists)
- *   design/default-theme   .agents/site.md exists but theme.css is still the scaffold's (warning)
+ *   design/untokenized-color a colour literal or palette class in views, sections or site/ instead of a token (warning, once .agents/site.md exists)
+ *   design/default-theme   the brief says the site is built but it still has the scaffold's look (warning)
  *   design/section-outdated a copied section whose Velocity source has a newer version (notice: never fails, not even with --strict)
  *
  * Notices are information only. --strict turns warnings into errors.
@@ -55,8 +54,7 @@ const RULES = {
   'content/placeholder': { severity: 'warning', ref: 'Rules → Placeholders' },
   'config/default-identity': { severity: 'warning', ref: 'Rules → Placeholders' },
   'design/multiple-h1': { severity: 'warning', ref: 'Rules → Design' },
-  'design/raw-color': { severity: 'warning', ref: 'Rules → Design' },
-  'design/arbitrary-value': { severity: 'warning', ref: 'Rules → Design' },
+  'design/untokenized-color': { severity: 'warning', ref: 'Rules → Design' },
   'design/default-theme': { severity: 'warning', ref: 'Rules → Design' },
   'design/section-outdated': { severity: 'notice', ref: 'Rules → Design' },
 };
@@ -852,8 +850,6 @@ const COLOR_UTIL = 'bg|text|border(?:-[xytrbl])?|ring|ring-offset|fill|stroke|fr
 const PALETTE_CLASS = new RegExp(`(?<![\\w-])(?:[\\w-]+:)*(?:${COLOR_UTIL})-(?:(?:${PALETTE})-(?:50|[1-9]00|950)|white|black)(?:\\/\\d+)?(?![\\w-])`, 'g');
 const ARBITRARY_COLOR = /(?<![\w-])(?:[\w-]+:)*[\w-]+-\[(?:#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?|oklch|oklab|lab|lch)\([^\]]*\))\]/g;
 const COLOR_FUNCTION = /(?:#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|lab|lch)\([^)]*\))/g;
-const SPACING_TYPE = 'p|px|py|pt|pr|pb|pl|ps|pe|m|mx|my|mt|mr|mb|ml|ms|me|gap|gap-x|gap-y|space-x|space-y|text|leading|tracking';
-const ARBITRARY_VALUE = new RegExp(`(?<![\\w-])(?:[\\w-]+:)*-?(?:${SPACING_TYPE})-\\[([^\\]]+)\\]`, 'g');
 
 function designFiles(root) {
   return DESIGN_DIRS.flatMap((dir) => walk(root, dir, (f) => /\.(astro|tsx|jsx|css)$/.test(f)));
@@ -873,36 +869,31 @@ function styleRanges(text) {
   return [...text.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>|\bstyle\s*=\s*(?:"[^"]*"|'[^']*')/gi)].map((m) => [m.index, m.index + m[0].length]);
 }
 
-/** design/raw-color and design/arbitrary-value, for projects with a brief. */
+/**
+ * design/untokenized-color, for projects with a brief: a colour written into a component
+ * ignores dark mode. Any colour is fine as a token with light and dark values in
+ * src/styles/site.css; components then use var(--…) or a semantic class.
+ */
 export function checkDesignSource(root) {
   if (!fs.existsSync(path.join(root, SITE_BRIEF))) return [];
   const out = [];
+  const fix = 'Define the colour as a token in src/styles/site.css, with a light value on :root and a dark one on .dark, and use var(--your-token) here (or a semantic class such as bg-background-secondary or text-foreground-muted). Any colour works; it just needs a dark-mode value. For a genuine exception add a /* velocity-allow: reason */ comment on the line above.';
   for (const file of designFiles(root)) {
     const text = read(root, file);
     const allowed = allowedLines(text);
     const seen = new Set();
-    const report = (rule, index, value, fix) => {
+    const report = (index, value) => {
       const line = lineOf(text, index);
-      const id = `${rule}:${line}:${value}`;
+      const id = `${line}:${value}`;
       if (allowed.has(line) || seen.has(id)) return;
       seen.add(id);
-      const message = rule === 'design/raw-color'
-        ? `"${value}" is a fixed colour: it ignores dark mode and the site's design direction.`
-        : `"${value}" is an arbitrary value outside the spacing and type scale.`;
-      out.push(finding(rule, { file, line, message, fix }));
+      out.push(finding('design/untokenized-color', { file, line, message: `"${value}" is a fixed colour, so it stays the same in dark mode.`, fix }));
     };
-    const colorFix = 'Use a semantic token class instead (bg-background-secondary, text-foreground-muted, border-border, bg-brand-600; see .agents/design.md → Rules). For a genuine exception add a /* velocity-allow: reason */ comment on the line above and record why in .agents/site.md → Decisions log.';
-    for (const m of text.matchAll(PALETTE_CLASS)) report('design/raw-color', m.index, m[0], colorFix);
-    for (const m of text.matchAll(ARBITRARY_COLOR)) report('design/raw-color', m.index, m[0], colorFix);
+    for (const m of text.matchAll(PALETTE_CLASS)) report(m.index, m[0]);
+    for (const m of text.matchAll(ARBITRARY_COLOR)) report(m.index, m[0]);
     const css = file.endsWith('.css');
     for (const [start, end] of css ? [[0, text.length]] : styleRanges(text)) {
-      for (const m of text.slice(start, end).matchAll(COLOR_FUNCTION)) report('design/raw-color', start + m.index, m[0], colorFix);
-    }
-    for (const m of text.matchAll(ARBITRARY_VALUE)) {
-      const value = m[1];
-      // Token references (py-[var(--space-section-md)]) and colours (handled above) are fine here.
-      if (/var\(--/.test(value) || /^(#|color:|rgb|hsl|oklch)/.test(value) || !/\d/.test(value)) continue;
-      report('design/arbitrary-value', m.index, m[0], 'Use the spacing scale (p-6, gap-8, py-[var(--space-section-md)]) or the type scale (text-sm … text-7xl); theme controls in theme.css change them site-wide. For a genuine exception add a /* velocity-allow: reason */ comment on the line above and record why in .agents/site.md → Decisions log.');
+      for (const m of text.slice(start, end).matchAll(COLOR_FUNCTION)) report(start + m.index, m[0]);
     }
   }
   return out;
@@ -914,15 +905,28 @@ export function isScaffoldTheme(themeCss) {
   return rest === '';
 }
 
-/** design/default-theme: a brief exists but the site still has the scaffold's look. */
+/** Whether site.css defines anything: a custom property or a rule with declarations. */
+export function hasSiteStyles(css) {
+  return /[\w-]+\s*:\s*[^;{}]+;/.test(css.replace(/\/\*[\s\S]*?\*\//g, ''));
+}
+
+/**
+ * design/default-theme: the brief says the site is built, yet neither theme.css nor
+ * site.css holds anything of its own, so it looks like every other Velocity site.
+ * Quiet while the site is being planned or was just created by the CLI.
+ */
 export function checkDefaultTheme(root) {
   const theme = 'src/styles/theme.css';
-  if (!fs.existsSync(path.join(root, SITE_BRIEF)) || !fs.existsSync(path.join(root, theme))) return [];
+  const brief = path.join(root, SITE_BRIEF);
+  if (!fs.existsSync(brief) || !fs.existsSync(path.join(root, theme))) return [];
+  if (!/^Status:\s*built\b/im.test(fs.readFileSync(brief, 'utf8'))) return [];
   if (!isScaffoldTheme(read(root, theme))) return [];
+  const site = path.join(root, 'src/styles/site.css');
+  if (fs.existsSync(site) && hasSiteStyles(fs.readFileSync(site, 'utf8'))) return [];
   return [finding('design/default-theme', {
     file: theme,
-    message: 'The site has a brief but still uses the scaffold\'s theme, so it looks like every other Velocity site.',
-    fix: 'Apply the direction in .agents/site.md → Design: npm run design -- direction --base <id> --brand "<hex>" (list them with -- direction --list).',
+    message: 'The site is built but still has the scaffold\'s look, so it looks like every other Velocity site.',
+    fix: 'Give it its own: the art direction in .agents/site.md → Design, carried out in src/styles/site.css (colours, devices, type) and the sections. See .agents/design.md.',
   })];
 }
 
