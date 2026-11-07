@@ -40,6 +40,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Component registry
         run: pnpm check:registry
+      - name: Component reference is current
+        run: pnpm check:components
       - run: pnpm exec playwright install --with-deps chromium
       - name: Scaffold, check, build and test every variant
         run: pnpm test:scaffold --e2e --out=${{ runner.temp }}/velocity-matrix

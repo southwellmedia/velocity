@@ -2,7 +2,7 @@
 /**
  * Build every project shape create-velocity-astro can produce.
  *
- *   pnpm test:scaffold                  # 8 combinations + a custom-language project: install, astro check, build
+ *   pnpm test:scaffold                  # 8 combinations + a custom-language project: install, astro check, build, check:agent
  *   pnpm test:scaffold --e2e            # …plus the Playwright suite in each full-component project
  *   pnpm test:scaffold --only=min-i18n  # filter by name: (demo|min)-(en|i18n)-(all|none) or custom-locale
  *   pnpm test:scaffold --out=./.matrix  # where projects are created (default: OS temp dir)
@@ -44,6 +44,7 @@ const combos = [
   { name: 'custom-locale', options: { demo: true, i18n: false, components: 'all' }, locales: ['en', 'de'] },
 ].filter((c) => typeof args.only !== 'string' || c.name.includes(args.only));
 
+/** Run a shell command synchronously. Returns { ok, seconds, output } with stdout and stderr combined. */
 function run(cmd, cwd, env = {}) {
   const started = Date.now();
   // `input` closes stdin, so a tool that prompts fails here instead of waiting forever
@@ -101,6 +102,8 @@ for (const { name, options, locales } of combos) {
       },
     ],
     ['build', () => run(`${bin('astro/bin/astro.mjs')} build`, dir, { DEPLOY_TARGET: 'node' })],
+    // A fresh project must pass its own agent-ready check (warnings, such as the form stubs, are expected).
+    ['agent', () => run('node scripts/check-agent.mjs', dir)],
   ];
   if (args.e2e && options.components === 'all') {
     const e2ePort = String(port++);

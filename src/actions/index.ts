@@ -18,6 +18,8 @@ import { postJson, warnUndelivered, DeliveryError } from '@/lib/form-delivery';
  * - Or replace the forwarding below with your provider's SDK (Resend,
  *   Postmark, a CRM, Mailchimp...).
  * - With neither, submissions are discarded and the server logs a warning.
+ *   That path is marked @velocity-stub; `npm run check:agent` warns about it
+ *   while the endpoint isn't set. Delete the marker once a provider is wired.
  */
 export const server = {
   contact: defineAction({
@@ -32,6 +34,7 @@ export const server = {
         return { success: true };
       }
 
+      // @velocity-stub contact (no delivery configured: discarded, see npm run check:agent)
       warnUndelivered('contact', 'CONTACT_FORM_ENDPOINT');
       if (import.meta.env.DEV) {
         // eslint-disable-next-line no-console
@@ -55,6 +58,7 @@ export const server = {
         return { success: true };
       }
 
+      // @velocity-stub newsletter (no delivery configured: discarded, see npm run check:agent)
       warnUndelivered('newsletter', 'NEWSLETTER_ENDPOINT');
       if (import.meta.env.DEV) {
         // eslint-disable-next-line no-console

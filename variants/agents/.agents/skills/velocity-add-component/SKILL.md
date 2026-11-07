@@ -9,9 +9,9 @@ description: Add, restore or customize a UI component in this Velocity site, fol
 
 ## 1. Check whether it already exists
 
-Look up the component in `component-registry.json`, then check whether its `files` are on disk.
+Read `.agents/components.md` first, before reading component source or creating anything. It lists every component Velocity ships, with its import path, props, variants, slots, an example, and notes on which component to use instead. Search it for `## <ComponentName>`. Then check whether the component's files are on disk.
 
-- **Installed:** use it. Read its `Props` interface and `*.variants.ts` for the API.
+- **Installed:** use it, following its entry in `.agents/components.md`. Read the source only if the entry doesn't answer your question.
 - **Listed but missing:** the project was scaffolded without it, so restore it (step 2).
 - **Not listed:** build it (steps 3 onward).
 
@@ -20,7 +20,7 @@ Import components by file path, such as `@/components/ui/data-display/Badge/Badg
 ## 2. Restore a Velocity component
 
 1. Read `version` from `.velocity.json`.
-2. Follow `dependencies.components` in `component-registry.json` recursively, and collect every entry that's missing from the project.
+2. Find the component in `component-registry.json`, follow its `dependencies.components` recursively, and collect every entry that's missing from the project.
 3. Download each file in those entries, keeping its path:
    `https://raw.githubusercontent.com/southwellmedia/velocity/v<version>/<file>`
 4. Check `dependencies.utilities` against the registry's `utilities` section. Add any missing `files`, and install any missing `npm` packages.

@@ -69,6 +69,7 @@
   "components": {
     "button": {
       "name": "Button",
+      "description": "Button or button-styled link with variants, sizes, loading state and optional leading/trailing icons.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -85,10 +86,17 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Button with href for links styled as buttons, not a styled <a>; external URLs get target=\"_blank\" and rel automatically.",
+        "Use icon (with size) for square icon-only buttons, and give them an aria-label.",
+        "Use the link variant for inline text actions, not a plain <button> with custom classes."
+      ],
+      "example": "---\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Button variant=\"primary\" size=\"lg\" trailingIcon=\"arrow-right\" href=\"/contact\">Get in touch</Button>\n<Button variant=\"outline\" type=\"submit\" loading>Saving</Button>"
     },
     "input": {
       "name": "Input",
+      "description": "Text input with built-in label, hint, error message and optional leading/trailing icons.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -105,10 +113,16 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Input with label/hint/error instead of wrapping it in FormField; it already wires ids and aria-describedby.",
+        "Use PasswordInput for passwords and SearchInput for search fields."
+      ],
+      "example": "---\nimport Input from '@/components/ui/form/Input/Input.astro';\n---\n\n<Input name=\"email\" type=\"email\" label=\"Email\" hint=\"We never share it.\" leadingIcon=\"mail\" required />"
     },
     "textarea": {
       "name": "Textarea",
+      "description": "Multi-line text field with built-in label, hint and error message.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -123,10 +137,12 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport Textarea from '@/components/ui/form/Textarea/Textarea.astro';\n---\n\n<Textarea name=\"message\" label=\"Message\" rows={6} error=\"Please enter a message.\" />"
     },
     "select": {
       "name": "Select",
+      "description": "Native <select> built from an options array, with label, placeholder, hint and error.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -141,10 +157,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Dropdown for a menu of actions or links; Select is for choosing a form value."
+      ],
+      "example": "---\nimport Select from '@/components/ui/form/Select/Select.astro';\n---\n\n<Select\n  name=\"plan\"\n  label=\"Plan\"\n  placeholder=\"Choose a plan\"\n  options={[\n    { value: 'starter', label: 'Starter' },\n    { value: 'pro', label: 'Pro' },\n  ]}\n/>"
     },
     "checkbox": {
       "name": "Checkbox",
+      "description": "Native checkbox with label, optional description and error message.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -159,10 +180,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Switch for settings that take effect immediately (on/off), Checkbox for form choices and consent."
+      ],
+      "example": "---\nimport Checkbox from '@/components/ui/form/Checkbox/Checkbox.astro';\n---\n\n<Checkbox name=\"terms\" label=\"I agree to the terms\" description=\"You can unsubscribe at any time.\" required />"
     },
     "radio": {
       "name": "Radio",
+      "description": "Single native radio input with label and description; give a group the same name. The card variant renders a selectable card.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -177,10 +203,12 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport Radio from '@/components/ui/form/Radio/Radio.astro';\n---\n\n<fieldset class=\"space-y-3\">\n  <legend class=\"text-sm font-medium\">Billing</legend>\n  <Radio name=\"billing\" value=\"monthly\" label=\"Monthly\" checked />\n  <Radio name=\"billing\" value=\"yearly\" label=\"Yearly\" description=\"Two months free\" variant=\"card\" />\n</fieldset>"
     },
     "switch": {
       "name": "Switch",
+      "description": "Accessible on/off toggle (a checkbox with role=\"switch\") with label and description.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -195,10 +223,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Checkbox for agreeing to terms or picking several options in a form."
+      ],
+      "example": "---\nimport Switch from '@/components/ui/form/Switch/Switch.astro';\n---\n\n<Switch name=\"updates\" label=\"Product updates\" description=\"One email a month.\" checked />"
     },
     "card": {
       "name": "Card",
+      "description": "Surface container with variants and padding; becomes a block link when given href.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -213,10 +246,16 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Card with href for a clickable card, not a Card wrapped in <a>.",
+        "Use StatCard for a metric with a trend, and Section for page-level bands."
+      ],
+      "example": "---\nimport Card from '@/components/ui/data-display/Card/Card.astro';\n---\n\n<Card variant=\"elevated\" padding=\"lg\" hover href=\"/blog\">\n  <h3 class=\"font-semibold text-foreground\">Read the blog</h3>\n  <p class=\"text-foreground-muted text-sm\">Guides and release notes.</p>\n</Card>"
     },
     "badge": {
       "name": "Badge",
+      "description": "Small inline label for status, tags or counts, with semantic color variants, a pill style and a pulsing dot.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -231,10 +270,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Badge for status and tags instead of a styled <span>; it is a <span>, so it can sit inside text."
+      ],
+      "example": "---\nimport Badge from '@/components/ui/data-display/Badge/Badge.astro';\n---\n\n<Badge variant=\"success\" size=\"sm\">Live</Badge>\n<Badge variant=\"brand\" pill pulse>New release</Badge>"
     },
     "avatar": {
       "name": "Avatar",
+      "description": "Circular user image that falls back to initials (from fallback or alt) when there is no src.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -249,10 +293,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use AvatarGroup for a stacked row of avatars with a \"+N\" overflow."
+      ],
+      "example": "---\nimport Avatar from '@/components/ui/data-display/Avatar/Avatar.astro';\n---\n\n<Avatar src=\"/avatars/ada.jpg\" alt=\"Ada Lovelace\" size=\"lg\" />\n<Avatar fallback=\"GH\" size=\"sm\" />"
     },
     "avatar-group": {
       "name": "AvatarGroup",
+      "description": "Overlapping stack of Avatars that collapses extras into a \"+N\" count.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -268,10 +317,15 @@
           "avatar"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use SocialProof for avatars next to a short trust line on marketing pages."
+      ],
+      "example": "---\nimport AvatarGroup from '@/components/ui/data-display/AvatarGroup/AvatarGroup.astro';\n---\n\n<AvatarGroup\n  max={3}\n  avatars={[\n    { src: '/avatars/ada.jpg', alt: 'Ada Lovelace' },\n    { alt: 'Grace Hopper' },\n    { fallback: 'AT' },\n    { alt: 'Alan Kay' },\n  ]}\n/>"
     },
     "table": {
       "name": "Table",
+      "description": "Responsive data table rendered from columns and rows arrays, with hover, striped and compact options.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -285,10 +339,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Cells render as plain text; for rich cell content write a <table> with the same semantic classes."
+      ],
+      "example": "---\nimport Table from '@/components/ui/data-display/Table/Table.astro';\n---\n\n<Table\n  striped\n  columns={[\n    { key: 'plan', label: 'Plan' },\n    { key: 'price', label: 'Price', align: 'right' },\n  ]}\n  rows={[\n    { plan: 'Starter', price: '$0' },\n    { plan: 'Pro', price: '$29' },\n  ]}\n/>"
     },
     "pagination": {
       "name": "Pagination",
+      "description": "Page navigation (<nav>) with previous/next links and a window of numbered pages built from baseUrl.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -305,10 +364,12 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport Pagination from '@/components/ui/data-display/Pagination/Pagination.astro';\n---\n\n<Pagination currentPage={2} totalPages={8} baseUrl=\"/blog/page/\" />"
     },
     "progress": {
       "name": "Progress",
+      "description": "Progress bar with semantic color variants and optional percentage label; omit value for an indeterminate bar.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -323,10 +384,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Skeleton for loading placeholders that mimic content shape."
+      ],
+      "example": "---\nimport Progress from '@/components/ui/data-display/Progress/Progress.astro';\n---\n\n<Progress value={64} variant=\"brand\" showLabel aria-label=\"Upload progress\" />"
     },
     "skeleton": {
       "name": "Skeleton",
+      "description": "Animated placeholder block, circle or text line for content that is still loading.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -341,10 +407,12 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport Skeleton from '@/components/ui/data-display/Skeleton/Skeleton.astro';\n---\n\n<div class=\"flex items-center gap-3\">\n  <Skeleton variant=\"circular\" width=\"40px\" height=\"40px\" />\n  <Skeleton variant=\"text\" width=\"60%\" />\n</div>"
     },
     "alert": {
       "name": "Alert",
+      "description": "Inline message box (info, success, warning, error) with an icon, optional title and dismiss button.",
       "category": "ui",
       "subcategory": "feedback",
       "files": [
@@ -361,10 +429,15 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Toast for transient notifications triggered from a React island; Alert is static, in-page content."
+      ],
+      "example": "---\nimport Alert from '@/components/ui/feedback/Alert/Alert.astro';\n---\n\n<Alert variant=\"warning\" title=\"Scheduled maintenance\" dismissible>\n  The dashboard is read-only on Sunday from 02:00 to 04:00 UTC.\n</Alert>"
     },
     "toast": {
       "name": "Toast",
+      "description": "React toast notifications: ToastProvider renders the stack and useToast() returns toast()/dismiss(). Toast.astro mounts the provider as an island around its slot.",
       "category": "ui",
       "subcategory": "feedback",
       "files": [
@@ -380,10 +453,16 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Trigger toasts from a React component rendered inside ToastProvider in the same island; Astro islands passed into Toast.astro's slot hydrate separately and cannot reach its context.",
+        "Use Alert for static, in-page messages."
+      ],
+      "example": "---\n// src/components/SaveButton.tsx, a React island:\n//   import { ToastProvider, useToast } from '@/components/ui/feedback/Toast/Toast';\n//   function Save() { const { toast } = useToast(); return <button onClick={() => toast({ title: 'Saved', variant: 'success' })}>Save</button>; }\n//   export default function SaveButton() { return <ToastProvider><Save /></ToastProvider>; }\nimport SaveButton from '@/components/SaveButton';\n---\n\n<SaveButton client:load />"
     },
     "tooltip": {
       "name": "Tooltip",
+      "description": "Text tooltip shown on hover and focus around a trigger passed in the default slot.",
       "category": "ui",
       "subcategory": "feedback",
       "files": [
@@ -397,10 +476,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Tooltips are supplementary: icon-only triggers still need their own aria-label. Use Dropdown or Dialog for interactive content."
+      ],
+      "example": "---\nimport Tooltip from '@/components/ui/feedback/Tooltip/Tooltip.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Tooltip content=\"Copy to clipboard\" position=\"bottom\">\n  <Button variant=\"ghost\" size=\"sm\" icon leadingIcon=\"copy\" aria-label=\"Copy\" />\n</Tooltip>"
     },
     "dialog": {
       "name": "Dialog",
+      "description": "Accessible modal with focus trap, Escape/backdrop close, title, description and a footer slot. Open it with window.openDialog(id).",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -416,10 +500,16 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Inline onclick is blocked by the CSP: open dialogs from a bundled <script> calling window.openDialog(id). Elements with data-dialog-close inside the dialog close it.",
+        "Use Tooltip for hints and Alert for in-page messages; reserve Dialog for tasks that need focus."
+      ],
+      "example": "---\nimport Dialog from '@/components/ui/overlay/Dialog/Dialog.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Button variant=\"destructive\" id=\"delete-trigger\">Delete project</Button>\n\n<Dialog id=\"delete-dialog\" title=\"Delete project?\" description=\"This can't be undone.\" size=\"sm\">\n  <p class=\"text-sm text-foreground-muted\">All deployments will be removed.</p>\n  <div slot=\"footer\" class=\"flex justify-end gap-3\">\n    <Button variant=\"outline\" data-dialog-close>Cancel</Button>\n    <Button variant=\"destructive\" data-dialog-close>Delete</Button>\n  </div>\n</Dialog>\n\n<script>\n  const w = window as Window & { openDialog?: (id: string) => void };\n  document.getElementById('delete-trigger')?.addEventListener('click', () => w.openDialog?.('delete-dialog'));\n</script>"
     },
     "dropdown": {
       "name": "Dropdown",
+      "description": "Menu of links or actions (with icons, separators and disabled items) opened from a trigger slot, with keyboard support.",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -435,10 +525,15 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Select for picking a form value."
+      ],
+      "example": "---\nimport Dropdown from '@/components/ui/overlay/Dropdown/Dropdown.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Dropdown\n  align=\"end\"\n  items={[\n    { label: 'Edit', href: '/settings', icon: 'edit' },\n    { label: '', separator: true },\n    { label: 'Archive', href: '/archive', icon: 'archive', disabled: true },\n  ]}\n>\n  <Button slot=\"trigger\" variant=\"outline\" trailingIcon=\"chevron-down\">Actions</Button>\n</Dropdown>"
     },
     "tabs": {
       "name": "Tabs",
+      "description": "Horizontal tabs with keyboard navigation; panels are children marked data-tab-content=\"<tab id>\".",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -452,10 +547,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use VerticalTabs for settings-style navigation with descriptions and icons, and Accordion for long stacked content."
+      ],
+      "example": "---\nimport Tabs from '@/components/ui/overlay/Tabs/Tabs.astro';\n---\n\n<Tabs tabs={[{ id: 'overview', label: 'Overview' }, { id: 'pricing', label: 'Pricing' }]}>\n  <div data-tab-content=\"overview\">Overview content</div>\n  <div data-tab-content=\"pricing\">Pricing content</div>\n</Tabs>"
     },
     "vertical-tabs": {
       "name": "VerticalTabs",
+      "description": "Side-list tabs with optional descriptions and icons that turn into a dropdown or bottom sheet on mobile; panels use data-tab-content.",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -471,10 +571,12 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport VerticalTabs from '@/components/ui/overlay/VerticalTabs/VerticalTabs.astro';\n---\n\n<VerticalTabs\n  mobileVariant=\"sheet\"\n  tabs={[\n    { id: 'account', label: 'Account', description: 'Profile and email', icon: 'settings' },\n    { id: 'security', label: 'Security', description: 'Password and 2FA', icon: 'shield' },\n  ]}\n>\n  <div data-tab-content=\"account\">Account settings</div>\n  <div data-tab-content=\"security\">Security settings</div>\n</VerticalTabs>"
     },
     "accordion": {
       "name": "Accordion",
+      "description": "Collapsible sections built on native <details>/<summary> (works without JS), with an exclusive single-open mode.",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -491,10 +593,15 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Item content is plain text; for rich content per item use native <details> with the same classes, or Tabs."
+      ],
+      "example": "---\nimport Accordion from '@/components/ui/overlay/Accordion/Accordion.astro';\n---\n\n<Accordion\n  variant=\"card\"\n  exclusive\n  items={[\n    { title: 'Is it free?', content: 'Yes, Velocity is MIT licensed.', defaultOpen: true },\n    { title: 'Can I use React?', content: 'Yes, as islands.' },\n  ]}\n/>"
     },
     "separator": {
       "name": "Separator",
+      "description": "Horizontal or vertical divider line, optionally with a centered label.",
       "category": "ui",
       "subcategory": "layout",
       "files": [
@@ -509,10 +616,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Separator instead of a bare <hr> or bordered <div>."
+      ],
+      "example": "---\nimport Separator from '@/components/ui/layout/Separator/Separator.astro';\n---\n\n<Separator label=\"or\" />\n<div class=\"flex h-6 items-center gap-3\">Docs <Separator orientation=\"vertical\" /> Blog</div>"
     },
     "icon": {
       "name": "Icon",
+      "description": "Inline SVG icon from a built-in set of Lucide paths (plus a few brand icons), sized by preset.",
       "category": "ui",
       "subcategory": "primitives",
       "files": [
@@ -526,10 +638,16 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use the leadingIcon/trailingIcon props of Button and Input instead of placing Icon inside them by hand.",
+        "Only the names under Icon names exist; add a path to the icons map in Icon.astro for new ones, rather than importing an icon library."
+      ],
+      "example": "---\nimport Icon from '@/components/ui/primitives/Icon/Icon.astro';\n---\n\n<Icon name=\"check-circle\" size=\"sm\" class=\"text-success\" />"
     },
     "code-block": {
       "name": "CodeBlock",
+      "description": "Static code display with a window header, optional filename, line numbers and a copy button.",
       "category": "ui",
       "subcategory": "content",
       "files": [
@@ -542,10 +660,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "In Markdown/MDX content, use fenced code blocks; CodeBlock is for code shown in .astro pages."
+      ],
+      "example": "---\nimport CodeBlock from '@/components/ui/content/CodeBlock/CodeBlock.astro';\n---\n\n<CodeBlock filename=\"astro.config.mjs\" code={`export default defineConfig({\\n  site: 'https://example.com',\\n});`} />"
     },
     "logo": {
       "name": "Logo",
+      "description": "The site's logo, rendered inline from the SVGs in src/assets/branding/ (logomark or full), with light/dark versions.",
       "category": "ui",
       "subcategory": "marketing",
       "files": [
@@ -558,10 +681,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Replace the SVG files in src/assets/branding/ to rebrand; do not hardcode an <img> logo."
+      ],
+      "example": "---\nimport Logo from '@/components/ui/marketing/Logo/Logo.astro';\n---\n\n<a href=\"/\" class=\"flex items-center gap-2\">\n  <Logo size=\"lg\" decorative />\n  <span class=\"font-semibold\">Acme</span>\n</a>"
     },
     "cta": {
       "name": "CTA",
+      "description": "Closing call-to-action band centered, with logo, heading, description and actions slots (each rendered only when filled).",
       "category": "ui",
       "subcategory": "marketing",
       "files": [
@@ -576,10 +704,15 @@
           "logo"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Section for ordinary content bands; CTA is the closing conversion block."
+      ],
+      "example": "---\nimport CTA from '@/components/ui/marketing/CTA/CTA.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<CTA variant=\"invert\" size=\"md\">\n  <h2 slot=\"heading\">Ready to launch?</h2>\n  <p slot=\"description\">Start from a site that is fast, accessible and translated.</p>\n  <Button slot=\"actions\" size=\"lg\" href=\"/contact\">Talk to us</Button>\n</CTA>"
     },
     "npm-copy-button": {
       "name": "NpmCopyButton",
+      "description": "Button that shows a shell command and copies it to the clipboard, with \"copied\" feedback.",
       "category": "ui",
       "subcategory": "marketing",
       "files": [
@@ -594,10 +727,15 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use CodeBlock for multi-line code."
+      ],
+      "example": "---\nimport NpmCopyButton from '@/components/ui/marketing/NpmCopyButton/NpmCopyButton.astro';\n---\n\n<NpmCopyButton command=\"npm create velocity-astro@latest\" size=\"md\" />"
     },
     "social-proof": {
       "name": "SocialProof",
+      "description": "Row of overlapping avatar circles (images or placeholders) next to a short trust line.",
       "category": "ui",
       "subcategory": "marketing",
       "files": [
@@ -610,10 +748,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use AvatarGroup for user lists outside marketing copy."
+      ],
+      "example": "---\nimport SocialProof from '@/components/ui/marketing/SocialProof/SocialProof.astro';\n---\n\n<SocialProof text=\"Trusted by 2,000+ teams\" avatarCount={4} size=\"md\" />"
     },
     "terminal-demo": {
       "name": "TerminalDemo",
+      "description": "React island that animates a terminal replaying the create-velocity-astro CLI prompts. Takes no props.",
       "category": "ui",
       "subcategory": "marketing",
       "files": [
@@ -626,10 +769,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use CodeBlock for static commands, or NpmCopyButton for a copyable install command."
+      ],
+      "example": "---\nimport TerminalDemo from '@/components/ui/marketing/TerminalDemo/TerminalDemo';\n---\n\n<TerminalDemo client:visible />"
     },
     "contact-form": {
       "name": "ContactForm",
+      "description": "Complete contact form (name, email, subject, message) submitting to the `contact` Astro Action or an external endpoint, with localized labels, validation and status.",
       "category": "patterns",
       "files": [
         "src/components/patterns/ContactForm.astro",
@@ -646,10 +794,15 @@
           "button"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use ContactForm instead of building a form from Input/Textarea/Button; the schema lives in src/lib/forms.ts and the handler in src/actions/index.ts."
+      ],
+      "example": "---\nimport ContactForm from '@/components/patterns/ContactForm.astro';\n---\n\n<ContactForm submitLabel=\"Send message\" labels={{ subject: 'Topic' }} />"
     },
     "newsletter-form": {
       "name": "NewsletterForm",
+      "description": "Inline email signup form submitting to the `newsletter` Astro Action or an external endpoint, with localized status messages.",
       "category": "patterns",
       "files": [
         "src/components/patterns/NewsletterForm.astro",
@@ -665,10 +818,12 @@
           "button"
         ]
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport NewsletterForm from '@/components/patterns/NewsletterForm.astro';\n---\n\n<NewsletterForm buttonText=\"Subscribe\" class=\"max-w-md\" />"
     },
     "form-field": {
       "name": "FormField",
+      "description": "Label, hint, error and required marker around a custom control passed in the input slot.",
       "category": "patterns",
       "files": [
         "src/components/patterns/FormField.astro"
@@ -679,10 +834,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Input, Textarea, Select, Checkbox and Switch have label/hint/error built in; use FormField only for custom controls."
+      ],
+      "example": "---\nimport FormField from '@/components/patterns/FormField.astro';\n---\n\n<FormField label=\"Favorite color\" hint=\"Pick any color.\" required>\n  <input slot=\"input\" type=\"color\" name=\"color\" class=\"h-10 w-16 rounded-md border border-border\" />\n</FormField>"
     },
     "search-input": {
       "name": "SearchInput",
+      "description": "Search field (type=\"search\") built from Input with a leading search icon; used by the Pagefind search page.",
       "category": "patterns",
       "files": [
         "src/components/patterns/SearchInput.astro"
@@ -695,10 +855,12 @@
           "input"
         ]
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport SearchInput from '@/components/patterns/SearchInput.astro';\n---\n\n<form action=\"/search\" role=\"search\">\n  <SearchInput name=\"q\" placeholder=\"Search the docs\" aria-label=\"Search\" />\n</form>"
     },
     "password-input": {
       "name": "PasswordInput",
+      "description": "Password field built from Input with a show/hide toggle button.",
       "category": "patterns",
       "files": [
         "src/components/patterns/PasswordInput.astro"
@@ -712,10 +874,12 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport PasswordInput from '@/components/patterns/PasswordInput.astro';\n---\n\n<PasswordInput name=\"password\" label=\"Password\" autocomplete=\"new-password\" hint=\"At least 12 characters.\" />"
     },
     "stat-card": {
       "name": "StatCard",
+      "description": "Metric card with label, value, optional icon and an up/down/neutral trend line.",
       "category": "patterns",
       "files": [
         "src/components/patterns/StatCard.astro"
@@ -729,10 +893,12 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport StatCard from '@/components/patterns/StatCard.astro';\n---\n\n<StatCard label=\"Monthly visitors\" value=\"48.2k\" trend=\"up\" trendText=\"+12% from last month\" icon=\"users\" />"
     },
     "empty-state": {
       "name": "EmptyState",
+      "description": "Centered placeholder for empty lists or results: icon, title, description and an optional action button or slot.",
       "category": "patterns",
       "files": [
         "src/components/patterns/EmptyState.astro"
@@ -746,10 +912,12 @@
           "button"
         ]
       },
-      "premium": false
+      "premium": false,
+      "example": "---\nimport EmptyState from '@/components/patterns/EmptyState.astro';\n---\n\n<EmptyState icon=\"search\" title=\"No results\" description=\"Try a different search term.\" actionLabel=\"Clear search\" actionHref=\"/search\" />"
     },
     "hero": {
       "name": "Hero",
+      "description": "Page-opening hero section, centered or split, with badge, title, description, actions and aside slots plus optional grid and blob backgrounds.",
       "category": "hero",
       "files": [
         "src/components/hero/Hero.astro",
@@ -762,10 +930,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use PageHeader for inner pages; Hero is for landing and home pages. Put the page's <h1> in the title slot."
+      ],
+      "example": "---\nimport Hero from '@/components/hero/Hero.astro';\nimport Badge from '@/components/ui/data-display/Badge/Badge.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Hero layout=\"split\" size=\"lg\" showGrid showBlob>\n  <Badge slot=\"badge\" pill>New</Badge>\n  <h1 slot=\"title\">Build faster sites</h1>\n  <p slot=\"description\">A production-ready Astro starter.</p>\n  <div slot=\"actions\" class=\"flex gap-3\">\n    <Button size=\"lg\" href=\"/contact\">Get started</Button>\n  </div>\n  <img slot=\"aside\" src=\"/screenshot.png\" alt=\"Dashboard screenshot\" />\n</Hero>"
     },
     "header": {
       "name": "Header",
+      "description": "Site header with logo, nav from nav.config.ts, CTA, action buttons, theme toggle, language switcher and mobile menu; bar or floating capsule.",
       "category": "layout",
       "files": [
         "src/components/layout/Header.astro",
@@ -781,10 +954,16 @@
           "logo"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use SiteHeader (src/components/site/SiteHeader.astro), which every layout renders; set defaults there instead of rendering Header from a layout or page.",
+        "Change nav items, CTA and actions in src/config/nav.config.ts."
+      ],
+      "example": "---\nimport Header from '@/components/layout/Header.astro';\n---\n\n<!-- In src/components/site/SiteHeader.astro -->\n<Header position=\"fixed\" size=\"lg\" shape=\"floating\" showCta {...Astro.props} />"
     },
     "footer": {
       "name": "Footer",
+      "description": "Site footer in simple, columns, minimal or stacked layouts, with nav, link groups, social and legal links, tagline and copyright.",
       "category": "layout",
       "files": [
         "src/components/layout/Footer.astro",
@@ -799,10 +978,16 @@
           "logo"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use SiteFooter (src/components/site/SiteFooter.astro), which every layout renders; set defaults there instead of rendering Footer from a layout or page.",
+        "footerConfig.extraLinks in src/config/nav.config.ts only appears in the simple and stacked layouts."
+      ],
+      "example": "---\nimport Footer from '@/components/layout/Footer.astro';\n---\n\n<!-- In src/components/site/SiteFooter.astro -->\n<Footer\n  {...Astro.props}\n  layout=\"columns\"\n  columns={3}\n  linkGroups={[{ title: 'Company', links: [{ label: 'About', href: '/about' }] }]}\n  socialLinks={[{ platform: 'github', href: 'https://github.com/acme' }]}\n/>"
     },
     "consent-banner": {
       "name": "ConsentBanner",
+      "description": "Cookie consent banner and settings dialog with Google Consent Mode v2; renders only when PUBLIC_CONSENT_ENABLED is true.",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -817,10 +1002,15 @@
           "switch"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "BaseLayout already renders ConsentBanner; configure categories and copy in src/config/consent.config.ts instead of adding it to pages."
+      ],
+      "example": "---\nimport ConsentBanner from '@/components/ui/overlay/ConsentBanner/ConsentBanner.astro';\n---\n\n<!-- Already in src/layouts/BaseLayout.astro -->\n<ConsentBanner position=\"bottom\" />"
     },
     "google-map": {
       "name": "GoogleMap",
+      "description": "Consent-aware Google Maps embed by coordinates or address; shows a setup prompt without PUBLIC_GOOGLE_MAPS_API_KEY and a placeholder until consent.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -834,10 +1024,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use GoogleMap rather than a raw Maps <iframe>, which would load Google before the visitor consents."
+      ],
+      "example": "---\nimport GoogleMap from '@/components/ui/data-display/GoogleMap/GoogleMap.astro';\n---\n\n<GoogleMap address=\"1 Infinite Loop, Cupertino, CA\" zoom={14} size=\"lg\" ariaLabel=\"Map of our office\" />"
     },
     "section": {
       "name": "Section",
+      "description": "Page section with standard spacing and width, an optional eyebrow/title/lead heading block, action slot and tinted tone.",
       "category": "patterns",
       "files": [
         "src/components/patterns/Section.astro"
@@ -848,10 +1043,15 @@
         ],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Section for every content band on a page instead of hand-rolled <section> padding and container classes."
+      ],
+      "example": "---\nimport Section from '@/components/patterns/Section.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Section id=\"features\" eyebrow=\"Features\" title=\"Everything you need\" lead=\"Fast by default.\" tone=\"secondary\">\n  <Button slot=\"action\" variant=\"outline\" href=\"/docs\">Read the docs</Button>\n  <div class=\"grid gap-6 md:grid-cols-3\"><!-- cards --></div>\n</Section>"
     },
     "page-header": {
       "name": "PageHeader",
+      "description": "Opening band for inner pages with eyebrow, title and lead; holds the page's only <h1>.",
       "category": "patterns",
       "files": [
         "src/components/patterns/PageHeader.astro"
@@ -860,10 +1060,15 @@
         "utilities": [],
         "components": []
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use Hero for landing pages. Do not add another <h1> to a page that uses PageHeader."
+      ],
+      "example": "---\nimport PageHeader from '@/components/patterns/PageHeader.astro';\n---\n\n<PageHeader eyebrow=\"Company\" title=\"About us\" lead=\"We build fast, accessible websites.\" />"
     },
     "media-slot": {
       "name": "MediaSlot",
+      "description": "Optimized image from src/assets/photos/<photo> at a fixed aspect ratio, or a labelled placeholder until the photo exists.",
       "category": "patterns",
       "files": [
         "src/components/patterns/MediaSlot.astro"
@@ -876,7 +1081,11 @@
           "icon"
         ]
       },
-      "premium": false
+      "premium": false,
+      "useInstead": [
+        "Use MediaSlot for page photos instead of a raw <img>; drop the file into src/assets/photos/ and it appears."
+      ],
+      "example": "---\nimport MediaSlot from '@/components/patterns/MediaSlot.astro';\n---\n\n<MediaSlot photo=\"team\" alt=\"Our team outside the office\" label=\"Team photo\" ratio=\"4/3\" />"
     }
   }
 }

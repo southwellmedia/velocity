@@ -58,7 +58,12 @@ change that breaks a variant fails the PR that caused it.
 4. Delete every path in `cleanup`, and remove each npm script named in
    `cleanupScripts` from the project's `package.json` (repo-only tooling such as
    `test:scaffold`).
-5. **Upgrades run steps 1–4 on the fresh download, using the options in the
+5. Write `.velocity/baseline.json`: the SHA-256 of every file under `files.safe`,
+   exactly what `node scripts/check-agent.mjs --write-baseline` produces. Run that
+   command in the new project, or reproduce it. `check:agent` compares against it to
+   warn when an agent edits a file the next upgrade replaces. **Upgrades rewrite it
+   after replacing files.** Without it, `check:agent` skips that rule and says so.
+6. **Upgrades run steps 1–4 on the fresh download, using the options in the
    project's `.velocity.json`, before comparing files.** Otherwise a minimal or
    i18n project would be "upgraded" to demo or single-locale files.
 

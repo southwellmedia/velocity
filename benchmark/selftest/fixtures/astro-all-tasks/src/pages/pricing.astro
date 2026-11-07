@@ -1,0 +1,24 @@
+---
+import Layout from '../layouts/Layout.astro';
+const plans = [
+  { name: 'Starter', price: '$9', description: 'For individuals getting started.' },
+  { name: 'Pro', price: '$29', description: 'For professionals who need more.' },
+  { name: 'Team', price: '$79', description: 'For teams working together.' },
+];
+---
+
+<Layout title="Pricing">
+  <h1>Pricing</h1>
+  <div class="plans">
+    {plans.map((plan) => (
+      <section>
+        <h2>{plan.name}</h2>
+        <p>{plan.price} a month</p>
+        <p>{plan.description}</p>
+        <a class="button" href="/contact/">
+          Sign up for {plan.name}
+        </a>
+      </section>
+    ))}
+  </div>
+</Layout>

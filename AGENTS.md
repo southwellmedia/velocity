@@ -12,15 +12,17 @@ Astro 7 · Tailwind CSS v4 · TypeScript (strict) · React 19 islands · Node �
 |------|---------|
 | Dev server (background, safe for agents) | `pnpm dev:bg`, then `pnpm astro dev status`, `pnpm astro dev logs`, `pnpm astro dev stop` |
 | Health check | `GET http://localhost:4321/_astro/status` |
-| Full validation | `pnpm validate` (lint → check → unit tests → build) |
+| Full validation | `pnpm validate` (lint → check → unit tests → build → agent-ready check) |
+| Agent-ready check | `pnpm check:agent` (after a build): raw translation keys, CSP, broken links, stubbed forms, Velocity-owned edits, hardcoded strings |
 | Unit tests | `pnpm test` |
 | E2E + a11y | `pnpm build && pnpm test:e2e` |
+| Agent benchmark | `pnpm bench:selftest` (no model calls); `pnpm bench --model <id>` for real runs, see `benchmark/README.md` |
 
 When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on supported platforms, to background mode; a lockfile prevents duplicate servers. Use `astro dev --ignore-lock` only if you need a second server deliberately. Structured logs: `astro dev --json`.
 
 ## Where things live
 
-- `src/components/ui/` — design-system primitives (one folder per component, with `*.variants.ts` using CVA). Catalogued in `component-registry.json`; keep the registry in sync when adding, renaming, or changing a component's file dependencies.
+- `src/components/ui/` — design-system primitives (one folder per component, with `*.variants.ts` using CVA). Catalogued in `component-registry.json`; keep the registry in sync when adding, renaming, or changing a component's file dependencies. Each entry has a hand-written `description`, `example` and optional `useInstead`, which `pnpm generate:components` turns into `variants/agents/.agents/components.md` for user projects. A stale file fails `pnpm test`.
 - `src/components/patterns/` — compositions of primitives (ContactForm, NewsletterForm, SearchInput…).
 - `src/components/site/` — `SiteHeader` and `SiteFooter`, owned by the project. Every layout renders them. Don't render `Header` or `Footer` from a layout directly.
 - `src/views/` — page content. `src/pages/*.astro` are thin wrappers that render a view with a locale; `src/pages/[lang]/` holds the localized wrappers.
@@ -38,6 +40,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 - **No hardcoded user-facing strings in core components.** Use `const t = useTranslations(getLocale(Astro))`. New UI strings go in `src/i18n/ui.ts` (en, es, fr); page copy goes in `src/i18n/translations/en.ts`. Internal links go through `localizeRoute`/`localizePath`.
 - **Registry discipline.** Any file added under `src/components/{ui,patterns,hero}` must belong to an entry in `component-registry.json`, which must list every component it imports. Run `pnpm check:registry`.
 - **Scaffold variants** (`variants/`, `velocity-manifest.json → scaffold`) are what the CLI builds projects from. Read `variants/README.md` before touching them, and run `pnpm test:scaffold` after changing views, config or i18n.
+- **Agent-ready check.** `scripts/check-agent.mjs` ships to projects (`files.safe`). Every rule needs a failing fixture in `tests/unit/check-agent.test.ts`, and every finding must name the file, the `velocity.md` rule and the fix.
 - **Agent files.** `variants/agents/` holds the `AGENTS.md`, rules and skills that user projects receive. When a rule here changes, update `variants/agents/.agents/velocity.md` too. User projects differ from this repo: `src/i18n/ui.ts` is replaced on upgrade, and registry and scaffold tooling is removed. Keep skills identical in `.agents/skills/` and `.claude/skills/`.
 
 - **Static first.** Pages are prerendered. Only Actions (and anything you explicitly mark `export const prerender = false`) run on the server. Don't add `output: 'server'`.

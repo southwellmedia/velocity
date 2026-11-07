@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+const faqs = [
+  { q: 'Do you offer refunds?', a: 'Yes, we refund any purchase within 30 days.' },
+  {
+    q: 'Can I cancel at any time?',
+    a: 'Yes, you can cancel from your account settings whenever you like.',
+  },
+  { q: 'Is there a free trial?', a: 'Yes, every plan comes with a 14-day free trial.' },
+];
+---
+
+<Layout title="FAQ">
+  <h1>Frequently asked questions</h1>
+  {faqs.map((f) => (
+    <details>
+      <summary>{f.q}</summary>
+      <p>{f.a}</p>
+    </details>
+  ))}
+</Layout>

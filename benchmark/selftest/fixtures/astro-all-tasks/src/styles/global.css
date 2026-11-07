@@ -1,0 +1,33 @@
+body {
+  font-family: 'Inter Variable', sans-serif;
+  margin: 0 auto;
+  max-width: 48rem;
+  padding: 1rem;
+  color: #1f2937;
+}
+a {
+  color: #0f766e;
+}
+nav,
+footer {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 0;
+}
+.button {
+  display: inline-block;
+  background: #0f766e;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  text-decoration: none;
+}
+.plans {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+label {
+  display: block;
+  margin-top: 0.75rem;
+}

@@ -1,5 +1,5 @@
 {
-  "version": "2.3.0",
+  "version": "2.4.0",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -37,8 +37,10 @@
       "tests/e2e/site.ts",
       "src/components/hero/",
       ".agents/velocity.md",
+      ".agents/components.md",
       ".agents/skills/",
-      ".claude/skills/"
+      ".claude/skills/",
+      "scripts/check-agent.mjs"
     ],
     "protected": [
       "astro.config.mjs",
@@ -458,6 +460,12 @@
       "searchPaths": [
         "src/views/"
       ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.4.0",
+      "title": "Agent-ready check",
+      "description": "npm run check:agent scans your source and build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links, forms still on their stubs, edits to Velocity-owned files and hardcoded text. It now runs at the end of npm run validate; if you customized validate, append && node scripts/check-agent.mjs yourself. create-velocity-astro 2.1 and later record .velocity/baseline.json during the upgrade, so it can warn about edits to Velocity-owned files; with an older CLI, run npm run check:agent -- --write-baseline once and commit the file. Your contact and newsletter Actions are yours, so they weren't changed; check:agent still finds their original TODOs."
     }
   ],
   "scaffold": {
@@ -536,15 +544,24 @@
     },
     "cleanup": [
       "variants",
+      "benchmark",
       "scripts/scaffold.mjs",
       "scripts/scaffold-matrix.mjs",
       "scripts/check-registry.mjs",
+      "scripts/generate-components-ref.mjs",
+      "tests/unit/components-ref.test.ts",
       "tests/unit/scaffold.test.ts",
       ".github/workflows/scaffold.yml"
     ],
     "cleanupScripts": [
       "test:scaffold",
-      "check:registry"
+      "check:registry",
+      "check:components",
+      "generate:components",
+      "bench",
+      "bench:score",
+      "bench:summary",
+      "bench:selftest"
     ]
   },
   "packageJson": {
@@ -566,8 +583,11 @@
         "value": "playwright test"
       },
       "validate": {
-        "value": "eslint . && astro check && vitest run && astro build",
-        "replaces": "pnpm lint && pnpm check && pnpm test && pnpm build"
+        "value": "eslint . && astro check && vitest run && astro build && node scripts/check-agent.mjs",
+        "replaces": "eslint . && astro check && vitest run && astro build"
+      },
+      "check:agent": {
+        "value": "node scripts/check-agent.mjs"
       }
     }
   }
