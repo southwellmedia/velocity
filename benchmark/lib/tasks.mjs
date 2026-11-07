@@ -294,7 +294,12 @@ async function submitContactForm(ctx, page) {
   let hit;
   while (Date.now() < deadline && !hit) {
     hit = ctx.mock.requests.find(
-      (r) => r.method === 'POST' && r.body.includes(email.split('@')[0]) && r.body.includes(token)
+      (r) =>
+        r.method === 'POST' &&
+        // Only the endpoint the prompt named counts, not any path on the mock server
+        r.path.split('?')[0] === new URL(ctx.mock.url).pathname &&
+        r.body.includes(email.split('@')[0]) &&
+        r.body.includes(token)
     );
     if (!hit) await page.waitForTimeout(250);
   }

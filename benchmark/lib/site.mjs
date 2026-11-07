@@ -147,8 +147,9 @@ function extractPage() {
         label: '',
         hreflang: opt.getAttribute('lang'),
         lang: opt.getAttribute('lang'),
-        inNav: true,
-        inFooter: false,
+        // Same ancestor test as links, so a form's <select> can't pass a menu check
+        inNav: isIn(opt, 'nav, header, [role="navigation"], [role="banner"]'),
+        inFooter: isIn(opt, 'footer, [role="contentinfo"]'),
       });
     }
   }
