@@ -1,0 +1,51 @@
+---
+/**
+ * Positive-control fixture for the benchmark self-test: a plain Astro site
+ * that completes all six tasks by hand. If the scorer can't pass this, the
+ * scorer is broken, not the agent.
+ */
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  lang?: 'en' | 'es';
+}
+const { title, lang = 'en' } = Astro.props;
+const es = lang === 'es';
+---
+
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{title}</title>
+    <link rel="alternate" hreflang="en" href="/" />
+    <link rel="alternate" hreflang="es" href="/es/" />
+  </head>
+  <body>
+    <header>
+      <nav aria-label={es ? 'Principal' : 'Main'}>
+        <a href={es ? '/es/' : '/'}>{es ? 'Inicio' : 'Home'}</a>
+        <a href="/pricing/">Pricing</a>
+        <a href="/blog/">Blog</a>
+        <a href="/contact/">Contact</a>
+        {es ? (
+          <a href="/" hreflang="en" lang="en">
+            English
+          </a>
+        ) : (
+          <a href="/es/" hreflang="es" lang="es">
+            Español
+          </a>
+        )}
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer>
+      <a href="/faq/">FAQ</a>
+    </footer>
+  </body>
+</html>

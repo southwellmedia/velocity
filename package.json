@@ -43,7 +43,11 @@
     "test:scaffold": "node scripts/scaffold-matrix.mjs",
     "check:registry": "node scripts/check-registry.mjs",
     "check:components": "node scripts/generate-components-ref.mjs --check",
-    "generate:components": "node scripts/generate-components-ref.mjs"
+    "generate:components": "node scripts/generate-components-ref.mjs",
+    "bench": "node benchmark/run.mjs",
+    "bench:score": "node benchmark/score.mjs",
+    "bench:summary": "node benchmark/summarize.mjs",
+    "bench:selftest": "node benchmark/selftest.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "8.1.2",

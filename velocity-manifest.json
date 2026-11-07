@@ -539,6 +539,7 @@
     },
     "cleanup": [
       "variants",
+      "benchmark",
       "scripts/scaffold.mjs",
       "scripts/scaffold-matrix.mjs",
       "scripts/check-registry.mjs",
@@ -551,7 +552,11 @@
       "test:scaffold",
       "check:registry",
       "check:components",
-      "generate:components"
+      "generate:components",
+      "bench",
+      "bench:score",
+      "bench:summary",
+      "bench:selftest"
     ]
   },
   "packageJson": {
