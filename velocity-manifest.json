@@ -38,7 +38,8 @@
       "src/components/hero/",
       ".agents/velocity.md",
       ".agents/skills/",
-      ".claude/skills/"
+      ".claude/skills/",
+      "scripts/check-agent.mjs"
     ],
     "protected": [
       "astro.config.mjs",
@@ -457,6 +458,12 @@
       "searchPaths": [
         "src/views/"
       ]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.3.0",
+      "title": "Agent-ready check",
+      "description": "npm run check:agent scans your source and build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links, forms still on their stubs, edits to Velocity-owned files and hardcoded text. It now runs at the end of npm run validate; if you customized validate, append && node scripts/check-agent.mjs yourself. To have it warn about edits to Velocity-owned files, run npm run check:agent -- --write-baseline once this upgrade is done and commit .velocity/baseline.json. Your contact and newsletter Actions are yours, so they weren't changed; check:agent still finds their original TODOs."
     }
   ],
   "scaffold": {
@@ -561,8 +568,11 @@
         "value": "playwright test"
       },
       "validate": {
-        "value": "eslint . && astro check && vitest run && astro build",
-        "replaces": "pnpm lint && pnpm check && pnpm test && pnpm build"
+        "value": "eslint . && astro check && vitest run && astro build && node scripts/check-agent.mjs",
+        "replaces": "eslint . && astro check && vitest run && astro build"
+      },
+      "check:agent": {
+        "value": "node scripts/check-agent.mjs"
       }
     }
   }

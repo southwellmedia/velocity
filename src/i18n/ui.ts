@@ -24,6 +24,7 @@ const en = {
     toggleTheme: 'Toggle theme',
     breadcrumb: 'Breadcrumb',
     languageSwitcher: 'Choose language',
+    togglePassword: 'Toggle password visibility',
   },
   nav: {
     home: 'Home',
@@ -131,6 +132,7 @@ const es: DeepPartial<UIStrings> = {
     toggleTheme: 'Cambiar tema',
     breadcrumb: 'Ruta de navegación',
     languageSwitcher: 'Elegir idioma',
+    togglePassword: 'Mostrar u ocultar la contraseña',
   },
   nav: {
     home: 'Inicio',
@@ -234,6 +236,7 @@ const fr: DeepPartial<UIStrings> = {
     toggleTheme: 'Changer de thème',
     breadcrumb: "Fil d'Ariane",
     languageSwitcher: 'Choisir la langue',
+    togglePassword: 'Afficher ou masquer le mot de passe',
   },
   nav: {
     home: 'Accueil',

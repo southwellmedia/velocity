@@ -38,7 +38,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "validate": "eslint . && astro check && vitest run && astro build",
+    "validate": "eslint . && astro check && vitest run && astro build && node scripts/check-agent.mjs",
+    "check:agent": "node scripts/check-agent.mjs",
     "test:scaffold": "node scripts/scaffold-matrix.mjs",
     "check:registry": "node scripts/check-registry.mjs"
   },

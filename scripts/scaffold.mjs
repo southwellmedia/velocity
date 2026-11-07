@@ -7,6 +7,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { writeBaseline } from './check-agent.mjs';
 
 const SKIP = new Set(['node_modules', 'dist', '.git', '.astro', '.vercel', '.netlify', 'test-results', 'playwright-report']);
 
@@ -81,6 +82,9 @@ export function applyScaffold(dir, options) {
     for (const name of scaffold.cleanupScripts) delete pkg.scripts?.[name];
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
   }
+
+  // Record Velocity-owned files as shipped, so check:agent can spot later edits.
+  if (scaffold.baseline !== false) writeBaseline(dir);
   return { applied, kept };
 }
 
