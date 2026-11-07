@@ -69,7 +69,10 @@ export const headerConfig: {
 
 /** Defaults for <Footer />. */
 export const footerConfig: { extraLinks: NavItem[] } = {
-  extraLinks: [],
+  extraLinks: [
+    // A small credit for the starter. Remove it whenever you like.
+    { label: 'footer.builtWith', href: 'https://deployvelocity.com', external: true, order: 100 },
+  ],
 };
 
 /** Navigation items sorted by order. */

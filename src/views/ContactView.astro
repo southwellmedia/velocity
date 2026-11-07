@@ -60,12 +60,14 @@ const t = useTranslations(locale);
 
         <!-- Right column: Map + Contact Info -->
         <div class="flex flex-col gap-8">
-          {/* Map */}
-          <GoogleMap
-            size="sm"
-            ariaLabel={t('contact.map.ariaLabel', { name: siteConfig.name })}
-            placeholderTitle={t('contact.map.placeholderTitle')}
-          />
+          {/* Map: only with an address, since a place embed with no location shows an error */}
+          {siteConfig.address && (
+            <GoogleMap
+              size="sm"
+              ariaLabel={t('contact.map.ariaLabel', { name: siteConfig.name })}
+              placeholderTitle={t('contact.map.placeholderTitle')}
+            />
+          )}
 
           {/* Contact Info */}
           <div>

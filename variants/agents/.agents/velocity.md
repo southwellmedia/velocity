@@ -63,5 +63,5 @@ New files you add inside Velocity's folders stay in place. Only files Velocity s
 - **Search:** only content inside `data-pagefind-body` is indexed. `PageLayout` and `BlogLayout` already set it, so mark any new content layout the same way.
 - **Fonts:** register families in `fonts` in `astro.config.mjs`. `BaseLayout` renders every registered family and preloads the first. Don't `@import` font CSS.
 - **Accessibility is tested.** Routes in `src/config/nav.config.ts` are picked up by `tests/e2e/site.ts` automatically, and each must pass axe WCAG 2 A/AA with no serious or critical violations. Axe runs on each route's default-locale URL, and every route must load in every enabled locale.
-- **Forms:** `ContactForm` and `NewsletterForm` submit to Actions in `src/actions/index.ts` that report success but deliver nothing until you finish their TODOs. Connect a provider before relying on them.
+- **Forms:** `ContactForm` and `NewsletterForm` submit to Actions in `src/actions/index.ts`. They forward to `CONTACT_FORM_ENDPOINT` / `NEWSLETTER_ENDPOINT` when set (see `src/lib/form-delivery.ts`); otherwise submissions are discarded and the server logs a warning. Connect an endpoint or a provider SDK before relying on them.
 - **Secrets** go through `astro:env` (`env.schema` in `astro.config.mjs`), never `import.meta.env` directly.

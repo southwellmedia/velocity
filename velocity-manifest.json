@@ -1,5 +1,5 @@
 {
-  "version": "2.2.2",
+  "version": "2.3.0",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -468,6 +468,10 @@
       {
         "id": "agents",
         "overlay": "variants/agents"
+      },
+      {
+        "id": "project",
+        "overlay": "variants/project"
       },
       {
         "id": "i18n",

@@ -4,7 +4,6 @@ export interface SiteConfig {
   name: string;
   description: string;
   url: string;
-  ogImage: string;
   author: string;
   email: string;
   phone?: string;
@@ -52,7 +51,6 @@ const siteConfig: SiteConfig = {
   name: 'Velocity',
   description: 'A modern website built with Astro and Tailwind CSS',
   url: SITE_URL || 'https://example.com',
-  ogImage: '/og-default.png',
   author: 'Southwell Media',
   // Demo contact info - replace with your actual business details
   email: 'hello@example.com',
