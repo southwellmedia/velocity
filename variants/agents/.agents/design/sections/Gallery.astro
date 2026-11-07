@@ -1,0 +1,50 @@
+---
+/* @velocity-section Gallery@2.6.0
+ * Photos of the work, the place or the people.
+ * 'grid': even tiles. 'masonry': mixed heights in columns. 'strip': one row of three or four.
+ * Real photos only: missing ones show labelled placeholders, so list them in the handoff.
+ * @requires section, media-slot
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import MediaSlot from '@/components/patterns/MediaSlot.astro';
+import { cn } from '@/lib/cn';
+
+interface Photo {
+  /** File name in src/assets/photos/, without the extension */
+  photo?: string;
+  alt: string;
+  caption?: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  photos: Photo[];
+  layout?: 'grid' | 'masonry' | 'strip';
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, photos, layout = 'grid', tone = 'default', class: className } = Astro.props;
+const ratios = ['4/5', '4/3', '16/10'] as const;
+---
+
+<Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  <ul class={cn(
+    layout === 'masonry' ? 'gap-4 sm:columns-2 lg:columns-3' : 'grid gap-4',
+    layout === 'grid' && 'sm:grid-cols-2 lg:grid-cols-3',
+    layout === 'strip' && 'grid-cols-2 lg:grid-cols-4',
+  )}>
+    {photos.map((item, i) => (
+      <li class={cn(layout === 'masonry' && 'mb-4 break-inside-avoid')}>
+        <figure>
+          <MediaSlot photo={item.photo} alt={item.alt} label={item.alt} ratio={layout === 'masonry' ? ratios[i % ratios.length] : layout === 'strip' ? '4/5' : '4/3'} class="rounded-md" />
+          {item.caption && <figcaption class="text-foreground-muted mt-2 text-sm">{item.caption}</figcaption>}
+        </figure>
+      </li>
+    ))}
+  </ul>
+</Section>

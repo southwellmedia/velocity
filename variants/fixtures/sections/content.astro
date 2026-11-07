@@ -1,0 +1,44 @@
+---
+// Test fixture: see sections.astro. velocity-allow-hardcoded velocity-single-language
+import LandingLayout from '@/layouts/LandingLayout.astro';
+import Announcement from '@/components/sections/Announcement.astro';
+import HeroTypographic from '@/components/sections/HeroTypographic.astro';
+import Story from '@/components/sections/Story.astro';
+import Values from '@/components/sections/Values.astro';
+import Timeline from '@/components/sections/Timeline.astro';
+import Gallery from '@/components/sections/Gallery.astro';
+import BeforeAfter from '@/components/sections/BeforeAfter.astro';
+import PriceList from '@/components/sections/PriceList.astro';
+import ComparisonTable from '@/components/sections/ComparisonTable.astro';
+import CaseStudies from '@/components/sections/CaseStudies.astro';
+import NewsletterBand from '@/components/sections/NewsletterBand.astro';
+
+const paragraphs = ['Rosa started baking in a borrowed kitchen with one oven and a sourdough starter from her grandmother.', 'Thirty years on the oven is wood-fired and the starter is the same.'];
+const photos = [{ alt: 'Loaves cooling on racks' }, { alt: 'The counter in the morning' }, { alt: 'Rosa shaping dough' }, { alt: 'Cardamom buns' }];
+const studies = [{ client: 'Leith Deli', title: 'Bread for a new deli counter', result: '[[placeholder: result]]', href: '/fixture/sections/' }, { client: 'Shore Café', title: 'Weekly pastry order' }, { client: 'Port Market', title: 'A Saturday stall' }];
+---
+
+<LandingLayout title="Content sections fixture" description="Story, values, timeline, gallery, before and after, price list, comparison, case studies, announcement and newsletter.">
+  <Announcement text="Open on Sundays from June." link={{ label: 'See hours', href: '/fixture/sections/' }} layout="brand" />
+  <HeroTypographic title="Thirty years of bread" class="pt-10" />
+  <Story title="Our story" paragraphs={paragraphs} quote="Good bread is mostly patience." quoteBy="Rosa" mediaLabel="Rosa at the oven" />
+  <Values title="What we hold to" tone="secondary" values={[{ title: 'Nothing leaves the oven before it is ready.', text: 'Long proofs, every loaf.' }, { title: 'Flour from forty miles away, not four hundred.' }, { title: 'Yesterday’s bread goes to the shelter, never the bin.' }]} />
+  <Values title="Values grid" layout="grid" values={[{ title: 'Patience', text: 'Long proofs.' }, { title: 'Local', text: 'Nearby mills.' }, { title: 'No waste', text: 'Day-old to the shelter.' }]} />
+  <Timeline title="Thirty years" tone="secondary" items={[{ when: '1994', title: 'A borrowed kitchen' }, { when: '2003', title: 'The shop on Shore Street', text: 'And the first wood-fired oven.' }, { when: '2024', title: 'Thirty years' }]} />
+  <Timeline title="Alternating timeline" layout="alternating" items={[{ when: '08:00', title: 'Doors open' }, { when: '11:00', title: 'Second bake' }, { when: '15:00', title: 'Sold out, usually' }]} />
+  <Story title="Columns story" layout="columns" tone="secondary" paragraphs={[...paragraphs, ...paragraphs]} quote="Good bread is mostly patience." />
+  <Story title="Quote story" layout="quote" paragraphs={paragraphs} quote="Good bread is mostly patience, and a little stubbornness." quoteBy="Rosa, founder" />
+  <Gallery title="From the bakery" photos={photos} tone="secondary" />
+  <Gallery title="Masonry gallery" layout="masonry" photos={[...photos, ...photos]} />
+  <Gallery title="Strip gallery" layout="strip" tone="secondary" photos={photos} />
+  <BeforeAfter title="The shop, then and now" labels={{ before: 'Before', after: 'After' }} pairs={[{ title: 'Front of shop', before: { alt: 'The shop front in 2003' }, after: { alt: 'The shop front today' } }, { title: 'The oven', before: { alt: 'The first oven' }, after: { alt: 'The wood-fired oven' }, note: 'Rebuilt in 2015.' }]} />
+  <BeforeAfter title="Stacked pair" layout="stacked" tone="secondary" labels={{ before: 'Before', after: 'After' }} pairs={[{ title: 'Counter', before: { alt: 'Old counter' }, after: { alt: 'New counter' } }]} />
+  <PriceList title="Menu" groups={[{ title: 'Bread', items: [{ name: 'Sourdough', price: '[[placeholder: price]]', description: 'Two-day ferment.' }, { name: 'Rye', price: '[[placeholder: price]]' }] }, { title: 'Pastry', items: [{ name: 'Cardamom bun', price: '[[placeholder: price]]' }] }]} note="Ask us about allergens." />
+  <PriceList title="Menu board" layout="board" tone="secondary" groups={[{ title: 'Today', items: [{ name: 'Seeded loaf', price: '[[placeholder: price]]' }] }]} />
+  <ComparisonTable title="Bread club" options={['Weekly', 'Family']} highlight={1} labels={{ yes: 'Included', no: 'Not included', feature: 'What you get' }} rows={[{ feature: 'Loaves a week', values: ['1', '3'] }, { feature: 'Cake each month', values: [false, true] }, { feature: 'Pick any day', values: [true, true] }]} />
+  <CaseStudies title="Who we bake for" tone="secondary" studies={studies} />
+  <CaseStudies title="Feature layout" layout="feature" studies={studies} />
+  <CaseStudies title="List layout" layout="list" tone="secondary" studies={studies} />
+  <NewsletterBand title="The Friday loaf list" text="What's baking next week, every Friday." />
+  <NewsletterBand title="Card newsletter" layout="card" />
+</LandingLayout>

@@ -1,0 +1,73 @@
+---
+/* @velocity-section Story@2.6.0
+ * The business in its own words: where it came from, what it cares about.
+ * 'split': prose beside a photo. 'quote': one pull quote dominates, prose underneath.
+ * 'columns': long-form prose in two columns with a short intro.
+ * Only the user's own story; never invent founding years, people or anecdotes.
+ * @requires section, media-slot
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import MediaSlot from '@/components/patterns/MediaSlot.astro';
+
+interface Props {
+  id?: string;
+  title: string;
+  /** Paragraphs of the story */
+  paragraphs: string[];
+  /** A line worth pulling out, in the owner's words */
+  quote?: string;
+  quoteBy?: string;
+  photo?: string;
+  alt?: string;
+  mediaLabel?: string;
+  layout?: 'split' | 'quote' | 'columns';
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, title, paragraphs, quote, quoteBy, photo, alt = '', mediaLabel, layout = 'split', tone = 'default', class: className } = Astro.props;
+---
+
+<Section id={id} tone={tone} class={className}>
+  {layout === 'quote' ? (
+    <div class="mx-auto max-w-4xl">
+      <h2 class="text-foreground-muted mb-8 text-sm font-semibold">{title}</h2>
+      {quote && (
+        <figure class="mb-12">
+          <blockquote class="font-display text-foreground text-4xl leading-tight tracking-tight text-balance">
+            <p>{quote}</p>
+          </blockquote>
+          {quoteBy && <figcaption class="text-foreground-muted mt-6">{quoteBy}</figcaption>}
+        </figure>
+      )}
+      <div class="text-foreground-secondary max-w-prose space-y-5 text-lg">
+        {paragraphs.map((p) => <p>{p}</p>)}
+      </div>
+    </div>
+  ) : layout === 'columns' ? (
+    <div>
+      <h2 class="font-display text-foreground max-w-3xl text-4xl tracking-tight">{title}</h2>
+      <div class="text-foreground-secondary mt-10 gap-12 space-y-5 md:columns-2 md:space-y-0 [&>p]:mb-5 [&>p]:break-inside-avoid">
+        {paragraphs.map((p) => <p>{p}</p>)}
+      </div>
+      {quote && <p class="font-display text-foreground border-border mt-6 border-l-2 pl-6 text-2xl">{quote}</p>}
+    </div>
+  ) : (
+    <div class="grid items-center gap-12 lg:grid-cols-2 lg:gap-20">
+      <MediaSlot photo={photo} alt={alt} label={mediaLabel ?? title} ratio="4/5" class="rounded-lg" />
+      <div>
+        <h2 class="font-display text-foreground text-4xl tracking-tight">{title}</h2>
+        <div class="text-foreground-secondary mt-6 space-y-5 text-lg">
+          {paragraphs.map((p) => <p>{p}</p>)}
+        </div>
+        {quote && (
+          <figure class="border-border mt-8 border-l-2 pl-6">
+            <blockquote class="font-display text-foreground text-xl"><p>{quote}</p></blockquote>
+            {quoteBy && <figcaption class="text-foreground-muted mt-2 text-sm">{quoteBy}</figcaption>}
+          </figure>
+        )}
+      </div>
+    </div>
+  )}
+</Section>

@@ -1,0 +1,61 @@
+---
+/* @velocity-section PriceList@2.6.0
+ * A menu or a list of services with prices: dishes, treatments, repairs, classes.
+ * Dotted leaders between name and price, grouped by heading.
+ * 'columns': groups side by side. 'board': one column, set large like a menu board.
+ * Only prices the user supplied; otherwise [[placeholder: price]] and list it in the handoff.
+ * @requires section
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import { cn } from '@/lib/cn';
+
+interface Item {
+  name: string;
+  price: string;
+  description?: string;
+}
+
+interface Group {
+  title: string;
+  items: Item[];
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  groups: Group[];
+  /** A line under the list, such as allergens or "prices include VAT" */
+  note?: string;
+  layout?: 'columns' | 'board';
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, groups, note, layout = 'columns', tone = 'default', class: className } = Astro.props;
+---
+
+<Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  <div class={cn('grid gap-12', layout === 'columns' ? 'md:grid-cols-2' : 'mx-auto max-w-3xl')}>
+    {groups.map((group) => (
+      <div>
+        <h3 class={cn('font-display text-foreground border-border border-b pb-3 font-semibold', layout === 'board' ? 'text-3xl' : 'text-xl')}>{group.title}</h3>
+        <ul class="mt-4 space-y-4">
+          {group.items.map((item) => (
+            <li>
+              <div class={cn('flex items-baseline gap-3', layout === 'board' && 'text-xl')}>
+                <span class="text-foreground font-medium">{item.name}</span>
+                <span class="border-border-strong mb-1 flex-1 border-b border-dotted" aria-hidden="true" />
+                <span class="text-foreground font-semibold tabular-nums">{item.price}</span>
+              </div>
+              {item.description && <p class="text-foreground-muted mt-1 max-w-prose text-sm">{item.description}</p>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+  {note && <p class="text-foreground-muted mt-10 text-sm">{note}</p>}
+</Section>

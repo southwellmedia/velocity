@@ -1,0 +1,34 @@
+---
+/* @velocity-section Announcement@2.6.0
+ * A slim band for one timely message: new opening hours, a launch, a booking window.
+ * Put it at the top of the home page view, above the hero, and pass the hero class="pt-10": this band
+ * already clears the fixed header. Remove it when it's out of date.
+ * 'brand': brand-coloured. 'quiet': a tinted strip.
+ * @requires icon
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { cn } from '@/lib/cn';
+
+interface Props {
+  text: string;
+  link?: { label: string; href: string };
+  layout?: 'brand' | 'quiet';
+  class?: string;
+}
+
+const { text, link, layout = 'quiet', class: className } = Astro.props;
+---
+
+<aside class={cn('pt-[var(--header-offset)]', className)}>
+  <div class={cn('px-6 py-3 text-center text-sm', layout === 'brand' ? 'bg-primary text-primary-foreground' : 'bg-background-secondary text-foreground border-border border-b')}>
+    <p class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1">
+      <span>{text}</span>
+      {link && (
+        <a href={link.href} class="inline-flex items-center gap-1 font-semibold underline underline-offset-4">
+          {link.label}<Icon name="arrow-right" size="xs" />
+        </a>
+      )}
+    </p>
+  </div>
+</aside>

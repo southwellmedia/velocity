@@ -1,0 +1,37 @@
+---
+/* @velocity-section NewsletterBand@2.6.0
+ * An email signup with one line on what subscribers get.
+ * 'inline': heading and form on one row. 'card': a panel inside the page.
+ * The form posts to the newsletter Action, a stub until a provider is connected (velocity-connect-forms).
+ * @requires newsletter-form
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import NewsletterForm from '@/components/patterns/NewsletterForm.astro';
+import { cn } from '@/lib/cn';
+
+interface Props {
+  title: string;
+  /** What subscribers get and how often */
+  text?: string;
+  layout?: 'inline' | 'card';
+  class?: string;
+}
+
+const { title, text, layout = 'inline', class: className } = Astro.props;
+---
+
+<section class={cn('py-[var(--space-section-sm)]', className)}>
+  <div class="mx-auto max-w-6xl px-6">
+    <div class={cn(
+      'flex flex-col gap-6 md:flex-row md:items-center md:justify-between',
+      layout === 'card' && 'bg-background-secondary border-border rounded-xl border p-8 md:p-10',
+      layout === 'inline' && 'border-border border-y py-10',
+    )}>
+      <div class="max-w-xl">
+        <h2 class="font-display text-foreground text-2xl font-semibold tracking-tight">{title}</h2>
+        {text && <p class="text-foreground-secondary mt-2">{text}</p>}
+      </div>
+      <NewsletterForm class="w-full md:max-w-sm" />
+    </div>
+  </div>
+</section>

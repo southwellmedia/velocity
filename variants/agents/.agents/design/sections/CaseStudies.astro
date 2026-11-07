@@ -1,0 +1,89 @@
+---
+/* @velocity-section CaseStudies@2.6.0
+ * Work for clients: what was done and what changed.
+ * 'grid': cards with a photo. 'feature': one study large, the rest listed. 'list': rows with the result first.
+ * Only real clients and results the user supplied; never invented figures.
+ * @requires section, media-slot, icon
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import MediaSlot from '@/components/patterns/MediaSlot.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { cn } from '@/lib/cn';
+
+interface Study {
+  client: string;
+  title: string;
+  /** The outcome in one line, such as "Bookings up a third in six months" */
+  result?: string;
+  href?: string;
+  photo?: string;
+  alt?: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  studies: Study[];
+  layout?: 'grid' | 'feature' | 'list';
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, studies, layout = 'grid', tone = 'default', class: className } = Astro.props;
+const [first, ...rest] = studies;
+const Tag = (s: Study) => (s.href ? 'a' : 'div');
+---
+
+<Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  {layout === 'list' ? (
+    <ul class="divide-border border-border divide-y border-y">
+      {studies.map((s) => {
+        const El = Tag(s);
+        return (
+          <li>
+            <El href={s.href} class="group grid gap-2 py-6 md:grid-cols-12 md:items-baseline md:gap-8">
+              <span class="text-foreground-muted text-sm md:col-span-3">{s.client}</span>
+              <span class="font-display text-foreground text-xl font-semibold md:col-span-5">{s.title}</span>
+              {s.result && <span class="text-foreground-secondary md:col-span-3">{s.result}</span>}
+              {s.href && <Icon name="arrow-up-right" size="sm" class="text-foreground-muted group-hover:text-foreground hidden md:col-span-1 md:block md:justify-self-end" />}
+            </El>
+          </li>
+        );
+      })}
+    </ul>
+  ) : layout === 'feature' && first ? (
+    <div class="grid gap-12 lg:grid-cols-5">
+      <article class="lg:col-span-3">
+        <MediaSlot photo={first.photo} alt={first.alt ?? ''} label={first.title} ratio="16/10" class="rounded-lg" />
+        <p class="text-foreground-muted mt-6 text-sm">{first.client}</p>
+        <h3 class="font-display text-foreground mt-1 text-3xl font-semibold tracking-tight">
+          {first.href ? <a href={first.href} class="hover:underline">{first.title}</a> : first.title}
+        </h3>
+        {first.result && <p class="text-foreground-secondary mt-3 text-lg">{first.result}</p>}
+      </article>
+      <ul class="divide-border space-y-0 divide-y lg:col-span-2">
+        {rest.map((s) => (
+          <li class="py-5 first:pt-0">
+            <p class="text-foreground-muted text-sm">{s.client}</p>
+            <h3 class="font-display text-foreground mt-1 text-lg font-semibold">{s.href ? <a href={s.href} class="hover:underline">{s.title}</a> : s.title}</h3>
+            {s.result && <p class="text-foreground-secondary mt-1 text-sm">{s.result}</p>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : (
+    <ul class={cn('grid gap-8 sm:grid-cols-2', studies.length > 2 && 'lg:grid-cols-3')}>
+      {studies.map((s) => (
+        <li>
+          <MediaSlot photo={s.photo} alt={s.alt ?? ''} label={s.title} ratio="4/3" class="rounded-lg" />
+          <p class="text-foreground-muted mt-4 text-sm">{s.client}</p>
+          <h3 class="font-display text-foreground mt-1 text-xl font-semibold">{s.href ? <a href={s.href} class="hover:underline">{s.title}</a> : s.title}</h3>
+          {s.result && <p class="text-foreground-secondary mt-2">{s.result}</p>}
+        </li>
+      ))}
+    </ul>
+  )}
+</Section>

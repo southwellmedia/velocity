@@ -1,0 +1,70 @@
+---
+/* @velocity-section ComparisonTable@2.6.0
+ * Options compared feature by feature: plans, packages, membership levels, "us and the usual way".
+ * Ticks and crosses carry text for screen readers. The table scrolls sideways on small screens.
+ * Only facts the user supplied.
+ * @requires section, icon
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { cn } from '@/lib/cn';
+
+interface Row {
+  feature: string;
+  /** One value per option: true (included), false (not included) or text */
+  values: (boolean | string)[];
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  /** Column headings, one per option */
+  options: string[];
+  rows: Row[];
+  /** Index of the option to emphasize */
+  highlight?: number;
+  /** Translated screen-reader text, such as { yes: 'Included', no: 'Not included', feature: 'Feature' } */
+  labels: { yes: string; no: string; feature: string };
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, options, rows, highlight, labels, tone = 'default', class: className } = Astro.props;
+---
+
+<Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  <!-- Focusable and labelled, so keyboard users can scroll the table on small screens -->
+  <div class="border-border focus-visible:outline-ring overflow-x-auto rounded-lg border" tabindex="0" role="region" aria-label={title ?? labels.feature}>
+    <table class="w-full min-w-xl text-left">
+      <thead>
+        <tr class="border-border border-b">
+          <th scope="col" class="text-foreground-muted px-5 py-4 text-sm font-medium">{labels.feature}</th>
+          {options.map((option, i) => (
+            <th scope="col" class={cn('font-display text-foreground px-5 py-4 text-center font-semibold', i === highlight && 'bg-background-secondary')}>{option}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr class="border-border border-b last:border-b-0">
+            <th scope="row" class="text-foreground px-5 py-4 font-normal">{row.feature}</th>
+            {row.values.map((value, i) => (
+              <td class={cn('px-5 py-4 text-center', i === highlight && 'bg-background-secondary')}>
+                {value === true ? (
+                  <span class="text-foreground inline-flex"><Icon name="check" size="sm" /><span class="sr-only">{labels.yes}</span></span>
+                ) : value === false ? (
+                  <span class="text-foreground-muted inline-flex"><Icon name="minus" size="sm" /><span class="sr-only">{labels.no}</span></span>
+                ) : (
+                  <span class="text-foreground-secondary text-sm">{value}</span>
+                )}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Section>

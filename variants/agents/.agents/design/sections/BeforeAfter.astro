@@ -1,0 +1,53 @@
+---
+/* @velocity-section BeforeAfter@2.6.0
+ * Results side by side: a renovation, a garden, a repair, a treatment.
+ * 'pairs': each before and after next to each other. 'stacked': one large pair per row with a note.
+ * Real photos only, with the client's permission.
+ * @requires section, media-slot
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import MediaSlot from '@/components/patterns/MediaSlot.astro';
+import { cn } from '@/lib/cn';
+
+interface Pair {
+  title: string;
+  before: { photo?: string; alt: string };
+  after: { photo?: string; alt: string };
+  note?: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  pairs: Pair[];
+  /** Translated labels, such as { before: 'Before', after: 'After' } */
+  labels: { before: string; after: string };
+  layout?: 'pairs' | 'stacked';
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, pairs, labels, layout = 'pairs', tone = 'default', class: className } = Astro.props;
+---
+
+<Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  <div class={cn('grid gap-12', layout === 'pairs' && pairs.length > 1 && 'lg:grid-cols-2')}>
+    {pairs.map((pair) => (
+      <article>
+        <h3 class="font-display text-foreground mb-4 text-xl font-semibold">{pair.title}</h3>
+        <div class="grid grid-cols-2 gap-3">
+          {[['before', pair.before], ['after', pair.after]].map(([key, image]) => (
+            <figure>
+              <MediaSlot photo={(image as Pair['before']).photo} alt={(image as Pair['before']).alt} label={(image as Pair['before']).alt} ratio={layout === 'stacked' ? '16/10' : '4/3'} class="rounded-md" />
+              <figcaption class="text-foreground-muted mt-2 text-sm font-medium">{labels[key as 'before' | 'after']}</figcaption>
+            </figure>
+          ))}
+        </div>
+        {pair.note && <p class="text-foreground-secondary mt-4 max-w-prose">{pair.note}</p>}
+      </article>
+    ))}
+  </div>
+</Section>

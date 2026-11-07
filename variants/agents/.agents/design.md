@@ -92,6 +92,20 @@ Set these in `theme.css` on `:root` only (they're computed once there, so a loca
 
 Compose each page from sections in `src/components/sections/`. Start from a recipe: `.agents/recipes.md` indexes the working sources in `.agents/design/sections/` (heroes, feature grids, steps, testimonials, pricing, FAQ, team, contact, hours) and gives a home-page blueprint per business type. Copy a source, keep its `@velocity-section` stamp, and adapt it. When nothing fits, write a new section the same way: props for copy, primitives and tokens only, a `class` prop passed through, and the rules below.
 
+## Composing a section
+
+The recipes are worked examples of a few decisions every section makes. Make them on purpose, from the content outwards, and a new section will sit with the rest of the site:
+
+- **Width.** `max-w-6xl` for most sections, `max-w-3xl` or `max-w-prose` for reading, full bleed (no container) only for a band or image that should break the grid. `Section` gives the standard width and padding.
+- **Grid.** Split by importance, not evenly: 1/3 + 2/3 (`lg:grid-cols-3` with `lg:col-span-2`), 5/7 (`md:grid-cols-12` with `col-span-5` and `col-span-7`), or a single column. Equal thirds suit only truly equal items.
+- **Alignment.** Left-aligned by default; centre only short, standalone statements. A page where every section is centred looks templated.
+- **Opening.** Decide whether the section needs a heading at all, and if so whether it needs an eyebrow or a lead. Vary it: a heading beside the content (`FeatureGrid` `split`), a heading only, or none when the content speaks for itself (a gallery).
+- **Emphasis.** One focal point per section: a large number, a photo, a quote or a button. Use size (the type scale), weight and space for emphasis before colour; `invert-section` and `tone="secondary"` change the background, and borders (`border-border`) separate quietly.
+- **Rhythm inside.** Gaps from the scale: `gap-3` to `gap-4` inside a group, `gap-6` to `gap-8` between items, `gap-12` to `gap-16` between columns. Keep one rhythm per section.
+- **Media.** `MediaSlot` with a ratio that suits the content (`4/5` people, `4/3` places and products, `16/10` wide scenes), rounded with the theme's radius classes so the direction carries through.
+- **Structure.** Lists are `ul`/`ol`, quotes `figure` + `blockquote` + `figcaption`, tables have `th scope`, headings follow the page order (`h2` for the section, `h3` inside). A wide table or row that scrolls needs `tabindex="0"`, `role="region"` and a label.
+- **Props.** Copy arrives as props; take a `class` prop and merge it with `cn()`; offer a `layout` prop when the same content works in two arrangements.
+
 ## Make it the site's own
 
 Directions and recipes give every site a sound starting point, which also means a site built only from them looks like other Velocity sites. Before building pages, decide three things and record them in `.agents/site.md` → Design:

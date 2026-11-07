@@ -25,6 +25,16 @@ Every section takes its copy as props. The view calls `t()` with keys from `src/
 | `LogoCloud` | Client, partner or press logos | `row`, `grid` | none | Real logos only, else leave it out |
 | `CTABand` | The closing ask | `invert`, `inline` | cta, button | n/a |
 | `HoursAndLocation` | Opening hours, address, phone | `card`, `inline` | section, table, icon | Placeholders unless supplied |
+| `Story` | The business in its own words: origin, what it cares about | `split` (with photo), `quote` (pull quote leads), `columns` (long form) | section, media-slot | Only the user's own story |
+| `Values` | What the business stands for, in a few specific statements | `statements` (manifesto), `grid` | section | Specific to the business, never generic |
+| `Timeline` | History, project phases, an event programme | `vertical`, `alternating` | section | Only dates the user gave |
+| `Gallery` | Photos of the work, place or people | `grid`, `masonry`, `strip` | section, media-slot | Real photos; list missing ones |
+| `BeforeAfter` | Results side by side: renovations, gardens, repairs, treatments | `pairs`, `stacked` | section, media-slot | Real photos with permission |
+| `PriceList` | A menu, or services with prices | `columns`, `board` (large, menu-board style) | section | Placeholders unless supplied |
+| `ComparisonTable` | Plans, packages or "us and the usual way", feature by feature | table with a highlighted option | section, icon | Only facts the user supplied |
+| `CaseStudies` | Client work and what changed | `grid`, `feature` (one large), `list` | section, media-slot, icon | Real clients and results only |
+| `Announcement` | One timely message above the hero | `brand`, `quiet` | icon | Remove when out of date |
+| `NewsletterBand` | Email signup with what subscribers get | `inline`, `card` | newsletter-form | Form stays a stub until connected |
 
 `PageHeader` (inner page titles), `Section` (any section with a heading), `MediaSlot` and `NewsletterForm` in `src/components/patterns/` are used as they are. The components in `src/components/landing/` are Velocity's own marketing; don't use them.
 

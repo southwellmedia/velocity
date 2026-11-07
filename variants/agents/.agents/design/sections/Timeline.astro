@@ -1,0 +1,49 @@
+---
+/* @velocity-section Timeline@2.6.0
+ * Milestones in order: a history, a project's phases, an event's programme.
+ * 'vertical': a rule down the side. 'alternating': entries either side of a centre rule on wide screens.
+ * Only dates the user gave.
+ * @requires section
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import { cn } from '@/lib/cn';
+
+interface Entry {
+  /** A year, date or time, as the user wrote it */
+  when: string;
+  title: string;
+  text?: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  items: Entry[];
+  layout?: 'vertical' | 'alternating';
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, items, layout = 'vertical', tone = 'default', class: className } = Astro.props;
+---
+
+<Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  <ol class={cn('relative', layout === 'vertical' ? 'border-border max-w-2xl border-l-2' : 'md:before:bg-border md:before:absolute md:before:inset-y-0 md:before:left-1/2 md:before:w-0.5')}>
+    {items.map((item, i) => (
+      <li class={cn(
+        'relative pb-10 last:pb-0',
+        layout === 'vertical' ? 'pl-8' : 'md:grid md:grid-cols-2 md:gap-16',
+      )}>
+        <span class={cn('bg-primary absolute size-3 rounded-full', layout === 'vertical' ? 'top-1.5 -left-2' : 'top-1.5 -left-1.5 md:left-1/2 md:-translate-x-1/2')} aria-hidden="true" />
+        <div class={cn(layout === 'alternating' && 'pl-6 md:pl-0', layout === 'alternating' && (i % 2 === 0 ? 'md:text-right' : 'md:col-start-2'))}>
+          <p class="text-foreground-muted text-sm font-semibold tabular-nums">{item.when}</p>
+          <h3 class="font-display text-foreground mt-1 text-xl font-semibold">{item.title}</h3>
+          {item.text && <p class="text-foreground-secondary mt-2">{item.text}</p>}
+        </div>
+      </li>
+    ))}
+  </ol>
+</Section>

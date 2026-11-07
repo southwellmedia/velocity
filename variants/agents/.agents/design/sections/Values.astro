@@ -1,0 +1,56 @@
+---
+/* @velocity-section Values@2.6.0
+ * What the business stands for, as a few short statements.
+ * 'statements': large type, one per row, like a manifesto. 'grid': short headed paragraphs in columns.
+ * Three to five values, each specific to this business; avoid generic words such as "quality" or "passion" on their own.
+ * @requires section
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import { cn } from '@/lib/cn';
+
+interface Value {
+  title: string;
+  text?: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  values: Value[];
+  layout?: 'statements' | 'grid';
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, values, layout = 'statements', tone = 'default', class: className } = Astro.props;
+---
+
+<Section id={id} tone={tone} class={className}>
+  {(eyebrow || title) && (
+    <div class="mb-10">
+      {eyebrow && <p class="text-foreground-muted mb-2 text-sm font-medium">{eyebrow}</p>}
+      {title && <h2 class="font-display text-foreground text-4xl tracking-tight">{title}</h2>}
+    </div>
+  )}
+  {layout === 'statements' ? (
+    <ol class="divide-border border-border divide-y border-y">
+      {values.map((value) => (
+        <li class="grid gap-3 py-8 md:grid-cols-12 md:gap-8">
+          <p class="font-display text-foreground text-3xl leading-tight tracking-tight md:col-span-7">{value.title}</p>
+          {value.text && <p class="text-foreground-secondary md:col-span-5 md:pt-2">{value.text}</p>}
+        </li>
+      ))}
+    </ol>
+  ) : (
+    <div class={cn('grid gap-10 sm:grid-cols-2', values.length > 3 && 'lg:grid-cols-4', values.length === 3 && 'lg:grid-cols-3')}>
+      {values.map((value) => (
+        <div class="border-primary border-t-2 pt-5">
+          <h3 class="font-display text-foreground text-lg font-semibold">{value.title}</h3>
+          {value.text && <p class="text-foreground-secondary mt-2">{value.text}</p>}
+        </div>
+      ))}
+    </div>
+  )}
+</Section>
