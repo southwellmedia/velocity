@@ -12,8 +12,14 @@ on:
   schedule:
     - cron: '0 9 * * *'
 
+# Neither job writes to the repository. Fresh installs run code from packages
+# resolved today, so they get a read-only token that isn't left in git config.
+permissions:
+  contents: read
+
 concurrency:
-  group: scaffold-${{ github.ref }}
+  # Separate groups, so a scheduled run never cancels a push run on main
+  group: scaffold-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -43,6 +49,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:

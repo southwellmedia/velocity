@@ -91,7 +91,15 @@ for (const { name, options, locales } of combos) {
         return run('pnpm install --no-frozen-lockfile', dir, { CI: 'true' });
       },
     ],
-    ['check', () => run(`${bin('astro/bin/astro.mjs')} check`, dir)],
+    [
+      'check',
+      () => {
+        // astro check can exit 0 after failing to load @astrojs/check, so also
+        // require the summary it prints once diagnostics have actually run.
+        const r = run(`${bin('astro/bin/astro.mjs')} check`, dir);
+        return { ...r, ok: r.ok && /^Result \(\d+ files?\)/m.test(r.output) };
+      },
+    ],
     ['build', () => run(`${bin('astro/bin/astro.mjs')} build`, dir, { DEPLOY_TARGET: 'node' })],
   ];
   if (args.e2e && options.components === 'all') {
