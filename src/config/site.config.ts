@@ -28,6 +28,11 @@ export interface SiteConfig {
    * Logo files: Replace SVGs in src/assets/branding/
    * Favicon: Replace in public/favicon.svg
    */
+  /**
+   * Theme for visitors who haven't chosen one with the toggle: 'system' follows
+   * their operating system (the default), 'light' or 'dark' fixes it.
+   */
+  defaultTheme?: 'system' | 'light' | 'dark';
   branding: {
     /** Logo alt text for accessibility */
     logo: {

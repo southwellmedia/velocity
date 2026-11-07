@@ -27,11 +27,11 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 
 - `src/components/site/`: this site's `SiteHeader` and `SiteFooter`. Every layout renders them, so change the header or footer here, never in `src/layouts/` or `src/components/layout/`.
 - `src/styles/theme.css`: picks the active theme. Themes load last, so they can override any token. `--brand-hue` recolours the brand scale.
-- `src/views/`: page content. `src/pages/*.astro` are thin wrappers that render a view with a locale, and `src/pages/[lang]/` holds the localized wrappers.
+- `src/views/`: page content. `src/pages/*.astro` are thin wrappers that render a view with a locale, and `src/pages/[lang]/` holds the localized wrappers. The 404 page's content is `src/views/NotFoundView.astro`, so customize it there, not in `src/pages/404.astro`.
 - `src/components/ui/`: design-system primitives, one folder per component with a `*.variants.ts` file using CVA. Read `.agents/components.md` before using or building a component: it lists every component Velocity ships with its purpose, props, variants, an example and what to use instead.
 - `src/components/patterns/`: compositions of primitives, such as `SearchInput`.
 - `src/config/nav.config.ts`: routes (with translated slugs), nav items, and header and footer defaults.
-- `src/config/site.config.ts`: site name, URL and metadata.
+- `src/config/site.config.ts`: site name, URL and metadata, and `defaultTheme` ('system', 'light' or 'dark') for visitors who haven't used the theme toggle.
 - `src/i18n/`: enabled locales (`locales.mjs`), your site copy (`translations/<locale>.ts`), and helpers (`useTranslations`, `getLocale`, `localizeRoute`, `localizePath`).
 - `src/lib/blog.ts`: the only place that maps posts to URLs (`getPosts`, `getPostUrl`).
 - `src/content.config.ts`: Velocity's content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`). Add your own in `src/config/collections.ts`, which is merged in.

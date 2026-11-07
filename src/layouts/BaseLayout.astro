@@ -55,10 +55,14 @@ const schemas: Array<WithContext<WebSite> | WithContext<Organization>> = [create
 if (includeOrgSchema) {
   schemas.push(createOrganizationSchema());
 }
+
+// Read loosely: projects created before defaultTheme existed have no such field in their SiteConfig type.
+const configuredTheme = (siteConfig as { defaultTheme?: string }).defaultTheme;
+const defaultTheme = configuredTheme === 'light' || configuredTheme === 'dark' ? configuredTheme : 'system';
 ---
 
 <!doctype html>
-<html lang={getLocaleTag(locale)} class="scroll-smooth">
+<html lang={getLocaleTag(locale)} class="scroll-smooth" data-default-theme={defaultTheme}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
