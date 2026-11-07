@@ -1,6 +1,6 @@
 {
   "name": "velocity",
-  "version": "2.5.0-beta.1",
+  "version": "2.5.0",
   "description": "A production-ready starter built on Astro 7 and Tailwind CSS v4",
   "type": "module",
   "author": "Southwell Media",
