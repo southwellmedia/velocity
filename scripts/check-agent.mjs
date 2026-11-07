@@ -188,7 +188,8 @@ export function checkUntranslated(dicts) {
   const expected = [...new Set([...leaves(dicts.site[dicts.defaultLocale]), ...leaves(dicts.ui[dicts.defaultLocale])])];
   for (const locale of dicts.locales) {
     if (locale === dicts.defaultLocale) continue;
-    const missing = expected.filter((key) => !lookup(dicts.site[locale], key) && !lookup(dicts.ui[locale], key));
+    // An empty string is a translation too (a deliberately blank part of a heading, say).
+    const missing = expected.filter((key) => lookup(dicts.site[locale], key) === undefined && lookup(dicts.ui[locale], key) === undefined);
     if (!missing.length) continue;
     const builtIn = missing.filter((key) => lookup(dicts.ui[dicts.defaultLocale], key) && !lookup(dicts.site[dicts.defaultLocale], key));
     const sample = missing.slice(0, 5).join(', ') + (missing.length > 5 ? ', …' : '');

@@ -96,11 +96,13 @@ describe('check:agent', () => {
   it('i18n/untranslated: warns about English fallbacks, including built-in UI strings', async () => {
     const root = project({
       'src/i18n/locales.mjs': "export const defaultLocale = 'en';\nexport const locales = ['en', 'de'];\n",
-      'src/i18n/translations/de.ts': "export default { pricing: { title: 'Preise' } };\n",
+      'src/i18n/translations/en.ts': "export default { pricing: { title: 'Pricing', titleEm: '' } };\n",
+      'src/i18n/translations/de.ts': "export default { pricing: { title: 'Preise', titleEm: '' } };\n",
     });
     const [f] = await findings(root, 'i18n/untranslated');
     expect(f).toMatchObject({ severity: 'warning', file: 'src/i18n/translations/de.ts' });
     expect(f.message).toContain('nav.home');
+    expect(f.message).not.toContain('titleEm');
     expect(f.fix).toContain('not src/i18n/ui.ts');
   });
 
