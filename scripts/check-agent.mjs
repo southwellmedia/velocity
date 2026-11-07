@@ -18,6 +18,7 @@
  *   csp/unhashed-script    an inline <script> whose hash isn't in the page's CSP    (error)
  *   csp/javascript-url     href="javascript:..."                                    (error)
  *   links/broken           internal link, asset or #anchor that doesn't exist        (error)
+ *   i18n/single-locale-page  a page with no other-language versions on a multilingual site (warning)
  *   forms/stub             a form Action that reports success but delivers nothing  (warning)
  *   ownership/edited       a Velocity-owned file changed since scaffold or upgrade   (warning)
  *   strings/hardcoded      user-facing text written into a view or component         (warning)
@@ -38,6 +39,7 @@ const RULES = {
   'csp/unhashed-script': { severity: 'error', ref: 'Rules → CSP is on' },
   'csp/javascript-url': { severity: 'error', ref: 'Rules → CSP is on' },
   'links/broken': { severity: 'error', ref: 'Rules → Internal links' },
+  'i18n/single-locale-page': { severity: 'warning', ref: 'Rules → Accessibility is tested' },
   'forms/stub': { severity: 'warning', ref: 'Rules → Forms' },
   'ownership/edited': { severity: 'warning', ref: 'Who owns which files' },
   'strings/hardcoded': { severity: 'warning', ref: 'Rules → No hardcoded user-facing strings' },
@@ -221,6 +223,50 @@ function attrs(source) {
 const decode = (s) =>
   s.replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
 
+/**
+ * Routes that exist at runtime but not as files in the static build: pages and
+ * endpoints marked `export const prerender = false`, and `redirects` in
+ * astro.config. Returned as regular expressions over the URL path.
+ */
+export function serverRoutes(root) {
+  const out = [];
+  // One segment at a time: [...rest] matches any depth (including none), [param] one segment.
+  const toRegex = (route) => {
+    const segments = route.split('/').filter(Boolean);
+    let source = '';
+    for (const segment of segments) {
+      if (/^\[\.\.\.[^\]]+\]$/.test(segment)) source += '(?:/.*)?';
+      else source += '/' + segment.split(/(\[[^\]]+\])/).map((part) => (/^\[[^\]]+\]$/.test(part) ? '[^/]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))).join('');
+    }
+    return new RegExp(`^${source || '/'}/?$`);
+  };
+  for (const file of walk(root, 'src/pages', (f) => /\.(astro|ts|js|mjs|md|mdx)$/.test(f))) {
+    if (!/export\s+const\s+prerender\s*=\s*false/.test(read(root, file))) continue;
+    const route = '/' + file.replace(/^src\/pages\//, '').replace(/\.(astro|ts|js|mjs|md|mdx)$/, '').replace(/(^|\/)index$/, '');
+    out.push(toRegex(route.replace(/\/+$/, '') || '/'));
+  }
+  const config = ['astro.config.mjs', 'astro.config.ts', 'astro.config.js'].find((f) => fs.existsSync(path.join(root, f)));
+  const block = config && read(root, config).match(/redirects\s*:\s*\{([\s\S]*?)\}/)?.[1];
+  for (const m of block?.matchAll(/['"`](\/[^'"`]*)['"`]\s*:/g) ?? []) out.push(toRegex(m[1].replace(/\/$/, '') || '/'));
+  return out;
+}
+
+export const SINGLE_LANGUAGE = 'velocity-single-language';
+
+/** Whether the src/pages file that built `page` (a static route) carries the SINGLE_LANGUAGE opt-out. */
+function pageSourceOptsOut(root, page) {
+  const route = page.replace(/(^|\/)index\.html$/, '').replace(/\.html$/, '').replace(/\/$/, '');
+  const candidates = route
+    ? [`src/pages/${route}.astro`, `src/pages/${route}/index.astro`, `src/pages/${route}.md`, `src/pages/${route}.mdx`]
+    : ['src/pages/index.astro'];
+  return candidates.some((rel) => fs.existsSync(path.join(root, rel)) && read(root, rel).includes(SINGLE_LANGUAGE));
+}
+
+/** The site's base path (astro.config `base`), read from where the build put its assets, or ''. */
+export function basePathOf(html) {
+  return html.match(/(?:href|src)=["'](\/[^"']*?)\/_astro\//)?.[1] ?? '';
+}
+
 /** Strip script, style, template and comment bodies so tag and text scans only see markup. */
 function markupOnly(html) {
   return html
@@ -246,8 +292,9 @@ const NON_EXECUTABLE = /^(application\/(ld\+)?json|importmap|text\/template|spec
 /**
  * Scan every built page. `keyIsRaw(text)` decides whether a text node is an unresolved translation key.
  */
-export function checkBuild(root, distRel, { keyIsRaw = () => false, defaultLocale = 'en' } = {}) {
+export function checkBuild(root, distRel, { keyIsRaw = () => false, defaultLocale = 'en', locales = [defaultLocale] } = {}) {
   const distRoot = path.join(root, distRel);
+  const dynamic = serverRoutes(root);
   const pages = walk(distRoot, '', (f) => f.endsWith('.html'));
   const out = [];
   const idsCache = new Map();
@@ -269,6 +316,27 @@ export function checkBuild(root, distRel, { keyIsRaw = () => false, defaultLocal
     const file = `${distRel}/${page}`;
     const html = fs.readFileSync(path.join(distRoot, page), 'utf8');
     const markup = markupOnly(html);
+
+    // On a multilingual site every page Velocity routes carries hreflang alternates.
+    // A page with none was built outside the localized routes: it exists in one
+    // language, and the language switcher sends other visitors to their home page.
+    // Articles (posts and other content) may be written in one language, and a
+    // page whose source carries SINGLE_LANGUAGE opted out deliberately.
+    if (
+      locales.length > 1 &&
+      !/(^|\/)404\.html$/.test(page) &&
+      /<html\b/i.test(html) &&
+      !/<link[^>]+rel=["']alternate["'][^>]+hreflang=/i.test(html) &&
+      !/<meta[^>]+property=["']og:type["'][^>]+content=["']article["']/i.test(html) &&
+      !pageSourceOptsOut(root, page)
+    ) {
+      const url = '/' + page.replace(/index\.html$/, '').replace(/\.html$/, '');
+      once(`single:${page}`, finding('i18n/single-locale-page', {
+        file,
+        message: `${url} exists in one language only, so ${locales.filter((l) => l !== defaultLocale).map((l) => `/${l}/`).join(' and ')} visitors can't reach it in theirs.`,
+        fix: `Build pages with the velocity-add-page skill: a view in src/views/, wrappers in src/pages/ and src/pages/[lang]/, and a route with translated slugs in src/config/nav.config.ts. If the page is deliberately single-language, add a ${SINGLE_LANGUAGE} comment to its file in src/pages/.`,
+      }));
+    }
     const csp = html.match(/<meta[^>]+http-equiv=["']content-security-policy["'][^>]*>/i)?.[0];
     const scriptSrc = csp ? decode(attrs(csp).content ?? '').match(/script-src([^;]*)/)?.[1] ?? '' : undefined;
 
@@ -318,8 +386,13 @@ export function checkBuild(root, distRel, { keyIsRaw = () => false, defaultLocal
         if (value.startsWith('#')) target = { page, hash: value.slice(1) };
         else if (value.startsWith('/') && !value.startsWith('//')) {
           const url = new URL(value, 'https://site.invalid');
-          if (url.pathname.startsWith('/_actions/') || url.pathname.startsWith('/_image')) continue;
-          const resolved = pageForUrl(distRoot, url.pathname);
+          // Links that carry the site's base path resolve against the build without it.
+          const base = basePathOf(html);
+          const pathname = base && url.pathname.startsWith(`${base}/`) ? url.pathname.slice(base.length) : url.pathname;
+          if (/^\/_(actions|image|server-islands)\//.test(pathname) || pathname === '/_image') continue;
+          // Server-rendered routes and redirects aren't in the static build but do exist.
+          if (dynamic.some((re) => re.test(pathname.replace(/\/$/, '') || '/'))) continue;
+          const resolved = pageForUrl(distRoot, pathname);
           if (!resolved) {
             once(`link:${url.pathname}`, finding('links/broken', {
               file,
@@ -476,7 +549,8 @@ export function checkOwnership(root) {
 // Hardcoded strings (warning: heuristics, so allow a file to opt out)
 
 export const ALLOW_HARDCODED = 'velocity-allow-hardcoded';
-const HARDCODED_DIRS = ['src/views', 'src/components/site', 'src/components/patterns', 'src/layouts'];
+/** Hand-written markup lives anywhere under src/ except content, i18n and Velocity's own internals. */
+const HARDCODED_SKIP = /^src\/(content|i18n|assets|styles)\//;
 const UI_ATTRS = /\s(alt|title|aria-label|placeholder|label|description|lead|heading|subtitle)\s*=\s*"([^"{}]*[A-Za-z]{2}[^"{}]*)"/g;
 
 /** Blank out {expressions} (tracking nested braces and strings), keeping offsets. */
@@ -525,20 +599,78 @@ export function findHardcoded(source) {
 }
 
 /** strings/hardcoded: warnings for every .astro file in the project-owned folders that hasn't opted out. */
-export function checkHardcoded(root) {
-  const out = [];
-  for (const dir of HARDCODED_DIRS) {
-    for (const file of walk(root, dir, (f) => f.endsWith('.astro'))) {
-      const source = read(root, file);
-      if (source.includes(ALLOW_HARDCODED)) continue;
-      for (const hit of findHardcoded(source)) {
-        out.push(finding('strings/hardcoded', {
-          file,
-          line: hit.line,
-          message: `"${hit.text.slice(0, 60)}" is written into the markup, so it won't translate.`,
-          fix: `Move it to src/i18n/translations/<locale>.ts and render it with t('…'). If the file is deliberately single-language, add a ${ALLOW_HARDCODED} comment to it.`,
-        }));
+/**
+ * Text and UI attributes in JSX (.tsx islands), found with the TypeScript parser
+ * when the project has it. Returns [] without TypeScript.
+ */
+export function findHardcodedJsx(source, ts) {
+  if (!ts) return [];
+  const sf = ts.createSourceFile('x.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  const hits = [];
+  const at = (node, text) => hits.push({ line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1, text: text.trim().replace(/\s+/g, ' ') });
+  const visit = (node) => {
+    if (ts.isJsxText(node)) {
+      const text = node.getText(sf).trim();
+      if (/[A-Za-zÀ-ÿ]{2,}/.test(text) && !/^[a-z][\w.-]*$/.test(text)) at(node, text);
+    } else if (ts.isJsxAttribute(node) && node.initializer && ts.isStringLiteral(node.initializer)) {
+      const name = node.name.getText(sf);
+      if (/^(alt|title|aria-label|placeholder|label)$/.test(name) && /[A-Za-z]{2}/.test(node.initializer.text)) {
+        at(node, `${name}="${node.initializer.text}"`);
       }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+  return hits;
+}
+
+/** Load the project's TypeScript compiler, if installed, for scanning .tsx files. */
+async function loadTypeScript(root) {
+  const { createRequire } = await import('node:module');
+  for (const from of [path.join(root, 'package.json'), import.meta.url]) {
+    try {
+      return createRequire(from)('typescript');
+    } catch {
+      // not installed there; try the next location
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Files to scan for hardcoded text: every .astro and .tsx under src/, except
+ * Velocity-owned files the project hasn't touched (they're Velocity's to fix,
+ * and upgrades replace them). With a baseline, a Velocity-owned file counts as
+ * the project's once it changes; without one, Velocity-owned paths are skipped.
+ */
+function hardcodedFiles(root) {
+  const owned = new Set(velocityOwnedFiles(root));
+  const baselinePath = path.join(root, BASELINE);
+  const baseline = fs.existsSync(baselinePath) ? JSON.parse(fs.readFileSync(baselinePath, 'utf8')).files ?? {} : undefined;
+  return walk(root, 'src', (f) => /\.(astro|tsx)$/.test(f) && !HARDCODED_SKIP.test(f)).filter((file) => {
+    if (!owned.has(file)) return true;
+    if (!baseline) return false;
+    // Not in the baseline: a file the project added inside a Velocity folder.
+    if (!(file in baseline)) return true;
+    return sha256(fs.readFileSync(path.join(root, file))) !== baseline[file];
+  });
+}
+
+/** strings/hardcoded: warnings for user-facing text written into any page, view, layout or component the project owns. */
+export async function checkHardcoded(root) {
+  const out = [];
+  const ts = await loadTypeScript(root);
+  for (const file of hardcodedFiles(root)) {
+    const source = read(root, file);
+    if (source.includes(ALLOW_HARDCODED)) continue;
+    const hits = file.endsWith('.tsx') ? findHardcodedJsx(source, ts) : findHardcoded(source);
+    for (const hit of hits) {
+      out.push(finding('strings/hardcoded', {
+        file,
+        line: hit.line,
+        message: `"${hit.text.slice(0, 60)}" is written into the markup, so it won't translate.`,
+        fix: `Move it to src/i18n/translations/<locale>.ts and render it with t('…'); in a React island, pass the translated text in as a prop. If the file is deliberately single-language, add a ${ALLOW_HARDCODED} comment to it.`,
+      }));
     }
   }
   return out;
@@ -557,7 +689,7 @@ export async function run(root, { strict = false } = {}) {
   const distRel = findDistDir(root);
   if (distRel) {
     const used = findKeyUses(root).map((u) => u.key);
-    const build = checkBuild(root, distRel, { keyIsRaw: rawKeyMatcher(dicts, used), defaultLocale: dicts.defaultLocale });
+    const build = checkBuild(root, distRel, { keyIsRaw: rawKeyMatcher(dicts, used), defaultLocale: dicts.defaultLocale, locales: dicts.locales });
     findings.push(...build.findings);
     notes.push(`Scanned ${build.pages} built page(s) in ${distRel}/.`);
   } else {
@@ -575,7 +707,7 @@ export async function run(root, { strict = false } = {}) {
   const ownership = checkOwnership(root);
   findings.push(...ownership.findings);
   if (ownership.skipped) notes.push(`No ${BASELINE}, so edits to Velocity-owned files weren't checked. Run npm run check:agent -- --write-baseline on a clean checkout to start tracking.`);
-  findings.push(...checkHardcoded(root));
+  findings.push(...(await checkHardcoded(root)));
 
   if (strict) for (const f of findings) f.severity = 'error';
   const errors = findings.filter((f) => f.severity === 'error').length;
@@ -606,9 +738,11 @@ if (isMain) {
   const root = process.cwd();
   if (args.has('--write-baseline')) {
     console.log(`Recorded ${writeBaseline(root)} Velocity-owned file(s) in ${BASELINE}.`);
-    process.exit(0);
+  } else {
+    const result = await run(root, { strict: args.has('--strict') });
+    console.log(args.has('--json') ? JSON.stringify(result, null, 2) : format(result));
+    // Set the code instead of calling process.exit(), which can cut off large
+    // output that is still being written to a pipe.
+    process.exitCode = result.ok ? 0 : 1;
   }
-  const result = await run(root, { strict: args.has('--strict') });
-  console.log(args.has('--json') ? JSON.stringify(result, null, 2) : format(result));
-  process.exit(result.ok ? 0 : 1);
 }

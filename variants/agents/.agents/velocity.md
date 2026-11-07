@@ -52,7 +52,7 @@ New files you add inside Velocity's folders stay in place. Only files Velocity s
 
 ## Before you say you're done
 
-Run `npm run validate`, which ends with `check:agent`, then `npm run build && npm run test:e2e` for accessibility and CSP in a real browser. `check:agent` scans the source and the build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links and anchors, forms still on their stubs, edits to Velocity-owned files, and hardcoded user-facing text. Each finding prints the file, the rule below that it breaks, and the fix. Errors fail; warnings are worth fixing or explaining to the user. A file that is deliberately single-language can opt out of the hardcoded-text warning with a `velocity-allow-hardcoded` comment.
+Run `npm run validate`, which ends with `check:agent`, then `npm run build && npm run test:e2e` for accessibility and CSP in a real browser. `check:agent` scans the source and the build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links and anchors, pages that exist in only one language on a multilingual site, forms still on their stubs, edits to Velocity-owned files, and hardcoded user-facing text. Each finding prints the file, the rule below that it breaks, and the fix. Errors fail; warnings are worth fixing or explaining to the user. A file that is deliberately single-language can opt out of the hardcoded-text warning with a `velocity-allow-hardcoded` comment, and a page in `src/pages/` can opt out of the one-language-only warning with a `velocity-single-language` comment.
 
 ## Rules
 
