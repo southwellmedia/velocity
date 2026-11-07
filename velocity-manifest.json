@@ -1,5 +1,5 @@
 {
-  "version": "2.4.1",
+  "version": "2.5.0",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -38,9 +38,13 @@
       "src/components/hero/",
       ".agents/velocity.md",
       ".agents/components.md",
+      ".agents/design/",
+      ".agents/design.md",
+      ".agents/recipes.md",
       ".agents/skills/",
       ".claude/skills/",
-      "scripts/check-agent.mjs"
+      "scripts/check-agent.mjs",
+      "scripts/design.mjs"
     ],
     "protected": [
       "astro.config.mjs",
@@ -55,6 +59,7 @@
       "src/components/landing/",
       "src/components/blog/",
       "src/components/patterns/",
+      "src/components/sections/",
       ".env",
       ".env.example",
       "src/actions/",
@@ -69,6 +74,7 @@
       "src/components/patterns/Section.astro",
       "src/components/patterns/PageHeader.astro",
       "src/components/patterns/MediaSlot.astro",
+      "src/components/sections/README.md",
       "src/components/site/",
       "src/config/collections.ts",
       "src/styles/theme.css",
@@ -573,6 +579,7 @@
       "scripts/generate-components-ref.mjs",
       "tests/unit/components-ref.test.ts",
       "tests/unit/check-agent.test.ts",
+      "tests/unit/design.test.ts",
       "tests/unit/scaffold.test.ts",
       ".github/workflows/scaffold.yml"
     ],
@@ -611,6 +618,9 @@
       },
       "check:agent": {
         "value": "node scripts/check-agent.mjs"
+      },
+      "design": {
+        "value": "node scripts/design.mjs"
       }
     }
   }

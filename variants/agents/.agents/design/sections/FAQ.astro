@@ -1,0 +1,47 @@
+---
+/* @velocity-section FAQ@2.5.0
+ * Questions and answers in an accordion, alone or beside the section heading.
+ * Answer the questions visitors actually ask before they act: price, time, area, booking.
+ * @requires section, accordion
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Section from '@/components/patterns/Section.astro';
+import Accordion from '@/components/ui/overlay/Accordion/Accordion.astro';
+
+interface Item {
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  id?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  items: Item[];
+  /** 'split' puts the heading in a column beside the questions */
+  layout?: 'single' | 'split';
+  tone?: 'default' | 'secondary';
+  class?: string;
+}
+
+const { id, eyebrow, title, lead, items, layout = 'single', tone = 'default', class: className } = Astro.props;
+const accordion = items.map((item) => ({ title: item.question, content: item.answer }));
+---
+
+{layout === 'split' ? (
+  <Section id={id} tone={tone} class={className}>
+    <div class="grid gap-10 lg:grid-cols-3 lg:gap-16">
+      <div>
+        {eyebrow && <p class="text-primary mb-3 text-xs font-bold tracking-widest uppercase">{eyebrow}</p>}
+        {title && <h2 class="font-display text-foreground text-4xl tracking-tight">{title}</h2>}
+        {lead && <p class="text-foreground-secondary mt-4 text-lg">{lead}</p>}
+      </div>
+      <Accordion items={accordion} class="lg:col-span-2" />
+    </div>
+  </Section>
+) : (
+  <Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+    <Accordion items={accordion} class="max-w-3xl" />
+  </Section>
+)}

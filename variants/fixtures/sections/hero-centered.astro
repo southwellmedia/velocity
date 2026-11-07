@@ -1,0 +1,11 @@
+---
+// Test fixture: see sections.astro. velocity-allow-hardcoded velocity-single-language
+import LandingLayout from '@/layouts/LandingLayout.astro';
+import HeroCentered from '@/components/sections/HeroCentered.astro';
+import CTABand from '@/components/sections/CTABand.astro';
+---
+
+<LandingLayout title="Centred hero fixture" description="HeroCentered with a wide image slot.">
+  <HeroCentered eyebrow="New" title="Invoices that send themselves" lead="Set it up once and get paid on time." primary={{ label: 'Start free', href: '/fixture/hero-centered/' }} secondary={{ label: 'See pricing', href: '/fixture/sections/' }} layout="media" mediaLabel="Product screenshot" />
+  <CTABand title="Try it today" primary={{ label: 'Start free', href: '/fixture/hero-centered/' }} />
+</LandingLayout>

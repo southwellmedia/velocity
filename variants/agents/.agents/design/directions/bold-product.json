@@ -1,0 +1,63 @@
+{
+  "id": "bold-product",
+  "name": "Bold product",
+  "feel": "Confident, high contrast",
+  "suits": "SaaS, apps, launches",
+  "rhythm": "centred hero with product shot → logo cloud → bento features → invert band → pricing → FAQ → invert CTA",
+  "imagery": "Product screenshots and UI crops; abstract shapes only from tokens",
+  "brand": {
+    "hue": 275,
+    "chroma": 1.1
+  },
+  "neutral": {
+    "chroma": 0.01
+  },
+  "primary": "brand",
+  "invert": "brand",
+  "fonts": {
+    "display": {
+      "family": "Space Grotesk",
+      "fallbacks": [
+        "sans-serif"
+      ]
+    },
+    "body": {
+      "family": "Manrope",
+      "fallbacks": [
+        "sans-serif"
+      ]
+    },
+    "installedFallback": {
+      "display": {
+        "family": "Outfit",
+        "fallbacks": [
+          "sans-serif"
+        ]
+      },
+      "body": {
+        "family": "Manrope",
+        "fallbacks": [
+          "sans-serif"
+        ]
+      }
+    }
+  },
+  "controls": {
+    "--theme-heading-weight": "700",
+    "--theme-heading-tracking": "-0.035em",
+    "--theme-body-leading": "1.55",
+    "--theme-heading-scale": "1.1",
+    "--theme-display-scale": "1.15",
+    "--theme-section-space": "0.9",
+    "--theme-radius-sm": "0.375rem",
+    "--theme-radius-md": "0.5rem",
+    "--theme-radius-lg": "0.75rem",
+    "--theme-radius-xl": "1rem",
+    "--theme-radius-button": "0.5rem",
+    "--theme-button-weight": "600",
+    "--theme-shadow-sm": "0 1px 2px rgba(0, 0, 0, 0.08)",
+    "--theme-shadow-md": "0 6px 14px rgba(0, 0, 0, 0.1)",
+    "--theme-shadow-lg": "0 12px 28px rgba(0, 0, 0, 0.14)",
+    "--theme-shadow-xl": "0 28px 56px rgba(0, 0, 0, 0.2)"
+  }
+}

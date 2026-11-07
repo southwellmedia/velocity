@@ -14,6 +14,12 @@ The site runs at http://localhost:4321.
 
 ## Make it yours
 
+The fastest way: open the project in your AI coding agent (Claude Code, Codex, Cursor, …) and ask it to **"Set up this site for my business"**. Its `velocity-start-site` skill interviews you, writes a brief to `.agents/site.md` that later sessions follow, applies one of five design directions, builds your pages from section recipes and lists anything it couldn't know as a placeholder instead of inventing it.
+
+Design directions: **Editorial** (calm, type-led), **Warm local** (friendly, rounded), **Clinical** (clear, trustworthy), **Bold product** (confident, high contrast), **Minimal portfolio** (quiet, image-led). Try one yourself with `npm run design -- direction --base warm-local --brand "#c2410c"`.
+
+By hand:
+
 - **Site details:** `src/config/site.config.ts` (name, description, social links). Canonical and social-card URLs come from `SITE_URL`, so set it to your production URL in `.env` and in the environment that runs the build.
 - **Logo and favicon:** `src/assets/branding/` and `public/favicon.svg`
 - **Navigation:** `src/config/nav.config.ts`
@@ -31,7 +37,8 @@ The site runs at http://localhost:4321.
 | `npm run check` | Type check |
 | `npm run lint` | Lint |
 | `npm run test` | Unit tests |
-| `npm run validate` | Lint, type check, unit tests and build |
+| `npm run validate` | Lint, type check, unit tests, build and agent-ready check |
+| `npm run design -- tokens` | Design tokens and a contrast check of every colour pair |
 
 ## Upgrading Velocity
 

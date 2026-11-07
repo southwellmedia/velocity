@@ -1,0 +1,52 @@
+---
+/* @velocity-section HeroSplit@2.5.0
+ * Opening band: copy and actions on one side, a photo on the other. Holds the page's only <h1>.
+ * Use when the business has a real photo that says what it does (the shop, the work, the team).
+ * @requires button, badge, media-slot
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Button from '@/components/ui/form/Button/Button.astro';
+import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import MediaSlot from '@/components/patterns/MediaSlot.astro';
+import { cn } from '@/lib/cn';
+
+interface Action {
+  label: string;
+  href: string;
+}
+
+interface Props {
+  eyebrow?: string;
+  title: string;
+  lead?: string;
+  primary?: Action;
+  secondary?: Action;
+  /** File name in src/assets/photos/, without the extension */
+  photo?: string;
+  alt?: string;
+  /** What belongs in the photo, shown on the placeholder until it exists */
+  mediaLabel?: string;
+  /** Put the photo first on wide screens */
+  reverse?: boolean;
+  class?: string;
+}
+
+const { eyebrow, title, lead, primary, secondary, photo, alt = '', mediaLabel, reverse = false, class: className } = Astro.props;
+---
+
+<section class={cn('pt-[var(--space-page-top-sm)] pb-[var(--space-section-md)]', className)}>
+  <div class="mx-auto grid max-w-6xl items-center gap-12 px-6 lg:grid-cols-2 lg:gap-16">
+    <div class={cn(reverse && 'lg:order-2')}>
+      {eyebrow && <Badge variant="brand" pill class="mb-6">{eyebrow}</Badge>}
+      <h1 class="font-display text-foreground text-5xl leading-tight tracking-tight text-balance">{title}</h1>
+      {lead && <p class="text-foreground-secondary mt-6 max-w-xl text-lg">{lead}</p>}
+      {(primary || secondary) && (
+        <div class="mt-8 flex flex-wrap gap-4">
+          {primary && <Button href={primary.href} size="lg" trailingIcon="arrow-right">{primary.label}</Button>}
+          {secondary && <Button href={secondary.href} size="lg" variant="outline">{secondary.label}</Button>}
+        </div>
+      )}
+    </div>
+    <MediaSlot photo={photo} alt={alt} label={mediaLabel} ratio="4/5" priority class="rounded-xl shadow-lg" />
+  </div>
+</section>

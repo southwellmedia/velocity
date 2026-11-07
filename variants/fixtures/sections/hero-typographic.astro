@@ -1,0 +1,11 @@
+---
+// Test fixture: see sections.astro. velocity-allow-hardcoded velocity-single-language
+import LandingLayout from '@/layouts/LandingLayout.astro';
+import HeroTypographic from '@/components/sections/HeroTypographic.astro';
+import ProofBand from '@/components/sections/ProofBand.astro';
+---
+
+<LandingLayout title="Typographic hero fixture" description="HeroTypographic with an avatars proof band.">
+  <HeroTypographic eyebrow="Studio" title="Brand identities for independent businesses" lead="Strategy, naming and design for companies that would rather be remembered than noticed." primary={{ label: 'Start a project', href: '/fixture/hero-centered/' }} secondary={{ label: 'See the work', href: '/fixture/sections/' }} note="Based in Glasgow, working everywhere." />
+  <ProofBand layout="avatars" people={[{ alt: 'Ana Lopez' }, { alt: 'Ben Okafor' }, { alt: 'Chloe Martin' }]} text="Trusted by forty independent businesses." />
+</LandingLayout>
