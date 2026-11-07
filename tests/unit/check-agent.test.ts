@@ -426,9 +426,34 @@ describe('check:agent', () => {
     it('is quiet when the copy is current', async () => {
       const root = project({
         '.agents/design/sections/Testimonials.astro': source('2.5.0'),
-        'src/components/sections/Testimonials.astro': source('2.5.0'),
+        'src/components/sections/Testimonials.astro': source('2.5.0').replace('<section>', '<section class="mine">'),
       });
       expect(await findings(root, 'design/section-outdated')).toEqual([]);
+    });
+  });
+
+  describe('design/section-unmodified', () => {
+    const source = '---\n/* @velocity-section Steps@2.5.0 */\n---\n<section class="steps"></section>\n';
+
+    it('is a notice for a section copied without any change', async () => {
+      const root = project({
+        '.agents/design/sections/Steps.astro': source,
+        'src/components/sections/Steps.astro': source.replace(/\n/g, '\r\n'),
+      });
+      const [f, ...rest] = await findings(root, 'design/section-unmodified');
+      expect(rest).toEqual([]);
+      expect(f).toMatchObject({ file: 'src/components/sections/Steps.astro', severity: 'notice' });
+      expect(f.fix).toMatch(/Make it the site's own/);
+      expect(await findings(root, 'design/section-outdated')).toEqual([]);
+    });
+
+    it('is quiet once the section is adapted, or for sections written from scratch', async () => {
+      const root = project({
+        '.agents/design/sections/Steps.astro': source,
+        'src/components/sections/Steps.astro': source.replace('class="steps"', 'class="steps bg-background-secondary"'),
+        'src/components/sections/MenuBoard.astro': '<section class="menu"></section>\n',
+      });
+      expect(await findings(root, 'design/section-unmodified')).toEqual([]);
     });
   });
 

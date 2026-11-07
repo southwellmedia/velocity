@@ -1,6 +1,8 @@
 ---
-/* @velocity-section FeatureGrid@2.5.0
- * Services, features or reasons, as columns of cards, a bento grid or a list with photos.
+/* @velocity-section FeatureGrid@2.6.0
+ * Services, features or reasons, as columns of cards, a bento grid, a list with photos,
+ * a split with the heading beside the items, or a numbered list without cards.
+ * @changed 2.6.0: 'split' and 'numbered' layouts
  * Change the layout between neighbouring grids so a page doesn't repeat itself.
  * @requires section, card, icon, media-slot
  * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
@@ -27,7 +29,7 @@ interface Props {
   title?: string;
   lead?: string;
   items: Feature[];
-  layout?: 'columns' | 'bento' | 'list';
+  layout?: 'columns' | 'bento' | 'list' | 'split' | 'numbered';
   tone?: 'default' | 'secondary';
   class?: string;
 }
@@ -35,8 +37,39 @@ interface Props {
 const { id, eyebrow, title, lead, items, layout = 'columns', tone = 'default', class: className } = Astro.props;
 ---
 
+{layout === 'split' ? (
+  <Section id={id} tone={tone} class={className}>
+    <div class="grid gap-12 lg:grid-cols-3 lg:gap-16">
+      <div class="lg:sticky lg:top-24 lg:self-start">
+        {eyebrow && <p class="text-foreground-muted mb-3 text-sm font-medium">{eyebrow}</p>}
+        {title && <h2 class="font-display text-foreground text-4xl tracking-tight">{title}</h2>}
+        {lead && <p class="text-foreground-secondary mt-4 text-lg">{lead}</p>}
+      </div>
+      <dl class="divide-border divide-y lg:col-span-2">
+        {items.map((item) => (
+          <div class="grid gap-2 py-6 first:pt-0 sm:grid-cols-3 sm:gap-8">
+            <dt class="font-display text-foreground text-lg font-semibold">{item.title}</dt>
+            <dd class="text-foreground-secondary sm:col-span-2">{item.text}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </Section>
+) : (
 <Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
-  {layout === 'list' ? (
+  {layout === 'numbered' ? (
+    <ol class="grid gap-x-16 gap-y-12 md:grid-cols-2">
+      {items.map((item, i) => (
+        <li class="border-border flex gap-6 border-t pt-6">
+          <span class="font-display text-foreground-muted text-4xl leading-none font-bold tabular-nums" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+          <div>
+            <h3 class="font-display text-foreground text-xl font-semibold">{item.title}</h3>
+            <p class="text-foreground-secondary mt-2">{item.text}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  ) : layout === 'list' ? (
     <div class="divide-border divide-y">
       {items.map((item, i) => (
         <article class="grid items-center gap-8 py-10 first:pt-0 last:pb-0 md:grid-cols-2 md:gap-16">
@@ -69,3 +102,4 @@ const { id, eyebrow, title, lead, items, layout = 'columns', tone = 'default', c
     </div>
   )}
 </Section>
+)}

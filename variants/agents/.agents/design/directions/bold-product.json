@@ -59,5 +59,41 @@
     "--theme-shadow-md": "0 6px 14px rgba(0, 0, 0, 0.1)",
     "--theme-shadow-lg": "0 12px 28px rgba(0, 0, 0, 0.14)",
     "--theme-shadow-xl": "0 28px 56px rgba(0, 0, 0, 0.2)"
-  }
+  },
+  "variation": {
+    "brandHue": 45,
+    "chroma": [
+      0.9,
+      1.15
+    ],
+    "radius": [
+      0.5,
+      1,
+      1.5
+    ],
+    "buttonRadius": [
+      "9999px",
+      "0.5rem"
+    ],
+    "headingWeight": [
+      "600",
+      "700"
+    ],
+    "invert": [
+      "brand",
+      "neutral"
+    ]
+  },
+  "fontPairs": [
+    {
+      "display": "Bricolage Grotesque",
+      "body": "Onest",
+      "note": "characterful"
+    },
+    {
+      "display": "Unbounded",
+      "body": "Instrument Sans",
+      "note": "loud, wide display"
+    }
+  ]
 }

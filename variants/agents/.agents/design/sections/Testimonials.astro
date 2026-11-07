@@ -1,6 +1,7 @@
 ---
-/* @velocity-section Testimonials@2.5.0
- * What customers say: a grid of quotes, or one large quote.
+/* @velocity-section Testimonials@2.6.0
+ * What customers say: a grid of quotes, one large quote, or a wall of short quotes in columns.
+ * @changed 2.6.0: 'wall' layout
  * Only real quotes the user supplied. Otherwise pass [[placeholder: …]] text and list it in the handoff.
  * @requires section, card, avatar
  * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
@@ -24,7 +25,7 @@ interface Props {
   title?: string;
   lead?: string;
   items: Quote[];
-  layout?: 'grid' | 'single';
+  layout?: 'grid' | 'single' | 'wall';
   tone?: 'default' | 'secondary';
   class?: string;
 }
@@ -34,7 +35,20 @@ const [first] = items;
 ---
 
 <Section id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
-  {layout === 'single' && first ? (
+  {layout === 'wall' ? (
+    <div class="gap-6 sm:columns-2 lg:columns-3">
+      {items.map((item) => (
+        <figure class="border-border mb-6 break-inside-avoid border-l-2 pl-5">
+          <blockquote class="text-foreground">
+            <p>{item.quote}</p>
+          </blockquote>
+          <figcaption class="text-foreground-muted mt-3 text-sm">
+            <span class="text-foreground font-semibold">{item.name}</span>{item.role && <span>, {item.role}</span>}
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  ) : layout === 'single' && first ? (
     <figure class="mx-auto max-w-3xl text-center">
       <blockquote class="font-display text-foreground text-3xl leading-snug text-balance">
         <p>{first.quote}</p>

@@ -1,0 +1,11 @@
+---
+// Test fixture: see sections.astro. velocity-allow-hardcoded velocity-single-language
+import LandingLayout from '@/layouts/LandingLayout.astro';
+import HeroAsymmetric from '@/components/sections/HeroAsymmetric.astro';
+import CTABand from '@/components/sections/CTABand.astro';
+---
+
+<LandingLayout title="Asymmetric hero fixture (overlap)" description="HeroAsymmetric, overlap layout.">
+  <HeroAsymmetric kicker="Leith, since 1987" title="Bread worth getting up early for" lead="A neighbourhood bakery with a wood-fired oven and a long table by the window." action={{ label: 'Visit us', href: '/fixture/sections/' }} mediaLabel="The shop front at dawn" layout="overlap" />
+  <CTABand layout="inline" title="Open from seven" primary={{ label: 'Find us', href: '/fixture/sections/' }} />
+</LandingLayout>

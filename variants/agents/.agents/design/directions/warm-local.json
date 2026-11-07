@@ -59,5 +59,46 @@
     "--theme-shadow-md": "0 4px 12px rgba(60, 30, 0, 0.08)",
     "--theme-shadow-lg": "0 10px 24px rgba(60, 30, 0, 0.1)",
     "--theme-shadow-xl": "0 24px 48px rgba(60, 30, 0, 0.14)"
-  }
+  },
+  "variation": {
+    "brandHue": 30,
+    "chroma": [
+      0.8,
+      1.1
+    ],
+    "neutralChroma": [
+      0.6,
+      1.5
+    ],
+    "radius": [
+      0.75,
+      1,
+      1.25
+    ],
+    "buttonRadius": [
+      "9999px",
+      "0.75rem"
+    ],
+    "headingWeight": [
+      "700",
+      "800",
+      "900"
+    ],
+    "invert": [
+      "brand",
+      "neutral"
+    ]
+  },
+  "fontPairs": [
+    {
+      "display": "Fraunces",
+      "body": "Nunito Sans",
+      "note": "old-fashioned, bakery or deli"
+    },
+    {
+      "display": "Bricolage Grotesque",
+      "body": "Nunito Sans",
+      "note": "playful, café or studio"
+    }
+  ]
 }

@@ -28,7 +28,7 @@ Decide the look once, before building pages. List the directions with `npm run d
 
 Each direction file (`.agents/design/directions/<id>.json`) also records the section rhythm it favours (`rhythm`) and how it handles images (`imagery`). Read them when planning pages.
 
-Pick from the business type and the three words the user gave for the feel. Adapt by changing the brand colour and fonts; keep the direction's proportions (radii, spacing, type scale).
+Pick from the business type and the three words the user gave for the feel. A direction is where the look starts, not where it ends: see Make it the site's own below.
 
 ## Apply it
 
@@ -37,7 +37,8 @@ npm run design -- direction --base warm-local --brand "#c2410c"
 ```
 
 - `--brand` takes the user's brand colour. The engine keeps its hue and saturation and fits it to Velocity's lightness scale, so every step stays accessible.
-- `--display` and `--body` swap the fonts (`--display Fraunces --body "Source Sans 3"`). Use at most two families.
+- **Variation:** the engine varies the direction within its bounds (brand hue when no `--brand` is given, neutral tint, radii, heading weight, spacing, type scale, whether buttons and invert bands use the brand), picked by a seed that defaults to the site name. Two sites in the same direction come out different, and the same seed always gives the same result. It prints what it picked. `--seed "<text>"` tries another variation; `--seed preset` gives the plain direction, which is for testing, not for a real site.
+- **Fonts:** `--pair 2` or `--pair 3` picks one of the direction's alternative pairings (listed by `-- direction --list`); `--display` and `--body` set any fontsource family (`--display Fraunces --body "Source Sans 3"`). Choose by the brief's voice. Use at most two families.
 - The command writes one block marked `@velocity-direction` at the end of `src/styles/theme.css` and registers the fonts in `fonts` in `astro.config.mjs`. Re-running replaces the block; put hand edits after the end marker.
 - It checks every text/surface pair in light and dark against WCAG AA, darkens brand steps where needed and says what it changed. If a combination can't pass, it writes nothing.
 - **Fonts:** if a font package isn't installed, it prints the install command and writes nothing. Ask the user before installing. If they decline, add `--fallback-fonts` to keep to installed families, and note it in `.agents/site.md`.
@@ -68,6 +69,30 @@ Set these in `theme.css` on `:root` only (they're computed once there, so a loca
 ## Build pages from sections
 
 Compose each page from sections in `src/components/sections/`. Start from a recipe: `.agents/recipes.md` indexes the working sources in `.agents/design/sections/` (heroes, feature grids, steps, testimonials, pricing, FAQ, team, contact, hours) and gives a home-page blueprint per business type. Copy a source, keep its `@velocity-section` stamp, and adapt it. When nothing fits, write a new section the same way: props for copy, primitives and tokens only, a `class` prop passed through, and the rules below.
+
+## Make it the site's own
+
+Directions and recipes give every site a sound starting point, which also means a site built only from them looks like other Velocity sites. Before building pages, decide three things and record them in `.agents/site.md` → Design:
+
+1. **Variation:** keep the seed's result or try others until it fits the brief (`--seed`). Record the seed.
+2. **Font pairing:** the direction's default, one of its `--pair` options, or the brand's own fonts. Record why.
+3. **Signature:** one distinctive treatment that belongs to this business and no other site in the direction, designed from scratch rather than copied from a recipe. Use it on at least two pages and in no more than three places, so it reads as identity rather than decoration. Examples:
+   - a bakery: a menu-board section with dotted leaders between item and price, set in the display font;
+   - a physiotherapy clinic: oversized step numbers running down the margin of the process section;
+   - a law firm: a thin ruled grid and small-caps labels, like a document;
+   - a product launch: a full-bleed invert band with a large product stat;
+   - a photographer: an asymmetric image grid with captions in the margin.
+
+   A signature follows the same rules as everything else: tokens and the spacing and type scales, AA contrast in light and dark, reduced motion respected. Build it as a section in `src/components/sections/` (no `@velocity-section` stamp, since it's not from a recipe).
+
+Then **adapt every section you copy.** Change its composition (layout prop, alignment, column split, order of elements, which primitives), density or emphasis to fit the brief and the direction. A section left identical to its source gets a `design/section-unmodified` notice from `check:agent`.
+
+**Avoid the template tells:**
+- every section centred, or every section a row of three equal cards;
+- the same eyebrow, heading and lead block on top of every section (vary it: some sections need no eyebrow, some a heading only);
+- every page ending in the same invert CTA band;
+- a pill badge above every hero heading;
+- decorative gradient blobs or glows that don't come from the brief.
 
 ## Rules for pages and sections
 

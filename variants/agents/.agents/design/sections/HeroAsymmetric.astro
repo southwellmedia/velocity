@@ -1,0 +1,57 @@
+---
+/* @velocity-section HeroAsymmetric@2.6.0
+ * Opening band that breaks the centred, badge-and-two-buttons hero. Holds the page's only <h1>.
+ * 'stacked': a full-width statement, then the lead and one action beside a wide photo.
+ * 'overlap': a large photo with the copy on a panel overlapping its lower edge.
+ * Use when the business has one strong photo and a confident line.
+ * @requires button, media-slot
+ * Copy into src/components/sections/ and adapt. Rules: .agents/design.md
+ */
+import Button from '@/components/ui/form/Button/Button.astro';
+import MediaSlot from '@/components/patterns/MediaSlot.astro';
+import { cn } from '@/lib/cn';
+
+interface Props {
+  /** A short label above the statement, such as the place or the year */
+  kicker?: string;
+  title: string;
+  lead?: string;
+  action?: { label: string; href: string };
+  /** File name in src/assets/photos/, without the extension */
+  photo?: string;
+  alt?: string;
+  mediaLabel?: string;
+  layout?: 'stacked' | 'overlap';
+  class?: string;
+}
+
+const { kicker, title, lead, action, photo, alt = '', mediaLabel, layout = 'stacked', class: className } = Astro.props;
+---
+
+{layout === 'stacked' ? (
+  <section class={cn('pt-[var(--space-page-top-sm)] pb-[var(--space-section-md)]', className)}>
+    <div class="mx-auto max-w-6xl px-6">
+      {kicker && <p class="text-foreground-muted border-border mb-8 border-b pb-4 text-sm font-medium">{kicker}</p>}
+      <h1 class="font-display text-foreground text-6xl leading-none tracking-tight text-balance lg:text-7xl">{title}</h1>
+      <div class="mt-12 grid gap-10 lg:grid-cols-3 lg:gap-16">
+        <div class="flex flex-col justify-between gap-8">
+          {lead && <p class="text-foreground-secondary text-lg">{lead}</p>}
+          {action && <Button href={action.href} size="lg" class="self-start">{action.label}</Button>}
+        </div>
+        <MediaSlot photo={photo} alt={alt} label={mediaLabel} ratio="16/10" priority class="rounded-lg lg:col-span-2" />
+      </div>
+    </div>
+  </section>
+) : (
+  <section class={cn('pt-[var(--space-page-top-sm)] pb-[var(--space-section-md)]', className)}>
+    <div class="mx-auto max-w-6xl px-6">
+      <MediaSlot photo={photo} alt={alt} label={mediaLabel} ratio="16/10" priority class="rounded-xl" />
+      <div class="bg-background border-border relative -mt-24 max-w-2xl rounded-lg border p-8 shadow-lg md:ml-10 md:p-10">
+        {kicker && <p class="text-foreground-muted mb-4 text-sm font-medium">{kicker}</p>}
+        <h1 class="font-display text-foreground text-5xl leading-tight tracking-tight text-balance">{title}</h1>
+        {lead && <p class="text-foreground-secondary mt-5 text-lg">{lead}</p>}
+        {action && <Button href={action.href} size="lg" trailingIcon="arrow-right" class="mt-8">{action.label}</Button>}
+      </div>
+    </div>
+  </section>
+)}

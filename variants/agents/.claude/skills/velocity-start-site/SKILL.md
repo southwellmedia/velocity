@@ -43,7 +43,7 @@ If the user says "just do it", or nobody is there to answer (a headless run), us
 
 ## 2. Write the brief and choose the direction
 
-Copy `.agents/skills/velocity-start-site/brief-template.md` to `.agents/site.md` (or update the seeded one) and fill every heading. **Design:** choose a direction from `.agents/design.md` → Choose a direction first, matching the business type and the three words, and write down why, the brand colour, fonts, radius and density, the imagery approach and the section rhythm for each page (for example `HeroSplit → HoursAndLocation inline → FeatureGrid columns → Testimonials → CTABand invert`). Set `Status: planned`.
+Copy `.agents/skills/velocity-start-site/brief-template.md` to `.agents/site.md` (or update the seeded one) and fill every heading. **Design:** choose a direction from `.agents/design.md` → Choose a direction first, matching the business type and the three words, and write down why, the brand colour, the font pairing, radius and density, the imagery approach, the **signature** (`.agents/design.md` → Make it the site's own: one distinctive treatment designed for this business, not copied from a recipe) and the section rhythm for each page. For the rhythm, choose among the options in `.agents/recipes.md` → Page blueprints and adapt them to the brief; record why. Set `Status: planned`.
 
 Show the user the sitemap, one line per page with its sections, and the direction in one sentence. Wait for a go-ahead. In a headless run, continue and flag the assumptions in the handoff.
 
@@ -74,13 +74,14 @@ If the brief keeps About or Contact, leave that page's three files (view, page, 
 
 **Every state:**
 - Set `name`, `description`, `author` and `email` in `src/config/site.config.ts` from facts the user gave; ask for any that are missing, never invent them. `SITE_URL` goes in `.env` and the host's build settings.
-- Apply the direction: `npm run design -- direction --base <id> --brand "<hex>"`. If it reports missing font packages, ask the user before installing them; if they decline, add `--fallback-fonts` and note it under Assumptions. Then `npm run design -- fonts --fix`.
+- Apply the direction: `npm run design -- direction --base <id> --brand "<hex>"`, adding `--pair <n>` or `--display`/`--body` for the brief's font pairing. The seed defaults to the site name, so set the name in `site.config.ts` first; the engine prints what it varied. Record the seed in the brief. If it reports missing font packages, ask the user before installing them; if they decline, add `--fallback-fonts` and note it under Assumptions. Then `npm run design -- fonts --fix`.
 - Set `branding.colors.themeColor` in `site.config.ts` to the brand colour. For a logo or favicon, follow `velocity-rebrand` step 4.
 - **Photos:** copy the user's photos into `src/assets/photos/` with descriptive file names and use them through `MediaSlot`'s `photo` prop, which optimizes them. Write alt text from what each photo shows; decorative images get `alt=""`. Never use stock or generated images unless the user asks. With no photos, use `HeroTypographic` rather than a placeholder in the first screen.
 
 ## 4. Build
 
-- For each page in the Sitemap, follow `velocity-add-page`. Compose the page from sections: copy sources from `.agents/design/sections/` into `src/components/sections/` (see `.agents/recipes.md`) and adapt them, or write new ones following `.agents/design.md`. The home page replaces `src/views/HomeView.astro`. Inner pages open with `PageHeader`.
+- For each page in the Sitemap, follow `velocity-add-page`. Compose the page from sections: copy sources from `.agents/design/sections/` into `src/components/sections/` (see `.agents/recipes.md`) and **adapt each one** to the brief (composition, density, emphasis), or write new ones following `.agents/design.md`. The home page replaces `src/views/HomeView.astro`. Inner pages open with `PageHeader`.
+- Build the brief's **signature** as its own section and use it where the brief says. Check the result against `.agents/design.md` → Avoid the template tells.
 - Follow the brief's section rhythm: alternate `tone`, at most two invert bands, no two neighbouring sections alike, one `<h1>` per page.
 - Blog, case studies, team or similar collections: `velocity-add-content`. New language: `velocity-add-locale`. On a single-language site nothing links to missing locales.
 - Forms: `velocity-connect-forms` only if the user gave a provider and key; otherwise leave the stubs and say so.

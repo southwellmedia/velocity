@@ -13,10 +13,11 @@ Every section takes its copy as props. The view calls `t()` with keys from `src/
 | `HeroSplit` | Opening band with a real photo of the place, work or people | photo right, `reverse` | button, badge, media-slot | n/a |
 | `HeroCentered` | Opening statement for a product or launch, optional wide shot below | `plain`, `media` | button, badge, media-slot | n/a |
 | `HeroTypographic` | Opening band with no photo: large type that looks finished | type only | button | n/a |
+| `HeroAsymmetric` | Opening band with one strong photo and a confident line, without the centred badge-and-buttons look | `stacked`, `overlap` | button, media-slot | n/a |
 | `ProofBand` | Evidence right after the hero | `stats`, `avatars` | avatar-group | Real figures and customers only, else leave it out |
-| `FeatureGrid` | Services, features, reasons to choose | `columns`, `bento`, `list` (with photos) | section, card, icon, media-slot | n/a |
+| `FeatureGrid` | Services, features, reasons to choose | `columns`, `bento`, `list` (with photos), `split` (heading beside the items), `numbered` (no cards) | section, card, icon, media-slot | n/a |
 | `Steps` | How it works, 3 to 5 steps | `horizontal`, `vertical` | section | n/a |
-| `Testimonials` | What customers say | `grid`, `single` | section, card, avatar | Placeholders unless supplied |
+| `Testimonials` | What customers say | `grid`, `single`, `wall` (short quotes in columns) | section, card, avatar | Placeholders unless supplied |
 | `Pricing` | Plans or a single offer | 1 to 4 tiers | section, card, badge, button, icon | Placeholders unless supplied |
 | `FAQ` | Questions visitors ask before acting | `single`, `split` | section, accordion | n/a |
 | `Team` | The people | `grid` (portraits), `list` | section, media-slot, avatar | Only people the user named |
@@ -29,16 +30,18 @@ Every section takes its copy as props. The view calls `t()` with keys from `src/
 
 ## Page blueprints
 
-Starting points for the home page, as section lists. The brief's section rhythm (`.agents/site.md` → Design) wins. Alternate `tone="secondary"` and default backgrounds, use at most two invert bands, and never put the same section or layout twice in a row.
+Starting points for the home page: two or three section orders per business type, each with when it fits. Choose the one that suits the brief (the photos the user has, the primary action, the voice), then change it: add the brief's signature section, drop what the content can't support, reorder. Record the choice and why in `.agents/site.md` → Design. A blueprint copied unchanged is the fastest way to a site that looks like other Velocity sites.
 
-| Business | Direction | Home page |
+Whatever the order: alternate `tone="secondary"` and default backgrounds, use at most two invert bands, never put the same section or layout twice in a row, and vary how sections open (not every section needs an eyebrow, a centred heading or a lead).
+
+| Business | Suggested directions | Options |
 |---|---|---|
-| Local service (trades, salon, cleaner) | `warm-local` | HeroSplit → HoursAndLocation (`inline`) → FeatureGrid (`columns`) → Testimonials → FAQ → CTABand (`invert`) |
-| Restaurant or café | `warm-local` | HeroSplit → FeatureGrid (`list`, the menu highlights) → HoursAndLocation (`card`) → Testimonials (`single`) → CTABand (`inline`) |
-| Professional services (clinic, legal, finance) | `clinical` | HeroCentered → ProofBand (`stats`, if real) → FeatureGrid (`columns`) → Steps → Team → FAQ (`split`) → ContactBand |
-| Agency or consultant | `editorial` | HeroTypographic → FeatureGrid (`list`) → Testimonials (`single`) → Steps (`vertical`) → CTABand (`inline`) |
-| SaaS or app | `bold-product` | HeroCentered (`media`) → LogoCloud (if real) → FeatureGrid (`bento`) → Steps → Pricing → FAQ → CTABand (`invert`) |
-| Portfolio | `minimal-portfolio` | HeroTypographic → FeatureGrid (`list`, the work) → Testimonials (`single`) → CTABand (`inline`) |
-| Nonprofit or event | `editorial` or `warm-local` | HeroSplit → ProofBand (`stats`, if real) → FeatureGrid (`columns`) → Steps → FAQ → CTABand (`invert`) |
+| Local service (trades, salon, cleaner) | `warm-local`, `clinical` | **A, photos of the work:** HeroSplit → FeatureGrid `columns` → Testimonials `wall` → HoursAndLocation `inline` → CTABand `invert`. **B, no photos yet:** HeroTypographic → FeatureGrid `numbered` → Steps → FAQ `split` → ContactBand. **C, one strong photo:** HeroAsymmetric `overlap` → FeatureGrid `split` → Testimonials `single` → HoursAndLocation `card` |
+| Restaurant or café | `warm-local`, `editorial` | **A, the place sells it:** HeroAsymmetric `overlap` → signature menu section → HoursAndLocation `card` → Testimonials `single` → CTABand `inline`. **B, the food sells it:** HeroSplit → FeatureGrid `list` → Testimonials `wall` → HoursAndLocation `inline`. **C, no photos:** HeroTypographic → signature menu section → HoursAndLocation `card` → FAQ |
+| Professional services (clinic, legal, finance) | `clinical`, `editorial` | **A, trust first:** HeroCentered → ProofBand `stats` (if real) → FeatureGrid `split` → Steps `vertical` → Team → FAQ `split` → ContactBand. **B, people first:** HeroAsymmetric `stacked` → Team → FeatureGrid `numbered` → Testimonials `single` → ContactBand. **C, process first:** HeroTypographic → Steps → FeatureGrid `columns` → FAQ → CTABand `invert` |
+| Agency or consultant | `editorial`, `minimal-portfolio` | **A, work first:** HeroTypographic → FeatureGrid `list` (case studies) → Testimonials `single` → CTABand `inline`. **B, point of view first:** HeroAsymmetric `stacked` → FeatureGrid `split` → Steps `vertical` → Testimonials `wall` → CTABand `inline` |
+| SaaS or app | `bold-product`, `clinical` | **A, product shot:** HeroCentered `media` → LogoCloud (if real) → FeatureGrid `bento` → Steps → Pricing → FAQ → CTABand `invert`. **B, problem first:** HeroTypographic → FeatureGrid `numbered` → ProofBand `stats` (if real) → Pricing → FAQ `split`. **C, one big stat:** HeroAsymmetric `stacked` → FeatureGrid `split` → Testimonials `wall` → Pricing → CTABand `invert` |
+| Portfolio | `minimal-portfolio`, `editorial` | **A, images lead:** HeroAsymmetric `overlap` → FeatureGrid `list` (the work) → CTABand `inline`. **B, words lead:** HeroTypographic → FeatureGrid `numbered` (services) → FeatureGrid `list` (work) → Testimonials `single` |
+| Nonprofit or event | `editorial`, `warm-local` | **A, cause first:** HeroSplit → ProofBand `stats` (if real) → FeatureGrid `columns` → Steps → CTABand `invert`. **B, event details first:** HeroTypographic → HoursAndLocation `card` (date and venue) → FeatureGrid `split` (programme) → FAQ `split` → CTABand `inline` |
 
 Inner pages open with `PageHeader`, not a hero, so each page keeps one `<h1>`.

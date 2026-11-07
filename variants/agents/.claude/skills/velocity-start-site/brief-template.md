@@ -29,8 +29,10 @@ Status: draft
 
 - Direction:
 - Why:
+- Seed:
 - Brand colour:
 - Fonts:
+- Signature:
 - Radius and density:
 - Imagery:
 - Section rhythm:

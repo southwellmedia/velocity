@@ -6,13 +6,18 @@
  *   npm run design -- direction --base warm-local          # write the direction into src/styles/theme.css
  *   npm run design -- direction --base editorial --brand "#9a3412" --display Fraunces --body "Source Sans 3"
  *   npm run design -- direction --base clinical --fallback-fonts   # keep to fonts already installed
+ *   npm run design -- direction --base warm-local --seed "Rosa's Bakery"   # the default seed is the site name
+ *   npm run design -- direction --base editorial --pair 2  # one of the direction's alternative font pairings
  *   npm run design -- direction --list                     # the five directions
  *   npm run design -- tokens                               # resolved tokens + contrast matrix (light and dark)
  *   npm run design -- tokens --json
  *   npm run design -- fonts                                # packages ↔ astro.config.mjs ↔ --theme-font-* tokens
  *   npm run design -- fonts --fix                          # register missing families, drop unused ones
+ *   npm run design -- compare ../other-site                # how alike two sites are: colours, controls, fonts, page structure
  *
- * `direction` writes one marked block at the end of src/styles/theme.css (re-running replaces it)
+ * `direction` varies the direction within its bounds by a seed (default: the site name), so two
+ * sites in one direction don't come out identical; `--seed preset` gives the plain direction.
+ * It writes one marked block at the end of src/styles/theme.css (re-running replaces it)
  * and registers the direction's fonts in `fonts` in astro.config.mjs. It never installs packages:
  * when a font package is missing it prints the install command, changes nothing and exits 1.
  * Every text/surface pair is checked against WCAG AA; brand steps are adjusted until they pass,
@@ -365,7 +370,7 @@ function neutral(step, { hue, chroma }) {
 
 /** Semantic tokens for both modes from a direction's small spec, mirroring default.css. */
 function semanticTokens(spec, hue) {
-  const tint = { hue: spec.neutral?.hue ?? hue, chroma: spec.neutral?.chroma ?? 0 };
+  const tint = { hue: (spec.neutral?.hue ?? hue) + (spec.neutral?.hueShift ?? 0), chroma: spec.neutral?.chroma ?? 0 };
   const n = (s) => formatOklch(neutral(s, tint));
   const brandPrimary = spec.primary === 'brand';
   // Velocity's gray-400 sits right at 4.5:1 on gray-800; a little lighter keeps tinted neutrals above AA.
@@ -446,7 +451,15 @@ export function brandFromHex(hex) {
  * Build a direction: tokens for both modes, fonts and controls, with brand steps adjusted
  * until every pair passes AA. Returns { css, fonts, adjustments, failures }.
  */
-export function buildDirection(direction, { brand, display, body, fallbackFonts = false, sources = [] } = {}) {
+export function buildDirection(direction, { brand, display, body, pair, fallbackFonts = false, seed, sources = [] } = {}) {
+  const varied = varyDirection(direction, seed, { brandLocked: Boolean(brand) });
+  direction = varied.direction;
+  // --pair picks one of the direction's alternative font pairings (1 is the default).
+  const alt = pair && pair > 1 ? direction.fontPairs?.[pair - 2] : undefined;
+  if (alt) {
+    display = display ?? alt.display;
+    body = body ?? alt.body;
+  }
   const { hue, chroma } = brand ? brandFromHex(brand) : { hue: direction.brand.hue, chroma: direction.brand.chroma };
   const scale = brandScale(hue, chroma);
   const semantic = semanticTokens(direction, hue);
@@ -475,7 +488,7 @@ export function buildDirection(direction, { brand, display, body, fallbackFonts 
       ...fontTokens,
       ...direction.controls,
     };
-    return { shared, css: toCss(direction, { hue, brand }, shared, semantic, fonts) };
+    return { shared, css: toCss(direction, { hue, brand, seed, choices: varied.choices }, shared, semantic, fonts) };
   };
   const directionOf = {};
   for (let pass = 0; pass < 60; pass++) {
@@ -501,7 +514,7 @@ export function buildDirection(direction, { brand, display, body, fallbackFonts 
   }
   const { css } = render();
   const failures = ['light', 'dark'].flatMap((mode) => resolveMode([...sources, css], mode).pairs).filter((r) => !r.pass);
-  return { css, fonts, adjustments, failures, hue, chroma };
+  return { css, fonts, adjustments, failures, hue, chroma, choices: varied.choices, seed };
 }
 
 /** The brand step a semantic token in a failing pair points at, if any. */
@@ -517,13 +530,15 @@ function block(selector, tokens) {
   return `${selector} {\n${Object.entries(tokens).map(([k, v]) => `  ${k}: ${v};`).join('\n')}\n}`;
 }
 
-function toCss(direction, { hue, brand }, shared, semantic, fonts) {
+function toCss(direction, { hue, brand, seed, choices = [] }, shared, semantic, fonts) {
   const families = [...new Set([fonts.display.family, fonts.body.family])].join(' + ');
+  const seedFlag = seed && seed !== 'preset' ? ` --seed "${seed}"` : ' --seed preset';
   const header = [
     `${MARK_START} ${direction.id} */`,
-    `/* ${direction.name}: ${direction.feel}. Generated by \`npm run design -- direction --base ${direction.id}${brand ? ` --brand "${brand}"` : ''}\`.`,
-    `   Brand hue ${hue}; fonts ${families}. Edit the values freely: re-running the command replaces`,
-    `   everything up to the end marker, so keep hand edits below it. Rules: .agents/design.md */`,
+    `/* ${direction.name}: ${direction.feel}. Generated by \`npm run design -- direction --base ${direction.id}${brand ? ` --brand "${brand}"` : ''}${seedFlag}\`.`,
+    `   Brand hue ${hue}; fonts ${families}.${choices.length ? ` Variation: ${choices.join(', ')}.` : ''}`,
+    `   Edit the values freely: re-running the command replaces everything up to the end marker,`,
+    `   so keep hand edits below it. Rules: .agents/design.md */`,
   ].join('\n');
   return [
     header,
@@ -543,6 +558,127 @@ export function applyBlock(themeCss, css) {
     }
   }
   return `${themeCss.trimEnd()}\n\n${css}\n`;
+}
+
+// ---------------------------------------------------------------------------
+// Variation: two sites in the same direction shouldn't look the same
+
+/** FNV-1a hash of a string, then a mulberry32 generator: the same seed always gives the same choices. */
+export function seededRandom(seed) {
+  let h = 2166136261;
+  for (const ch of String(seed)) h = Math.imul(h ^ ch.codePointAt(0), 16777619);
+  let a = h >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+/** Defaults for directions that don't spell out their variation bounds. */
+const VARIATION_DEFAULTS = {
+  brandHue: 20,
+  chroma: [0.9, 1.1],
+  neutralHue: 30,
+  neutralChroma: [0.7, 1.4],
+  radius: [0.8, 1, 1.25],
+  sectionSpace: [0.95, 1.1],
+  headingScale: [0.96, 1.06],
+  displayScale: [0.95, 1.08],
+  tracking: [-0.01, 0.01],
+};
+
+const remScale = (value, factor) => {
+  const m = /^([\d.]+)rem$/.exec(String(value).trim());
+  return m ? `${round(Number(m[1]) * factor, 3)}rem` : value;
+};
+
+/**
+ * A copy of `direction` with values picked from its `variation` bounds by `seed`.
+ * The direction's character holds (warm-local stays warm and rounded); the exact hue,
+ * tint, radii, weight, spacing and scale move within it. `brandLocked` keeps the
+ * brand hue and chroma when the user gave a brand colour.
+ * Returns { direction, choices } where choices describes what was picked.
+ */
+export function varyDirection(direction, seed, { brandLocked = false } = {}) {
+  if (seed === undefined || seed === null || seed === '' || seed === 'preset') return { direction, choices: [] };
+  const v = { ...VARIATION_DEFAULTS, ...(direction.variation ?? {}) };
+  const rand = seededRandom(`${direction.id}:${seed}`);
+  const range = ([lo, hi], digits = 2) => round(lo + rand() * (hi - lo), digits);
+  const option = (list) => list[Math.floor(rand() * list.length)];
+  const choices = [];
+  const out = structuredClone(direction);
+  out.controls = { ...direction.controls };
+
+  // Always draw every value in the same order, so one seed means the same site whatever flags are given.
+  const hueShift = Math.round((rand() * 2 - 1) * v.brandHue);
+  const chroma = range(v.chroma);
+  const neutralShift = Math.round((rand() * 2 - 1) * v.neutralHue);
+  const neutralChroma = range(v.neutralChroma);
+  const radius = option(v.radius);
+  const sectionSpace = range(v.sectionSpace);
+  const headingScale = range(v.headingScale);
+  const displayScale = range(v.displayScale);
+  const tracking = range(v.tracking, 3);
+  const weight = v.headingWeight ? option(v.headingWeight) : undefined;
+  const buttonRadius = v.buttonRadius ? option(v.buttonRadius) : undefined;
+  const primary = v.primary ? option(v.primary) : undefined;
+  const invert = v.invert ? option(v.invert) : undefined;
+
+  if (!brandLocked) {
+    // chromaAbsolute lets a monochrome direction pick up a faint accent instead of scaling zero.
+    const brandChroma = v.chromaAbsolute ? range(v.chromaAbsolute) : round(direction.brand.chroma * chroma, 2);
+    out.brand = { hue: (direction.brand.hue + hueShift + 360) % 360, chroma: brandChroma };
+    choices.push(`brand hue ${out.brand.hue}`);
+  }
+  out.neutral = {
+    ...direction.neutral,
+    chroma: v.neutralChromaAbsolute ? range(v.neutralChromaAbsolute, 4) : round((direction.neutral?.chroma ?? 0) * neutralChroma, 4),
+    hueShift: neutralShift,
+  };
+  if (out.neutral.chroma > 0) choices.push(`neutral tint ${neutralShift >= 0 ? '+' : ''}${neutralShift}°`);
+  for (const k of ['--theme-radius-sm', '--theme-radius-md', '--theme-radius-lg', '--theme-radius-xl']) {
+    if (out.controls[k] !== undefined) out.controls[k] = remScale(out.controls[k], radius);
+  }
+  if (radius !== 1) choices.push(`radii ×${radius}`);
+  if (buttonRadius) {
+    out.controls['--theme-radius-button'] = buttonRadius;
+    choices.push(`button radius ${buttonRadius}`);
+  } else if (out.controls['--theme-radius-button']) {
+    out.controls['--theme-radius-button'] = remScale(out.controls['--theme-radius-button'], radius);
+  }
+  const scaleControl = (k, factor) => {
+    const base = Number(out.controls[k] ?? 1);
+    out.controls[k] = String(round(base * factor, 2));
+  };
+  scaleControl('--theme-section-space', sectionSpace);
+  scaleControl('--theme-heading-scale', headingScale);
+  scaleControl('--theme-display-scale', displayScale);
+  choices.push(`spacing ×${out.controls['--theme-section-space']}`, `display ×${out.controls['--theme-display-scale']}`);
+  const baseTracking = parseFloat(out.controls['--theme-heading-tracking'] ?? '-0.02');
+  out.controls['--theme-heading-tracking'] = `${round(baseTracking + tracking, 3)}em`;
+  if (weight) {
+    out.controls['--theme-heading-weight'] = String(weight);
+    choices.push(`heading weight ${weight}`);
+  }
+  if (primary) {
+    out.primary = primary;
+    choices.push(`${primary} buttons`);
+  }
+  if (invert) {
+    out.invert = invert;
+    choices.push(`${invert} invert bands`);
+  }
+  return { direction: out, choices };
+}
+
+/** The seed a project uses by default: its site name, unless it's still the scaffold's. */
+export function defaultSeed(root) {
+  const config = readIf(root, 'src/config/site.config.ts');
+  const name = /\bname:\s*(['"`])((?:(?!\1).)+)\1/.exec(config)?.[2];
+  if (name && name !== 'My Site') return name;
+  return path.basename(path.resolve(root));
 }
 
 // ---------------------------------------------------------------------------
@@ -672,6 +808,7 @@ function cmdList(root, log) {
   for (const d of dirs) {
     const fonts = [...new Set([d.fonts.display.family, d.fonts.body.family])].join(' + ');
     log(`${d.id.padEnd(18)} ${d.name}: ${d.feel}. Suits ${d.suits}. Fonts: ${fonts}.`);
+    (d.fontPairs ?? []).forEach((p, i) => log(`${''.padEnd(18)}   --pair ${i + 2}: ${[...new Set([p.display, p.body])].join(' + ')}${p.note ? ` (${p.note})` : ''}`));
   }
   return 0;
 }
@@ -695,7 +832,9 @@ export function cmdDirection(root, args, log = console.log) {
     brand: args.brand && (args.brand.startsWith('#') ? args.brand : `#${args.brand}`),
     display: typeof args.display === 'string' ? args.display : undefined,
     body: typeof args.body === 'string' ? args.body : undefined,
+    pair: args.pair ? Number(args.pair) : undefined,
     fallbackFonts: Boolean(args['fallback-fonts']),
+    seed: typeof args.seed === 'string' ? args.seed : defaultSeed(root),
     sources,
   });
 
@@ -729,6 +868,7 @@ export function cmdDirection(root, args, log = console.log) {
   if (nextConfig !== config) fs.writeFileSync(path.join(root, CONFIG_FILE), nextConfig);
 
   log(`Applied ${direction.name} to ${THEME_FILE} (brand hue ${built.hue}, chroma ×${built.chroma}).`);
+  if (built.choices.length) log(`Variation for seed "${built.seed}": ${built.choices.join(', ')}. Same seed, same result; --seed preset for the plain direction.`);
   log(`Fonts: ${[...new Set([built.fonts.display.family, built.fonts.body.family])].join(' + ')}${nextConfig !== config ? `; registered in ${CONFIG_FILE}` : ''}.`);
   for (const a of built.adjustments) log(`Adjusted: ${a}.`);
   const report = fontsReport(root);
@@ -828,12 +968,111 @@ export function cmdFonts(root, args, log = console.log) {
   return report.findings.some((f) => f.level === 'error') ? 1 : 0;
 }
 
+// ---------------------------------------------------------------------------
+// Compare: how alike are two sites?
+
+const COMPARE_COLORS = ['--background', '--background-secondary', '--foreground', '--foreground-muted', '--primary', '--brand-500', '--brand-600', '--surface-invert', '--card', '--border'];
+const COMPARE_CONTROLS = ['--theme-radius-md', '--theme-radius-button', '--theme-heading-weight', '--theme-heading-tracking', '--theme-section-space', '--theme-display-scale', '--theme-heading-scale'];
+
+function oklab({ l, c, h }) {
+  const rad = (h * Math.PI) / 180;
+  return [l, c * Math.cos(rad), c * Math.sin(rad)];
+}
+
+/** What a site's design is made of: resolved colours (light and dark), controls, fonts and each view's section sequence. */
+export function designFingerprint(root) {
+  const sources = themeSources(root);
+  const colors = {};
+  for (const mode of ['light', 'dark']) {
+    const { color } = resolveMode(sources, mode);
+    for (const k of COMPARE_COLORS) {
+      const c = color(k);
+      if (c && !c.rgb) colors[`${mode}:${k}`] = oklab(c);
+    }
+  }
+  const vars = cascade(sources, 'light');
+  const controls = Object.fromEntries(COMPARE_CONTROLS.map((k) => [k, substitute(vars[k] ?? '', vars)]));
+  // A display stack of just var(--theme-font-sans) means the display font is the body font.
+  const fontOf = (k) => {
+    const v = /var\(--font-/.test(vars[k] ?? '') ? vars[k] : vars['--theme-font-sans'] ?? '';
+    return /var\((--font-[\w-]+)\)/.exec(v)?.[1] ?? '';
+  };
+  const fonts = [fontOf('--theme-font-sans'), fontOf('--theme-font-display')];
+  const views = {};
+  const viewsDir = path.join(root, 'src/views');
+  for (const file of fs.existsSync(viewsDir) ? fs.readdirSync(viewsDir).filter((f) => f.endsWith('.astro')) : []) {
+    const text = fs.readFileSync(path.join(viewsDir, file), 'utf8');
+    const sections = new Set([...text.matchAll(/import\s+(\w+)\s+from\s+['"]@\/components\/sections\/[^'"]+['"]/g)].map((m) => m[1]));
+    const body = text.replace(/^---[\s\S]*?---/, '');
+    views[file] = [...body.matchAll(/<([A-Z]\w*)\b([^>]*)>/g)]
+      .filter((m) => sections.has(m[1]))
+      .map((m) => `${m[1]}${/\blayout=["']([\w-]+)["']/.exec(m[2])?.[1] ? `:${/\blayout=["']([\w-]+)["']/.exec(m[2])[1]}` : ''}`);
+  }
+  return { colors, controls, fonts, views, direction: /@velocity-direction ([\w-]+) \*\//.exec(readIf(root, THEME_FILE))?.[1] ?? null };
+}
+
+/** Length of the longest common subsequence, for comparing section orders. */
+function lcs(a, b) {
+  const row = new Array(b.length + 1).fill(0);
+  for (const x of a) {
+    let prev = 0;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = row[j];
+      row[j] = x === b[j - 1] ? prev + 1 : Math.max(row[j], row[j - 1]);
+      prev = tmp;
+    }
+  }
+  return row[b.length];
+}
+
+/**
+ * How alike two sites are, 0 (nothing in common) to 1 (identical), per aspect.
+ * colours: 1 minus the mean OKLab distance of key tokens (scaled so 0.1 apart counts as different);
+ * controls: share of radius, weight, tracking, spacing and scale values that match;
+ * fonts: share of the sans and display families that match;
+ * structure: for views both sites have, matching section order (with layouts) as a share of the longer page.
+ */
+export function compareSites(a, b) {
+  const keys = Object.keys(a.colors).filter((k) => b.colors[k]);
+  const meanDelta = keys.length ? keys.reduce((sum, k) => sum + Math.hypot(...a.colors[k].map((v, i) => v - b.colors[k][i])), 0) / keys.length : 1;
+  const colors = round(Math.max(0, 1 - meanDelta / 0.1), 2);
+  const controls = round(COMPARE_CONTROLS.filter((k) => a.controls[k] === b.controls[k]).length / COMPARE_CONTROLS.length, 2);
+  const fonts = round(a.fonts.filter((f, i) => f && f === b.fonts[i]).length / a.fonts.length, 2);
+  const shared = Object.keys(a.views).filter((v) => b.views[v]?.length && a.views[v].length);
+  const perView = Object.fromEntries(shared.map((v) => [v, round(lcs(a.views[v], b.views[v]) / Math.max(a.views[v].length, b.views[v].length), 2)]));
+  const structure = shared.length ? round(Object.values(perView).reduce((x, y) => x + y, 0) / shared.length, 2) : null;
+  const parts = [colors, controls, fonts, ...(structure === null ? [] : [structure])];
+  const overall = round(parts.reduce((x, y) => x + y, 0) / parts.length, 2);
+  const verdict = overall >= 0.8 ? 'near copy' : overall >= 0.6 ? 'similar' : 'distinct';
+  return { colors, controls, fonts, structure, perView, overall, verdict, sameDirection: a.direction !== null && a.direction === b.direction };
+}
+
+function cmdCompare(root, args, log) {
+  const other = args._[1];
+  if (!other || !fs.existsSync(path.join(other, THEME_FILE))) {
+    log('Usage: npm run design -- compare <path to another Velocity project>');
+    return 1;
+  }
+  const r = compareSites(designFingerprint(root), designFingerprint(path.resolve(other)));
+  if (args.json) {
+    log(JSON.stringify(r, null, 2));
+    return 0;
+  }
+  const pct = (x) => (x === null ? 'n/a' : `${Math.round(x * 100)}%`);
+  log(`Similarity to ${other}: ${pct(r.overall)} (${r.verdict})${r.sameDirection ? ', same direction' : ''}`);
+  log(`  colours ${pct(r.colors)}  controls ${pct(r.controls)}  fonts ${pct(r.fonts)}  page structure ${pct(r.structure)}`);
+  for (const [view, score] of Object.entries(r.perView)) log(`  ${view}: ${pct(score)} of its section order matches`);
+  if (r.verdict !== 'distinct') log('To tell them apart: try another --seed or --pair, change the page structure, and give each site its own signature section (.agents/design.md → Make it the site\'s own).');
+  return 0;
+}
+
 const HELP = `Usage: npm run design -- <command>
 
-  direction --base <id> [--brand <hex>] [--display <family>] [--body <family>] [--fallback-fonts] [--dry-run]
+  direction --base <id> [--brand <hex>] [--seed <text>|preset] [--pair <n>] [--display <family>] [--body <family>] [--fallback-fonts] [--dry-run]
   direction --list
   tokens [--json]
   fonts [--fix] [--json]
+  compare <other project> [--json]
 
 See .agents/design.md.`;
 
@@ -843,6 +1082,7 @@ export function main(argv, { root = process.cwd(), log = console.log } = {}) {
   if (command === 'direction') return cmdDirection(root, args, log);
   if (command === 'tokens') return cmdTokens(root, args, log);
   if (command === 'fonts') return cmdFonts(root, args, log);
+  if (command === 'compare') return cmdCompare(root, args, log);
   log(HELP);
   return command ? 1 : 0;
 }

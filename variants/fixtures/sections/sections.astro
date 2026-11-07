@@ -35,6 +35,9 @@ const features = [
   <HoursAndLocation title="Opening hours" tone="secondary" hours={[{ day: 'Monday to Friday', time: '7:00 to 17:00' }, { day: 'Saturday', time: '8:00 to 15:00' }]} columns={{ day: 'Day', time: 'Open' }} address={['12 Example Street', 'Leith']} addressLabel="Find us" phone={{ label: 'Call', value: '[[placeholder: phone number]]', href: 'tel:' }} />
   <FeatureGrid title="Bento layout" layout="bento" items={[...features, features[0]]} />
   <FeatureGrid title="List layout" layout="list" tone="secondary" items={features} />
+  <FeatureGrid title="Split layout" eyebrow="Services" lead="The heading stays beside the list." layout="split" items={features} />
+  <FeatureGrid title="Numbered layout" layout="numbered" tone="secondary" items={features} />
+  <Testimonials title="Wall layout" layout="wall" tone="default" items={[{ quote: 'Best rye in town.', name: 'A regular', role: 'Leith' }, { quote: 'Worth the queue every Saturday.', name: 'Another regular' }, { quote: 'They remembered my order after one visit.', name: 'A neighbour' }, { quote: 'The cardamom buns.', name: 'Sam' }]} />
   <Steps title="How ordering works" items={[{ title: 'Pick a cake', text: 'Choose from the menu.' }, { title: 'Tell us the date', text: 'Two days notice.' }, { title: 'Collect it', text: 'Fresh that morning.' }]} />
   <Steps title="Vertical steps" layout="vertical" tone="secondary" items={[{ title: 'Order', text: 'Online or in the shop.' }, { title: 'Collect', text: 'Any time we are open.' }]} />
   <Testimonials title="What neighbours say" items={[{ quote: '[[placeholder: a customer quote]]', name: '[[placeholder: customer name]]' }, { quote: 'The best rye in town.', name: 'A regular', role: 'Leith' }, { quote: 'Worth the queue.', name: 'Another regular' }]} />

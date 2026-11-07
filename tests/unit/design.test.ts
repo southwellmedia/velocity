@@ -42,6 +42,7 @@ function project({ base = 'default', installed = ['manrope', 'outfit', 'jetbrain
     manrope: ['Manrope', '200 800'], outfit: ['Outfit', '100 900'], 'jetbrains-mono': ['JetBrains Mono', '100 800'],
     fraunces: ['Fraunces', '100 900'], 'source-sans-3': ['Source Sans 3', '200 900'], nunito: ['Nunito', '200 1000'],
     figtree: ['Figtree', '300 900'], 'space-grotesk': ['Space Grotesk', '300 700'], 'dm-sans': ['DM Sans', '100 1000'],
+    newsreader: ['Newsreader', '200 800'], 'source-sans-3-alt': ['Source Sans 3', '200 900'],
   };
   for (const pkg of installed) {
     const dir = path.join(root, 'node_modules/@fontsource-variable', pkg);
@@ -55,7 +56,7 @@ function project({ base = 'default', installed = ['manrope', 'outfit', 'jetbrain
   return root;
 }
 
-const allFonts = ['manrope', 'outfit', 'jetbrains-mono', 'fraunces', 'source-sans-3', 'nunito', 'figtree', 'space-grotesk', 'dm-sans'];
+const allFonts = ['manrope', 'outfit', 'jetbrains-mono', 'fraunces', 'source-sans-3', 'nunito', 'figtree', 'space-grotesk', 'dm-sans', 'newsreader'];
 const run = (root: string, ...argv: string[]) => {
   const out: string[] = [];
   const code = design.main(argv, { root, log: (s: string) => out.push(s) });
@@ -326,5 +327,108 @@ describe('section sources', () => {
     expect(source.map((f) => `${f.file}:${f.line} ${f.message}`)).toEqual([]);
     const hardcoded = await check.checkHardcoded(root);
     expect(hardcoded.map((f: { file: string; line: number; message: string }) => `${f.file}:${f.line} ${f.message}`)).toEqual([]);
+  });
+});
+
+describe('variation', () => {
+  type Varied = { direction: { brand: { hue: number }; controls: Record<string, string> }; choices: string[] };
+  const vary = (id: string, seed: string, opts = {}) => design.varyDirection(directions[id], seed, opts) as Varied;
+
+  it('is deterministic per seed, different across seeds, and off for "preset"', () => {
+    expect(vary('warm-local', "Rosa's Bakery")).toEqual(vary('warm-local', "Rosa's Bakery"));
+    const seeds = ['Crumb & Co', 'The Daily Loaf', 'Leith Pantry', 'Rye Society', 'Oven Door'];
+    const shapes = new Set(seeds.map((seed) => JSON.stringify(vary('warm-local', seed).direction)));
+    expect(shapes.size).toBe(seeds.length);
+    expect(vary('warm-local', 'preset').direction).toEqual(directions['warm-local']);
+    expect(vary('warm-local', 'preset').choices).toEqual([]);
+  });
+
+  it('keeps the brand hue when the user gave a brand colour', () => {
+    const locked = vary('clinical', 'Seed', { brandLocked: true });
+    expect(locked.direction.brand).toEqual(directions.clinical.brand);
+    expect(locked.choices.some((c) => c.startsWith('brand hue'))).toBe(false);
+  });
+
+  it('stays inside the direction: radii scale, the button radius comes from its options', () => {
+    for (let i = 0; i < 40; i++) {
+      const { direction } = vary('warm-local', `seed ${i}`);
+      expect(['9999px', '0.75rem']).toContain(direction.controls['--theme-radius-button']);
+      expect(['700', '800', '900']).toContain(direction.controls['--theme-heading-weight']);
+      const md = parseFloat(direction.controls['--theme-radius-md']);
+      expect(md).toBeGreaterThanOrEqual(0.75 * 0.75 - 0.001);
+      expect(md).toBeLessThanOrEqual(0.75 * 1.25 + 0.001);
+    }
+  });
+
+  for (const id of Object.keys(directions)) {
+    it(`${id} passes AA for 40 seeds over both base themes`, () => {
+      for (const base of ['default', 'midnight']) {
+        const sources = design.themeSources(project({ base }));
+        for (let i = 0; i < 40; i++) {
+          const built = design.buildDirection(directions[id], { sources, seed: `site ${i}` });
+          expect(built.failures, `${id} ${base} seed ${i}`).toEqual([]);
+        }
+      }
+    });
+  }
+
+  it('every direction offers alternative font pairs', () => {
+    for (const d of Object.values(directions)) {
+      const pairs = (d as unknown as { fontPairs: { display: string; body: string }[] }).fontPairs;
+      expect(pairs.length).toBeGreaterThanOrEqual(2);
+      for (const p of pairs) expect(p.display && p.body).toBeTruthy();
+    }
+  });
+
+  it('defaults the seed to the site name, or the folder while the name is the scaffold\'s', () => {
+    const named = project({ files: { 'src/config/site.config.ts': "export default { name: \"Rosa's Bakery\" };" } });
+    expect(design.defaultSeed(named)).toBe("Rosa's Bakery");
+    const scaffold = project({ files: { 'src/config/site.config.ts': "export default { name: 'My Site' };" } });
+    expect(design.defaultSeed(scaffold)).toBe(path.basename(scaffold));
+  });
+
+  it('the command records the seed, prints the variation, and --pair picks alternative fonts', () => {
+    const root = project({ installed: allFonts, files: { 'src/config/site.config.ts': "export default { name: 'Crumb & Co' };" } });
+    const { code, out } = run(root, 'direction', '--base', 'editorial', '--pair', '2');
+    expect(code, out).toBe(0);
+    expect(out).toMatch(/Variation for seed "Crumb & Co": /);
+    const theme = read(root, 'src/styles/theme.css');
+    expect(theme).toContain('--seed "Crumb & Co"');
+    expect(theme).toContain('--theme-font-display: var(--font-newsreader)');
+    run(root, 'direction', '--base', 'editorial', '--seed', 'preset');
+    expect(read(root, 'src/styles/theme.css')).toContain('--seed preset');
+  });
+});
+
+describe('compare', () => {
+  const view = (sections: string) =>
+    `---\n${sections.split(' ').map((s) => `import ${s.split(':')[0]} from '@/components/sections/${s.split(':')[0]}.astro';`).join('\n')}\n---\n<Layout>\n${sections
+      .split(' ')
+      .map((s) => `  <${s.split(':')[0]}${s.includes(':') ? ` layout="${s.split(':')[1]}"` : ''} />`)
+      .join('\n')}\n</Layout>\n`;
+
+  it('scores an identical site as a near copy, and a varied one as distinct', () => {
+    const home = view('HeroSplit FeatureGrid:columns Testimonials CTABand:invert');
+    const a = project({ installed: allFonts, files: { 'src/views/HomeView.astro': home, 'src/config/site.config.ts': "export default { name: 'One' };" } });
+    const b = project({ installed: allFonts, files: { 'src/views/HomeView.astro': home, 'src/config/site.config.ts': "export default { name: 'One' };" } });
+    run(a, 'direction', '--base', 'warm-local');
+    run(b, 'direction', '--base', 'warm-local');
+    const same = design.compareSites(design.designFingerprint(a), design.designFingerprint(b));
+    expect(same).toMatchObject({ overall: 1, verdict: 'near copy', sameDirection: true });
+
+    const c = project({
+      installed: allFonts,
+      files: { 'src/views/HomeView.astro': view('HeroTypographic FeatureGrid:numbered Steps FAQ:split'), 'src/config/site.config.ts': "export default { name: 'Two' };" },
+    });
+    run(c, 'direction', '--base', 'warm-local', '--pair', '2');
+    const varied = design.compareSites(design.designFingerprint(a), design.designFingerprint(c));
+    expect(varied.structure).toBe(0);
+    expect(varied.overall).toBeLessThan(0.6);
+    expect(varied.verdict).toBe('distinct');
+  });
+
+  it('reads section order with layouts from the views', () => {
+    const root = project({ files: { 'src/views/HomeView.astro': view('HeroSplit FeatureGrid:bento CTABand') } });
+    expect(design.designFingerprint(root).views['HomeView.astro']).toEqual(['HeroSplit', 'FeatureGrid:bento', 'CTABand']);
   });
 });

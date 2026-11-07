@@ -29,6 +29,7 @@
  *   design/arbitrary-value arbitrary spacing or type values such as py-[73px]         (warning, once .agents/site.md exists)
  *   design/default-theme   .agents/site.md exists but theme.css is still the scaffold's (warning)
  *   design/section-outdated a copied section whose Velocity source has a newer version (notice: never fails, not even with --strict)
+ *   design/section-unmodified a copied section still identical to its source: copied, not designed (notice)
  *
  * Notices are information only. --strict turns warnings into errors.
  */
@@ -59,6 +60,7 @@ const RULES = {
   'design/arbitrary-value': { severity: 'warning', ref: 'Rules → Design' },
   'design/default-theme': { severity: 'warning', ref: 'Rules → Design' },
   'design/section-outdated': { severity: 'notice', ref: 'Rules → Design' },
+  'design/section-unmodified': { severity: 'notice', ref: 'Rules → Design' },
 };
 
 function finding(rule, { file, line, message, fix }) {
@@ -971,9 +973,19 @@ export function checkSections(root) {
     if (stamp) sources.set(stamp[1], { file, version: stamp[2], text });
   }
   const out = [];
+  const normalize = (text) => text.replace(/\r\n/g, '\n').trim();
   for (const file of walk(root, 'src/components/sections', (f) => f.endsWith('.astro'))) {
-    const stamp = SECTION_STAMP.exec(read(root, file));
+    const text = read(root, file);
+    const stamp = SECTION_STAMP.exec(text);
     const source = stamp && sources.get(stamp[1]);
+    if (source && normalize(text) === normalize(source.text)) {
+      out.push(finding('design/section-unmodified', {
+        file,
+        message: `${stamp[1]} is still identical to Velocity's source, so this part of the site looks like every other site that uses it.`,
+        fix: "Adapt it to the site: its layout and composition for the brief's section rhythm, its density and emphasis for the direction, and anything the content needs. See .agents/design.md → Make it the site's own.",
+      }));
+      continue;
+    }
     if (!source || !newer(source.version, stamp[2])) continue;
     const changes = [...source.text.matchAll(/@changed\s+(\d+\.\d+\.\d+):\s*(.+)/g)]
       .filter((m) => newer(m[1], stamp[2]))

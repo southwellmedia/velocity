@@ -59,5 +59,47 @@
     "--theme-shadow-md": "0 1px 0 rgba(0, 0, 0, 0.06)",
     "--theme-shadow-lg": "0 2px 6px rgba(0, 0, 0, 0.06)",
     "--theme-shadow-xl": "0 12px 32px rgba(0, 0, 0, 0.08)"
-  }
+  },
+  "variation": {
+    "brandHue": 25,
+    "chroma": [
+      0.7,
+      1.2
+    ],
+    "neutralHue": 30,
+    "neutralChroma": [
+      0.5,
+      2
+    ],
+    "radius": [
+      0.5,
+      1,
+      1.5
+    ],
+    "headingWeight": [
+      "400",
+      "500",
+      "600"
+    ],
+    "sectionSpace": [
+      0.92,
+      1.08
+    ],
+    "primary": [
+      "neutral",
+      "brand"
+    ]
+  },
+  "fontPairs": [
+    {
+      "display": "Newsreader",
+      "body": "Source Sans 3",
+      "note": "literary, softer serif"
+    },
+    {
+      "display": "Playfair Display",
+      "body": "Work Sans",
+      "note": "high-contrast, magazine"
+    }
+  ]
 }

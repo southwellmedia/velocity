@@ -59,5 +59,38 @@
     "--theme-shadow-md": "0 4px 10px rgba(0, 20, 40, 0.06)",
     "--theme-shadow-lg": "0 8px 20px rgba(0, 20, 40, 0.08)",
     "--theme-shadow-xl": "0 20px 40px rgba(0, 20, 40, 0.1)"
-  }
+  },
+  "variation": {
+    "brandHue": 35,
+    "radius": [
+      0.75,
+      1,
+      1.25
+    ],
+    "headingWeight": [
+      "500",
+      "600",
+      "700"
+    ],
+    "primary": [
+      "brand",
+      "neutral"
+    ],
+    "invert": [
+      "neutral",
+      "brand"
+    ]
+  },
+  "fontPairs": [
+    {
+      "display": "Plus Jakarta Sans",
+      "body": "Plus Jakarta Sans",
+      "note": "modern, friendly"
+    },
+    {
+      "display": "Literata",
+      "body": "Public Sans",
+      "note": "established, legal or finance"
+    }
+  ]
 }

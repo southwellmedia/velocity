@@ -60,5 +60,44 @@
     "--theme-shadow-md": "none",
     "--theme-shadow-lg": "none",
     "--theme-shadow-xl": "none"
-  }
+  },
+  "variation": {
+    "brandHue": 180,
+    "chromaAbsolute": [
+      0,
+      0.35
+    ],
+    "neutralChromaAbsolute": [
+      0,
+      0.008
+    ],
+    "radius": [
+      1
+    ],
+    "buttonRadius": [
+      "0",
+      "9999px"
+    ],
+    "headingWeight": [
+      "400",
+      "500",
+      "600"
+    ],
+    "sectionSpace": [
+      0.95,
+      1.1
+    ]
+  },
+  "fontPairs": [
+    {
+      "display": "Geist",
+      "body": "Geist",
+      "note": "technical, precise"
+    },
+    {
+      "display": "Hanken Grotesk",
+      "body": "Hanken Grotesk",
+      "note": "warmer grotesque"
+    }
+  ]
 }
