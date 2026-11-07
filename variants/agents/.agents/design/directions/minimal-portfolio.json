@@ -88,16 +88,9 @@
       1.1
     ]
   },
-  "fontPairs": [
-    {
-      "display": "Geist",
-      "body": "Geist",
-      "note": "technical, precise"
-    },
-    {
-      "display": "Hanken Grotesk",
-      "body": "Hanken Grotesk",
-      "note": "warmer grotesque"
-    }
+  "pairings": [
+    "geist-solo",
+    "hanken-solo",
+    "jost-franklin"
   ]
 }

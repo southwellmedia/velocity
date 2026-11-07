@@ -36,6 +36,7 @@ function project({ base = 'default', installed = ['manrope', 'outfit', 'jetbrain
   dirs.push(root);
   fs.cpSync(path.join(REPO, 'src/styles'), path.join(root, 'src/styles'), { recursive: true });
   fs.cpSync(DIRECTIONS, path.join(root, '.agents/design/directions'), { recursive: true });
+  fs.copyFileSync(path.join(REPO, 'variants/agents/.agents/design/fonts.json'), path.join(root, '.agents/design/fonts.json'));
   fs.writeFileSync(path.join(root, 'src/styles/theme.css'), `/* Active theme */\n\n@import './themes/${base}.css';\n`);
   fs.writeFileSync(path.join(root, 'astro.config.mjs'), CONFIG);
   const families: Record<string, [string, string]> = {
@@ -372,11 +373,12 @@ describe('variation', () => {
     });
   }
 
-  it('every direction offers alternative font pairs', () => {
+  it('every direction offers alternative pairings from the catalogue', () => {
+    const catalog = design.loadFontCatalog(REPO);
     for (const d of Object.values(directions)) {
-      const pairs = (d as unknown as { fontPairs: { display: string; body: string }[] }).fontPairs;
-      expect(pairs.length).toBeGreaterThanOrEqual(2);
-      for (const p of pairs) expect(p.display && p.body).toBeTruthy();
+      const ids = (d as unknown as { pairings: string[] }).pairings;
+      expect(ids.length).toBeGreaterThanOrEqual(2);
+      for (const id of ids) expect(design.pairingFonts(catalog, id), `${d.id}: ${id}`).toBeDefined();
     }
   });
 
@@ -430,5 +432,109 @@ describe('compare', () => {
   it('reads section order with layouts from the views', () => {
     const root = project({ files: { 'src/views/HomeView.astro': view('HeroSplit FeatureGrid:bento CTABand') } });
     expect(design.designFingerprint(root).views['HomeView.astro']).toEqual(['HeroSplit', 'FeatureGrid:bento', 'CTABand']);
+  });
+});
+
+describe('font catalogue', () => {
+  type Family = { family: string; category: string; weight: string; subsets: string[]; overused?: boolean };
+  type Pairing = { id: string; display: string; body: string; voice: string[]; suits: string };
+  const catalog = design.loadFontCatalog(REPO) as { families: Record<string, Family>; pairings: Pairing[] };
+
+  it('has dozens of pairings over real families, without the overused defaults', () => {
+    expect(catalog.pairings.length).toBeGreaterThanOrEqual(50);
+    expect(new Set(catalog.pairings.map((p) => p.id)).size).toBe(catalog.pairings.length);
+    for (const p of catalog.pairings) {
+      for (const pkg of [p.display, p.body]) {
+        const f = catalog.families[pkg];
+        expect(f, `${p.id}: ${pkg}`).toBeDefined();
+        expect(f.overused, `${p.id} uses ${f.family}`).toBeFalsy();
+        expect(f.subsets).toContain('latin');
+        expect(f.weight).toMatch(/^\d+( \d+)?$/);
+      }
+      expect(p.voice.length).toBeGreaterThanOrEqual(2);
+      expect(p.suits).toBeTruthy();
+    }
+    // Package names follow the family names, as fontsVariable() and the CLI expect.
+    for (const [pkg, f] of Object.entries(catalog.families)) expect(design.fontSpec(f.family).pkg).toBe(pkg);
+  });
+
+  it("covers every direction's default and fallback fonts", () => {
+    for (const d of Object.values(directions)) {
+      for (const role of ['display', 'body'] as const) {
+        expect(catalog.families[design.fontSpec(d.fonts[role].family).pkg], `${d.id} ${role}`).toBeDefined();
+      }
+    }
+  });
+
+  it('suggests pairings by voice and keeps only those whose body font covers the languages', () => {
+    const warm = design.suggestPairings(catalog, 'warm old-fashioned bakery') as Pairing[];
+    expect(warm.length).toBeGreaterThan(0);
+    expect(warm.every((p) => p.voice.some((v) => ['warm', 'old-fashioned'].includes(v)) || /bakeries/.test(p.suits))).toBe(true);
+    const russian = design.suggestPairings(catalog, 'warm friendly', { subsets: new Set(['latin', 'cyrillic']), limit: 20 }) as Pairing[];
+    expect(russian.length).toBeGreaterThan(0);
+    for (const p of russian) expect(catalog.families[p.body].subsets).toContain('cyrillic');
+    expect(design.suggestPairings(catalog, 'zzzz')).toEqual([]);
+  });
+
+  it('maps locales to the subsets they need', () => {
+    const r = design.requiredSubsets(['en', 'pl', 'ru', 'vi', 'ja']);
+    expect([...r.subsets].sort()).toEqual(['cyrillic', 'latin', 'latin-ext', 'vietnamese']);
+    expect(r.system).toEqual(['ja']);
+  });
+});
+
+describe('font checks when applying a direction', () => {
+  const faceCss = (family: string, weight: string, subsets: string[]) =>
+    subsets.map((sub) => `@font-face {\n  font-family: '${family} Variable';\n  font-weight: ${weight};\n  src: url(./files/x-${sub}-wght-normal.woff2) format('woff2-variations');\n  unicode-range: U+0000-00FF;\n}\n`).join('');
+  const install = (root: string, pkg: string, family: string, weight: string, subsets: string[]) => {
+    const dir = path.join(root, 'node_modules/@fontsource-variable', pkg);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'index.css'), faceCss(family, weight, subsets));
+  };
+
+  it('refuses a body font without the letters an enabled language needs, and names pairings that have them', () => {
+    const root = project({ installed: allFonts, files: { 'src/i18n/locales.mjs': "export const defaultLocale = 'en';\nexport const locales = ['en', 'ru'];\n" } });
+    install(root, 'nunito', 'Nunito', '200 1000', ['latin', 'latin-ext']);
+    const before = read(root, 'src/styles/theme.css');
+    const { code, out } = run(root, 'direction', '--base', 'warm-local');
+    expect(code).toBe(1);
+    expect(out).toMatch(/Nunito has no cyrillic letters/);
+    expect(out).toMatch(/--pairing /);
+    expect(read(root, 'src/styles/theme.css')).toBe(before);
+    expect(run(root, 'direction', '--base', 'warm-local', '--allow-missing-scripts').code).toBe(0);
+  });
+
+  it('clamps heading weight to what the display font can draw, and says so', () => {
+    const root = project({ installed: allFonts });
+    install(root, 'space-grotesk', 'Space Grotesk', '300 700', ['latin']);
+    const { code, out } = run(root, 'direction', '--base', 'warm-local', '--display', 'Space Grotesk', '--seed', 'preset');
+    expect(code, out).toBe(0);
+    expect(out).toMatch(/--theme-heading-weight 800 → 700 \(the display font draws 300–700\)/);
+    expect(read(root, 'src/styles/theme.css')).toContain('--theme-heading-weight: 700;');
+  });
+
+  it('applies any catalogue pairing with --pairing', () => {
+    const root = project({ installed: allFonts });
+    install(root, 'lora', 'Lora', '400 700', ['latin', 'latin-ext']);
+    install(root, 'nunito-sans', 'Nunito Sans', '200 1000', ['latin', 'latin-ext']);
+    const { code, out } = run(root, 'direction', '--base', 'clinical', '--pairing', 'lora-nunito-sans');
+    expect(code, out).toBe(0);
+    const theme = read(root, 'src/styles/theme.css');
+    expect(theme).toContain('--theme-font-display: var(--font-lora)');
+    expect(theme).toContain('--theme-font-sans: var(--font-nunito-sans)');
+    expect(run(root, 'direction', '--base', 'clinical', '--pairing', 'nope').out).toMatch(/No pairing "nope"/);
+  });
+
+  it('design fonts warns about overused defaults, extra families and weights the font fakes', () => {
+    const root = project({ installed: [...allFonts] });
+    install(root, 'inter', 'Inter', '100 900', ['latin']);
+    fs.writeFileSync(path.join(root, 'astro.config.mjs'), CONFIG.replace("fonts: [\n", "fonts: [\n    fontsourceVariable({ name: 'Inter', pkg: 'inter', cssVariable: '--font-inter', weight: '100 900', fallbacks: ['sans-serif'] }),\n"));
+    fs.appendFileSync(path.join(root, 'src/styles/theme.css'), ':root { --theme-font-sans: var(--font-inter), sans-serif; --theme-font-display: var(--font-outfit), sans-serif; }\n');
+    const messages = (design.fontsReport(root).findings as { message: string }[]).map((f) => f.message).join('\n');
+    expect(messages).toMatch(/Inter is one of the most common web fonts/);
+    const heavy = project({ installed: [...allFonts] });
+    install(heavy, 'outfit', 'Outfit', '300 600', ['latin']);
+    fs.appendFileSync(path.join(heavy, 'src/styles/theme.css'), ':root { --theme-heading-weight: 800; }\n');
+    expect((design.fontsReport(heavy).findings as { message: string }[]).some((f) => /only draws 300–600/.test(f.message))).toBe(true);
   });
 });

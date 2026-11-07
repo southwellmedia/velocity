@@ -1,0 +1,1445 @@
+{
+ "note": "Curated font pairings for npm run design. Families are @fontsource-variable packages; weight and subsets come from each package. Overused defaults are listed only so the fonts check can flag them.",
+ "families": {
+  "albert-sans": {
+   "family": "Albert Sans",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "alegreya": {
+   "family": "Alegreya",
+   "category": "serif",
+   "weight": "400 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese"
+   ]
+  },
+  "anybody": {
+   "family": "Anybody",
+   "category": "display",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "archivo": {
+   "family": "Archivo",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "baloo-2": {
+   "family": "Baloo 2",
+   "category": "rounded",
+   "weight": "400 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese",
+    "devanagari"
+   ]
+  },
+  "big-shoulders-display": {
+   "family": "Big Shoulders Display",
+   "category": "display",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "bodoni-moda": {
+   "family": "Bodoni Moda",
+   "category": "serif",
+   "weight": "400 900",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "bricolage-grotesque": {
+   "family": "Bricolage Grotesque",
+   "category": "sans",
+   "weight": "200 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "brygada-1918": {
+   "family": "Brygada 1918",
+   "category": "serif",
+   "weight": "400 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "vietnamese"
+   ]
+  },
+  "chivo": {
+   "family": "Chivo",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "comfortaa": {
+   "family": "Comfortaa",
+   "category": "rounded",
+   "weight": "300 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "vietnamese"
+   ]
+  },
+  "commissioner": {
+   "family": "Commissioner",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "vietnamese"
+   ]
+  },
+  "cormorant": {
+   "family": "Cormorant",
+   "category": "serif",
+   "weight": "300 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "crimson-pro": {
+   "family": "Crimson Pro",
+   "category": "serif",
+   "weight": "200 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "dm-sans": {
+   "family": "DM Sans",
+   "category": "sans",
+   "weight": "100 1000",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "eb-garamond": {
+   "family": "EB Garamond",
+   "category": "serif",
+   "weight": "400 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese"
+   ]
+  },
+  "epilogue": {
+   "family": "Epilogue",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "familjen-grotesk": {
+   "family": "Familjen Grotesk",
+   "category": "sans",
+   "weight": "400 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "figtree": {
+   "family": "Figtree",
+   "category": "sans",
+   "weight": "300 900",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "fira-code": {
+   "family": "Fira Code",
+   "category": "mono",
+   "weight": "300 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext"
+   ]
+  },
+  "fraunces": {
+   "family": "Fraunces",
+   "category": "serif",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "fredoka": {
+   "family": "Fredoka",
+   "category": "rounded",
+   "weight": "300 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "hebrew"
+   ]
+  },
+  "gabarito": {
+   "family": "Gabarito",
+   "category": "sans",
+   "weight": "400 900",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "geist": {
+   "family": "Geist",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "gelasio": {
+   "family": "Gelasio",
+   "category": "serif",
+   "weight": "400 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "hanken-grotesk": {
+   "family": "Hanken Grotesk",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "ibm-plex-sans": {
+   "family": "IBM Plex Sans",
+   "category": "sans",
+   "weight": "100 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "vietnamese"
+   ]
+  },
+  "instrument-sans": {
+   "family": "Instrument Sans",
+   "category": "sans",
+   "weight": "400 700",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "inter": {
+   "family": "Inter",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese"
+   ],
+   "overused": true
+  },
+  "inter-tight": {
+   "family": "Inter Tight",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese"
+   ]
+  },
+  "jetbrains-mono": {
+   "family": "JetBrains Mono",
+   "category": "mono",
+   "weight": "100 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "vietnamese"
+   ]
+  },
+  "josefin-sans": {
+   "family": "Josefin Sans",
+   "category": "sans",
+   "weight": "100 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "jost": {
+   "family": "Jost",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic"
+   ]
+  },
+  "karla": {
+   "family": "Karla",
+   "category": "sans",
+   "weight": "200 800",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "lexend": {
+   "family": "Lexend",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "libre-franklin": {
+   "family": "Libre Franklin",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "literata": {
+   "family": "Literata",
+   "category": "serif",
+   "weight": "200 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese"
+   ]
+  },
+  "lora": {
+   "family": "Lora",
+   "category": "serif",
+   "weight": "400 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "manrope": {
+   "family": "Manrope",
+   "category": "sans",
+   "weight": "200 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "vietnamese"
+   ]
+  },
+  "martian-mono": {
+   "family": "Martian Mono",
+   "category": "mono",
+   "weight": "100 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext"
+   ]
+  },
+  "merriweather": {
+   "family": "Merriweather",
+   "category": "serif",
+   "weight": "300 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "montserrat": {
+   "family": "Montserrat",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ],
+   "overused": true
+  },
+  "mulish": {
+   "family": "Mulish",
+   "category": "sans",
+   "weight": "200 1000",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "newsreader": {
+   "family": "Newsreader",
+   "category": "serif",
+   "weight": "200 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "nunito": {
+   "family": "Nunito",
+   "category": "rounded",
+   "weight": "200 1000",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "nunito-sans": {
+   "family": "Nunito Sans",
+   "category": "sans",
+   "weight": "200 1000",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "onest": {
+   "family": "Onest",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "open-sans": {
+   "family": "Open Sans",
+   "category": "sans",
+   "weight": "300 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese",
+    "hebrew"
+   ],
+   "overused": true
+  },
+  "outfit": {
+   "family": "Outfit",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "petrona": {
+   "family": "Petrona",
+   "category": "serif",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "playfair-display": {
+   "family": "Playfair Display",
+   "category": "serif",
+   "weight": "400 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "vietnamese"
+   ]
+  },
+  "plus-jakarta-sans": {
+   "family": "Plus Jakarta Sans",
+   "category": "sans",
+   "weight": "200 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "public-sans": {
+   "family": "Public Sans",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "quicksand": {
+   "family": "Quicksand",
+   "category": "rounded",
+   "weight": "300 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "raleway": {
+   "family": "Raleway",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "recursive": {
+   "family": "Recursive",
+   "category": "sans",
+   "weight": "300 1000",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "red-hat-display": {
+   "family": "Red Hat Display",
+   "category": "sans",
+   "weight": "300 900",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "red-hat-text": {
+   "family": "Red Hat Text",
+   "category": "sans",
+   "weight": "300 700",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "rethink-sans": {
+   "family": "Rethink Sans",
+   "category": "sans",
+   "weight": "400 800",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "roboto": {
+   "family": "Roboto",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese"
+   ],
+   "overused": true
+  },
+  "roboto-serif": {
+   "family": "Roboto Serif",
+   "category": "serif",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "rubik": {
+   "family": "Rubik",
+   "category": "sans",
+   "weight": "300 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "hebrew",
+    "arabic"
+   ]
+  },
+  "schibsted-grotesk": {
+   "family": "Schibsted Grotesk",
+   "category": "sans",
+   "weight": "400 900",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "sora": {
+   "family": "Sora",
+   "category": "sans",
+   "weight": "100 800",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "source-sans-3": {
+   "family": "Source Sans 3",
+   "category": "sans",
+   "weight": "200 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "greek-ext",
+    "vietnamese"
+   ]
+  },
+  "source-serif-4": {
+   "family": "Source Serif 4",
+   "category": "serif",
+   "weight": "200 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "vietnamese"
+   ]
+  },
+  "space-grotesk": {
+   "family": "Space Grotesk",
+   "category": "sans",
+   "weight": "300 700",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  },
+  "syne": {
+   "family": "Syne",
+   "category": "display",
+   "weight": "400 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "greek"
+   ]
+  },
+  "unbounded": {
+   "family": "Unbounded",
+   "category": "display",
+   "weight": "200 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "urbanist": {
+   "family": "Urbanist",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext"
+   ]
+  },
+  "vollkorn": {
+   "family": "Vollkorn",
+   "category": "serif",
+   "weight": "400 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "greek",
+    "vietnamese"
+   ]
+  },
+  "wix-madefor-display": {
+   "family": "Wix Madefor Display",
+   "category": "sans",
+   "weight": "400 800",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "cyrillic",
+    "cyrillic-ext",
+    "vietnamese"
+   ]
+  },
+  "work-sans": {
+   "family": "Work Sans",
+   "category": "sans",
+   "weight": "100 900",
+   "subsets": [
+    "latin",
+    "latin-ext",
+    "vietnamese"
+   ]
+  }
+ },
+ "pairings": [
+  {
+   "id": "fraunces-source-sans",
+   "display": "fraunces",
+   "body": "source-sans-3",
+   "voice": [
+    "warm",
+    "editorial",
+    "crafted",
+    "soft"
+   ],
+   "suits": "agencies, food writers, independent shops"
+  },
+  {
+   "id": "newsreader-source-sans",
+   "display": "newsreader",
+   "body": "source-sans-3",
+   "voice": [
+    "literary",
+    "calm",
+    "editorial",
+    "bookish"
+   ],
+   "suits": "writers, publishers, consultants"
+  },
+  {
+   "id": "playfair-work-sans",
+   "display": "playfair-display",
+   "body": "work-sans",
+   "voice": [
+    "elegant",
+    "magazine",
+    "high-contrast",
+    "stylish"
+   ],
+   "suits": "boutiques, hospitality, magazines"
+  },
+  {
+   "id": "literata-public-sans",
+   "display": "literata",
+   "body": "public-sans",
+   "voice": [
+    "scholarly",
+    "trustworthy",
+    "classic",
+    "serious"
+   ],
+   "suits": "legal, finance, research"
+  },
+  {
+   "id": "source-serif-source-sans",
+   "display": "source-serif-4",
+   "body": "source-sans-3",
+   "voice": [
+    "classic",
+    "calm",
+    "institutional",
+    "readable"
+   ],
+   "suits": "nonprofits, universities, public bodies"
+  },
+  {
+   "id": "crimson-karla",
+   "display": "crimson-pro",
+   "body": "karla",
+   "voice": [
+    "literary",
+    "quiet",
+    "gentle"
+   ],
+   "suits": "authors, therapists, small practices"
+  },
+  {
+   "id": "garamond-hanken",
+   "display": "eb-garamond",
+   "body": "hanken-grotesk",
+   "voice": [
+    "classic",
+    "elegant",
+    "refined",
+    "timeless"
+   ],
+   "suits": "galleries, wine, heritage brands"
+  },
+  {
+   "id": "cormorant-mulish",
+   "display": "cormorant",
+   "body": "mulish",
+   "voice": [
+    "luxury",
+    "elegant",
+    "delicate",
+    "romantic"
+   ],
+   "suits": "weddings, jewellery, spas (display at large sizes only)"
+  },
+  {
+   "id": "bodoni-albert",
+   "display": "bodoni-moda",
+   "body": "albert-sans",
+   "voice": [
+    "luxury",
+    "fashion",
+    "high-contrast",
+    "dramatic"
+   ],
+   "suits": "fashion, beauty, premium retail"
+  },
+  {
+   "id": "petrona-figtree",
+   "display": "petrona",
+   "body": "figtree",
+   "voice": [
+    "friendly",
+    "editorial",
+    "approachable"
+   ],
+   "suits": "coaches, community projects, blogs"
+  },
+  {
+   "id": "lora-nunito-sans",
+   "display": "lora",
+   "body": "nunito-sans",
+   "voice": [
+    "warm",
+    "gentle",
+    "classic",
+    "homely"
+   ],
+   "suits": "bakeries, florists, family businesses"
+  },
+  {
+   "id": "merriweather-source-sans",
+   "display": "merriweather",
+   "body": "source-sans-3",
+   "voice": [
+    "trustworthy",
+    "readable",
+    "serious",
+    "sturdy"
+   ],
+   "suits": "accountants, local government, news"
+  },
+  {
+   "id": "vollkorn-work-sans",
+   "display": "vollkorn",
+   "body": "work-sans",
+   "voice": [
+    "old-fashioned",
+    "crafted",
+    "sturdy",
+    "traditional"
+   ],
+   "suits": "breweries, butchers, craftspeople"
+  },
+  {
+   "id": "alegreya-franklin",
+   "display": "alegreya",
+   "body": "libre-franklin",
+   "voice": [
+    "literary",
+    "organic",
+    "expressive"
+   ],
+   "suits": "bookshops, festivals, cultural venues"
+  },
+  {
+   "id": "brygada-plex",
+   "display": "brygada-1918",
+   "body": "ibm-plex-sans",
+   "voice": [
+    "historic",
+    "institutional",
+    "dignified"
+   ],
+   "suits": "museums, archives, long-established firms"
+  },
+  {
+   "id": "gelasio-rethink",
+   "display": "gelasio",
+   "body": "rethink-sans",
+   "voice": [
+    "classic",
+    "approachable",
+    "balanced"
+   ],
+   "suits": "dentists, estate agents, local services"
+  },
+  {
+   "id": "roboto-serif-red-hat",
+   "display": "roboto-serif",
+   "body": "red-hat-text",
+   "voice": [
+    "neutral",
+    "modern",
+    "calm"
+   ],
+   "suits": "consultancies, B2B services"
+  },
+  {
+   "id": "newsreader-solo",
+   "display": "newsreader",
+   "body": "newsreader",
+   "voice": [
+    "bookish",
+    "literary",
+    "quiet",
+    "intimate"
+   ],
+   "suits": "essayists, poets, personal sites"
+  },
+  {
+   "id": "bricolage-nunito-sans",
+   "display": "bricolage-grotesque",
+   "body": "nunito-sans",
+   "voice": [
+    "playful",
+    "warm",
+    "quirky",
+    "friendly"
+   ],
+   "suits": "cafés, studios, creative small businesses"
+  },
+  {
+   "id": "space-grotesk-manrope",
+   "display": "space-grotesk",
+   "body": "manrope",
+   "voice": [
+    "technical",
+    "confident",
+    "modern"
+   ],
+   "suits": "software, developer tools, startups"
+  },
+  {
+   "id": "unbounded-instrument",
+   "display": "unbounded",
+   "body": "instrument-sans",
+   "voice": [
+    "loud",
+    "bold",
+    "youthful",
+    "wide"
+   ],
+   "suits": "launches, events, streetwear"
+  },
+  {
+   "id": "bricolage-onest",
+   "display": "bricolage-grotesque",
+   "body": "onest",
+   "voice": [
+    "characterful",
+    "modern",
+    "confident"
+   ],
+   "suits": "product companies with personality"
+  },
+  {
+   "id": "syne-epilogue",
+   "display": "syne",
+   "body": "epilogue",
+   "voice": [
+    "avant-garde",
+    "artsy",
+    "bold",
+    "unusual"
+   ],
+   "suits": "art studios, music, design agencies"
+  },
+  {
+   "id": "big-shoulders-chivo",
+   "display": "big-shoulders-display",
+   "body": "chivo",
+   "voice": [
+    "industrial",
+    "bold",
+    "sporty",
+    "condensed"
+   ],
+   "suits": "gyms, sports clubs, workshops, trades"
+  },
+  {
+   "id": "anybody-archivo",
+   "display": "anybody",
+   "body": "archivo",
+   "voice": [
+    "experimental",
+    "energetic",
+    "loud"
+   ],
+   "suits": "festivals, nightlife, youth brands"
+  },
+  {
+   "id": "schibsted-source-serif",
+   "display": "schibsted-grotesk",
+   "body": "source-serif-4",
+   "voice": [
+    "journalistic",
+    "newsroom",
+    "serious"
+   ],
+   "suits": "newsletters, media, think tanks"
+  },
+  {
+   "id": "familjen-public-sans",
+   "display": "familjen-grotesk",
+   "body": "public-sans",
+   "voice": [
+    "civic",
+    "plain",
+    "honest",
+    "straightforward"
+   ],
+   "suits": "charities, councils, co-ops"
+  },
+  {
+   "id": "red-hat-pair",
+   "display": "red-hat-display",
+   "body": "red-hat-text",
+   "voice": [
+    "corporate",
+    "friendly",
+    "clear"
+   ],
+   "suits": "IT services, agencies, SaaS"
+  },
+  {
+   "id": "jakarta-solo",
+   "display": "plus-jakarta-sans",
+   "body": "plus-jakarta-sans",
+   "voice": [
+    "modern",
+    "friendly",
+    "polished"
+   ],
+   "suits": "startups, clinics, apps"
+  },
+  {
+   "id": "figtree-solo",
+   "display": "figtree",
+   "body": "figtree",
+   "voice": [
+    "clear",
+    "humanist",
+    "calm",
+    "clinical"
+   ],
+   "suits": "healthcare, wellness, services"
+  },
+  {
+   "id": "dm-sans-solo",
+   "display": "dm-sans",
+   "body": "dm-sans",
+   "voice": [
+    "minimal",
+    "neutral",
+    "quiet"
+   ],
+   "suits": "portfolios, architects, photographers"
+  },
+  {
+   "id": "geist-solo",
+   "display": "geist",
+   "body": "geist",
+   "voice": [
+    "technical",
+    "precise",
+    "minimal"
+   ],
+   "suits": "developers, engineers, technical studios"
+  },
+  {
+   "id": "hanken-solo",
+   "display": "hanken-grotesk",
+   "body": "hanken-grotesk",
+   "voice": [
+    "warm",
+    "minimal",
+    "understated"
+   ],
+   "suits": "designers, freelancers, small studios"
+  },
+  {
+   "id": "sora-rethink",
+   "display": "sora",
+   "body": "rethink-sans",
+   "voice": [
+    "futuristic",
+    "friendly",
+    "tech"
+   ],
+   "suits": "fintech, AI products, apps"
+  },
+  {
+   "id": "lexend-solo",
+   "display": "lexend",
+   "body": "lexend",
+   "voice": [
+    "accessible",
+    "readable",
+    "clear",
+    "educational"
+   ],
+   "suits": "schools, tutoring, public information"
+  },
+  {
+   "id": "commissioner-solo",
+   "display": "commissioner",
+   "body": "commissioner",
+   "voice": [
+    "professional",
+    "versatile",
+    "composed"
+   ],
+   "suits": "consultancies, law, finance"
+  },
+  {
+   "id": "gabarito-karla",
+   "display": "gabarito",
+   "body": "karla",
+   "voice": [
+    "friendly",
+    "bold",
+    "startup",
+    "upbeat"
+   ],
+   "suits": "consumer apps, local startups"
+  },
+  {
+   "id": "outfit-manrope",
+   "display": "outfit",
+   "body": "manrope",
+   "voice": [
+    "geometric",
+    "modern",
+    "clean"
+   ],
+   "suits": "general purpose (Velocity default)"
+  },
+  {
+   "id": "jost-franklin",
+   "display": "jost",
+   "body": "libre-franklin",
+   "voice": [
+    "geometric",
+    "bauhaus",
+    "classic-modern"
+   ],
+   "suits": "architects, furniture, design shops"
+  },
+  {
+   "id": "urbanist-albert",
+   "display": "urbanist",
+   "body": "albert-sans",
+   "voice": [
+    "clean",
+    "geometric",
+    "architectural"
+   ],
+   "suits": "property, interiors, architecture"
+  },
+  {
+   "id": "raleway-lora",
+   "display": "raleway",
+   "body": "lora",
+   "voice": [
+    "elegant",
+    "light",
+    "refined"
+   ],
+   "suits": "salons, photographers, events"
+  },
+  {
+   "id": "josefin-crimson",
+   "display": "josefin-sans",
+   "body": "crimson-pro",
+   "voice": [
+    "vintage",
+    "elegant",
+    "art-deco"
+   ],
+   "suits": "cocktail bars, barbers, vintage shops"
+  },
+  {
+   "id": "archivo-solo",
+   "display": "archivo",
+   "body": "archivo",
+   "voice": [
+    "sturdy",
+    "grotesque",
+    "editorial",
+    "practical"
+   ],
+   "suits": "builders, manufacturers, trades"
+  },
+  {
+   "id": "franklin-solo",
+   "display": "libre-franklin",
+   "body": "libre-franklin",
+   "voice": [
+    "newsy",
+    "classic",
+    "american",
+    "straightforward"
+   ],
+   "suits": "local news, community groups"
+  },
+  {
+   "id": "plex-solo",
+   "display": "ibm-plex-sans",
+   "body": "ibm-plex-sans",
+   "voice": [
+    "engineering",
+    "institutional",
+    "rational"
+   ],
+   "suits": "engineering firms, labs, B2B"
+  },
+  {
+   "id": "fredoka-nunito",
+   "display": "fredoka",
+   "body": "nunito",
+   "voice": [
+    "playful",
+    "rounded",
+    "kids",
+    "cheerful"
+   ],
+   "suits": "nurseries, toy shops, family activities"
+  },
+  {
+   "id": "nunito-solo",
+   "display": "nunito",
+   "body": "nunito",
+   "voice": [
+    "friendly",
+    "rounded",
+    "warm",
+    "approachable"
+   ],
+   "suits": "local services, cafés, community"
+  },
+  {
+   "id": "quicksand-nunito-sans",
+   "display": "quicksand",
+   "body": "nunito-sans",
+   "voice": [
+    "soft",
+    "gentle",
+    "calm",
+    "wellness"
+   ],
+   "suits": "yoga, spas, therapists"
+  },
+  {
+   "id": "baloo-mulish",
+   "display": "baloo-2",
+   "body": "mulish",
+   "voice": [
+    "playful",
+    "chunky",
+    "cheerful",
+    "bold"
+   ],
+   "suits": "ice cream, games, kids clubs"
+  },
+  {
+   "id": "comfortaa-nunito-sans",
+   "display": "comfortaa",
+   "body": "nunito-sans",
+   "voice": [
+    "soft",
+    "rounded",
+    "quirky",
+    "light"
+   ],
+   "suits": "crafts, pet care, hobby shops"
+  },
+  {
+   "id": "recursive-solo",
+   "display": "recursive",
+   "body": "recursive",
+   "voice": [
+    "technical",
+    "casual",
+    "code-friendly"
+   ],
+   "suits": "dev blogs, maker projects"
+  },
+  {
+   "id": "rubik-karla",
+   "display": "rubik",
+   "body": "karla",
+   "voice": [
+    "friendly",
+    "rounded",
+    "approachable"
+   ],
+   "suits": "delivery, apps, local services"
+  },
+  {
+   "id": "wix-work-sans",
+   "display": "wix-madefor-display",
+   "body": "work-sans",
+   "voice": [
+    "crisp",
+    "modern",
+    "product"
+   ],
+   "suits": "product sites, agencies"
+  },
+  {
+   "id": "fraunces-figtree",
+   "display": "fraunces",
+   "body": "figtree",
+   "voice": [
+    "warm",
+    "modern",
+    "softly-serious"
+   ],
+   "suits": "clinics with warmth, wellbeing, coaching"
+  }
+ ]
+}

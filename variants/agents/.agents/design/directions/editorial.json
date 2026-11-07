@@ -90,16 +90,9 @@
       "brand"
     ]
   },
-  "fontPairs": [
-    {
-      "display": "Newsreader",
-      "body": "Source Sans 3",
-      "note": "literary, softer serif"
-    },
-    {
-      "display": "Playfair Display",
-      "body": "Work Sans",
-      "note": "high-contrast, magazine"
-    }
+  "pairings": [
+    "newsreader-source-sans",
+    "playfair-work-sans",
+    "fraunces-figtree"
   ]
 }

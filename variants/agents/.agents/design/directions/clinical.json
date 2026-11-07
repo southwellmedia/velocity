@@ -81,16 +81,9 @@
       "brand"
     ]
   },
-  "fontPairs": [
-    {
-      "display": "Plus Jakarta Sans",
-      "body": "Plus Jakarta Sans",
-      "note": "modern, friendly"
-    },
-    {
-      "display": "Literata",
-      "body": "Public Sans",
-      "note": "established, legal or finance"
-    }
+  "pairings": [
+    "jakarta-solo",
+    "literata-public-sans",
+    "fraunces-figtree"
   ]
 }

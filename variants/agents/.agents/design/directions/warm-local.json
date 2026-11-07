@@ -89,16 +89,9 @@
       "neutral"
     ]
   },
-  "fontPairs": [
-    {
-      "display": "Fraunces",
-      "body": "Nunito Sans",
-      "note": "old-fashioned, bakery or deli"
-    },
-    {
-      "display": "Bricolage Grotesque",
-      "body": "Nunito Sans",
-      "note": "playful, café or studio"
-    }
+  "pairings": [
+    "lora-nunito-sans",
+    "bricolage-nunito-sans",
+    "vollkorn-work-sans"
   ]
 }

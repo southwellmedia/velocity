@@ -8,6 +8,8 @@
  *   npm run design -- direction --base clinical --fallback-fonts   # keep to fonts already installed
  *   npm run design -- direction --base warm-local --seed "Rosa's Bakery"   # the default seed is the site name
  *   npm run design -- direction --base editorial --pair 2  # one of the direction's alternative font pairings
+ *   npm run design -- fonts --suggest "warm, old-fashioned"   # curated pairings for a voice, covering the site's languages
+ *   npm run design -- direction --base warm-local --pairing lora-nunito-sans
  *   npm run design -- direction --list                     # the five directions
  *   npm run design -- tokens                               # resolved tokens + contrast matrix (light and dark)
  *   npm run design -- tokens --json
@@ -451,15 +453,27 @@ export function brandFromHex(hex) {
  * Build a direction: tokens for both modes, fonts and controls, with brand steps adjusted
  * until every pair passes AA. Returns { css, fonts, adjustments, failures }.
  */
-export function buildDirection(direction, { brand, display, body, pair, fallbackFonts = false, seed, sources = [] } = {}) {
+export function buildDirection(direction, { brand, display, body, pairing, fallbackFonts = false, seed, weights, sources = [] } = {}) {
   const varied = varyDirection(direction, seed, { brandLocked: Boolean(brand) });
   direction = varied.direction;
-  // --pair picks one of the direction's alternative font pairings (1 is the default).
-  const alt = pair && pair > 1 ? direction.fontPairs?.[pair - 2] : undefined;
-  if (alt) {
-    display = display ?? alt.display;
-    body = body ?? alt.body;
+  // A catalogue pairing ({ display, body } with fallbacks); --display/--body still win.
+  if (pairing) {
+    display = display ?? pairing.display;
+    body = body ?? pairing.body;
   }
+  // Keep weights inside what the chosen fonts can draw, so headings don't fake bold.
+  const clamps = [];
+  const clamp = (control, range, label) => {
+    const value = Number(direction.controls[control]);
+    if (!range || !Number.isFinite(value)) return;
+    const next = Math.min(range[1], Math.max(range[0], value));
+    if (next !== value) {
+      direction.controls = { ...direction.controls, [control]: String(next) };
+      clamps.push(`${control} ${value} → ${next} (${label} draws ${range[0]}–${range[1]})`);
+    }
+  };
+  clamp('--theme-heading-weight', weights?.display, 'the display font');
+  clamp('--theme-button-weight', weights?.body, 'the body font');
   const { hue, chroma } = brand ? brandFromHex(brand) : { hue: direction.brand.hue, chroma: direction.brand.chroma };
   const scale = brandScale(hue, chroma);
   const semantic = semanticTokens(direction, hue);
@@ -467,6 +481,7 @@ export function buildDirection(direction, { brand, display, body, pair, fallback
   const pick = (role) => {
     const chosen = role === 'display' ? display : body;
     const base = fallbackFonts ? direction.fonts.installedFallback[role] : direction.fonts[role];
+    if (chosen && typeof chosen === 'object') return fontSpec(chosen.family, chosen.fallbacks);
     if (chosen) return fontSpec(chosen, base.fallbacks);
     return fontSpec(base.family, base.fallbacks);
   };
@@ -480,7 +495,7 @@ export function buildDirection(direction, { brand, display, body, pair, fallback
   };
 
   // Check every pair; nudge brand steps (never neutrals) until they pass.
-  const adjustments = [];
+  const adjustments = [...clamps];
   const render = () => {
     const shared = {
       '--brand-hue': String(hue),
@@ -682,6 +697,94 @@ export function defaultSeed(root) {
 }
 
 // ---------------------------------------------------------------------------
+// Font catalogue: curated pairings, script coverage and weights
+
+const FONT_CATALOG_PATHS = ['.agents/design/fonts.json', 'variants/agents/.agents/design/fonts.json'];
+
+/** The curated catalogue: { families: { pkg: { family, category, weight, subsets } }, pairings: [...] }. */
+export function loadFontCatalog(root) {
+  const file = FONT_CATALOG_PATHS.map((f) => path.join(root, f)).find((f) => fs.existsSync(f));
+  return file ? JSON.parse(fs.readFileSync(file, 'utf8')) : { families: {}, pairings: [] };
+}
+
+/** Fontsource subsets each language needs beyond latin. Languages fontsource's variable Latin families can't cover are reported. */
+const LOCALE_SUBSETS = {
+  ru: 'cyrillic', uk: 'cyrillic', bg: 'cyrillic', sr: 'cyrillic', be: 'cyrillic', mk: 'cyrillic', kk: 'cyrillic',
+  el: 'greek', vi: 'vietnamese', he: 'hebrew', ar: 'arabic', hi: 'devanagari',
+  pl: 'latin-ext', cs: 'latin-ext', sk: 'latin-ext', hu: 'latin-ext', ro: 'latin-ext', hr: 'latin-ext', sl: 'latin-ext',
+  tr: 'latin-ext', lt: 'latin-ext', lv: 'latin-ext', et: 'latin-ext', is: 'latin-ext', mt: 'latin-ext', az: 'latin-ext',
+};
+const SYSTEM_SCRIPT_LOCALES = new Set(['ja', 'zh', 'ko', 'th', 'ka', 'hy', 'bn', 'ta', 'fa', 'ur', 'km', 'my']);
+
+/** Locales enabled in src/i18n/locales.mjs. */
+export function projectLocales(root) {
+  const text = readIf(root, 'src/i18n/locales.mjs');
+  const list = /locales\s*=\s*\[([^\]]*)\]/.exec(text)?.[1] ?? "'en'";
+  return [...list.matchAll(/['"]([\w-]+)['"]/g)].map((m) => m[1]);
+}
+
+/** { subsets: the fontsource subsets the locales need, system: locales no fontsource Latin family covers }. */
+export function requiredSubsets(locales) {
+  const subsets = new Set(['latin']);
+  const system = [];
+  for (const locale of locales) {
+    const lang = locale.toLowerCase().split('-')[0];
+    if (SYSTEM_SCRIPT_LOCALES.has(lang)) system.push(locale);
+    else if (LOCALE_SUBSETS[lang]) subsets.add(LOCALE_SUBSETS[lang]);
+  }
+  return { subsets, system };
+}
+
+/** Subsets an installed package ships (from its file names), or the catalogue's record when it isn't installed. */
+export function fontSubsets(root, pkg, catalog = loadFontCatalog(root)) {
+  const css = readIf(root, `node_modules/@fontsource-variable/${pkg}/index.css`);
+  if (css) {
+    const known = ['latin-ext', 'latin', 'cyrillic-ext', 'cyrillic', 'greek-ext', 'greek', 'vietnamese', 'hebrew', 'arabic', 'devanagari'];
+    return new Set([...css.matchAll(/files\/([\w-]+?)-wght-normal\.woff2/g)].map((m) => known.find((k) => m[1].endsWith(`-${k}`))).filter(Boolean));
+  }
+  return new Set(catalog.families[pkg]?.subsets ?? []);
+}
+
+const weightRange = (value) => {
+  const [lo, hi] = String(value ?? '').split(/\s+/).map(Number);
+  return Number.isFinite(lo) ? [lo, Number.isFinite(hi) ? hi : lo] : undefined;
+};
+
+/** Font weight range of a family: installed package first, then the catalogue. */
+export function fontWeights(root, pkg, catalog = loadFontCatalog(root)) {
+  return weightRange(installedWeight(root, pkg) ?? catalog.families[pkg]?.weight);
+}
+
+const fallbacksFor = (category) => (category === 'serif' ? ['serif'] : category === 'mono' ? ['monospace'] : ['sans-serif']);
+
+/** A catalogue pairing as { display, body } families with fallbacks, or undefined. */
+export function pairingFonts(catalog, id) {
+  const p = catalog.pairings.find((x) => x.id === id);
+  if (!p) return undefined;
+  const role = (pkg) => ({ family: catalog.families[pkg]?.family ?? pkg, fallbacks: fallbacksFor(catalog.families[pkg]?.category) });
+  return { id, display: role(p.display), body: role(p.body) };
+}
+
+/**
+ * Pairings ranked for a description such as "warm, old-fashioned bakery", keeping only those whose
+ * body font covers every enabled locale (the display font should too, but headings can fall back).
+ */
+export function suggestPairings(catalog, words, { subsets = new Set(['latin']), limit = 6 } = {}) {
+  const terms = String(words).toLowerCase().split(/[^a-z-]+/).filter((w) => w.length > 2);
+  const covers = (pkg) => [...subsets].every((s) => (catalog.families[pkg]?.subsets ?? []).includes(s));
+  return catalog.pairings
+    .filter((p) => covers(p.body))
+    .map((p) => {
+      const hay = [...p.voice, ...p.suits.toLowerCase().split(/[^a-z-]+/)];
+      const score = terms.reduce((n, t) => n + (p.voice.includes(t) ? 3 : hay.some((h) => h.startsWith(t) || t.startsWith(h) && h.length > 3) ? 1 : 0), 0);
+      return { ...p, score, displayCovers: covers(p.display) };
+    })
+    .filter((p) => p.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
+}
+
+// ---------------------------------------------------------------------------
 // Fonts: packages ↔ astro.config.mjs ↔ tokens
 
 /** fontsourceVariable({...}) entries registered in astro.config.mjs. */
@@ -766,6 +869,33 @@ export function fontsReport(root) {
       }
     }
   }
+  // Choices worth a second look: overused defaults, too many families, letters or weights the fonts don't have.
+  const catalog = loadFontCatalog(root);
+  const usedFamilies = registered.filter((r) => usedByTokens.has(r.cssVariable) && r.cssVariable !== /var\((--font-[\w-]+)\)/.exec(cascade(sources, 'light')['--theme-font-mono'] ?? '')?.[1]);
+  for (const f of usedFamilies) {
+    if (catalog.families[f.pkg]?.overused) {
+      findings.push({ level: 'warning', message: `${f.name} is one of the most common web fonts, so on its own it makes the site look like many others.`, fix: 'Keep it only if the brand uses it; otherwise pick a pairing with npm run design -- fonts --suggest "<voice>".' });
+    }
+  }
+  if (usedFamilies.length > 2) {
+    findings.push({ level: 'warning', message: `The theme uses ${usedFamilies.length} text families (${usedFamilies.map((f) => f.name).join(', ')}); two read as deliberate, more as noise and extra downloads.`, fix: 'Keep one display and one body family.' });
+  }
+  const { subsets: needed } = requiredSubsets(projectLocales(root));
+  for (const f of usedFamilies) {
+    const have = fontSubsets(root, f.pkg, catalog);
+    const lacks = [...needed].filter((sub) => !have.has(sub));
+    if (have.size && lacks.length) {
+      findings.push({ level: 'warning', message: `${f.name} has no ${lacks.join(', ')} letters, which the site's languages need; those characters fall back to another font.`, fix: 'Choose a family that covers them: npm run design -- fonts --suggest "<voice>" lists only pairings that do.' });
+    }
+  }
+  const lightVars = cascade(sources, 'light');
+  const displayVar = /var\((--font-[\w-]+)\)/.exec(lightVars['--theme-font-display'] ?? '')?.[1] ?? /var\((--font-[\w-]+)\)/.exec(lightVars['--theme-font-sans'] ?? '')?.[1];
+  const displayFont = registered.find((r) => r.cssVariable === displayVar);
+  const range = displayFont && fontWeights(root, displayFont.pkg, catalog);
+  const heading = Number(substitute(lightVars['--theme-heading-weight'] ?? '', lightVars));
+  if (range && Number.isFinite(heading) && (heading < range[0] || heading > range[1])) {
+    findings.push({ level: 'warning', message: `--theme-heading-weight is ${heading}, but ${displayFont.name} only draws ${range[0]}–${range[1]}, so the browser fakes the weight.`, fix: `Set --theme-heading-weight between ${range[0]} and ${range[1]} in ${THEME_FILE}.` });
+  }
   const usedInSource = fontVarsUsedInSource(root);
   const unused = registered.filter((r) => !usedByTokens.has(r.cssVariable) && !usedInSource.has(r.cssVariable));
   for (const f of unused) {
@@ -801,6 +931,7 @@ function parseArgs(argv) {
 
 function cmdList(root, log) {
   const dirs = Object.values(loadDirections(root));
+  const catalog = loadFontCatalog(root);
   if (!dirs.length) {
     log('No directions found in .agents/design/directions/.');
     return 1;
@@ -808,7 +939,10 @@ function cmdList(root, log) {
   for (const d of dirs) {
     const fonts = [...new Set([d.fonts.display.family, d.fonts.body.family])].join(' + ');
     log(`${d.id.padEnd(18)} ${d.name}: ${d.feel}. Suits ${d.suits}. Fonts: ${fonts}.`);
-    (d.fontPairs ?? []).forEach((p, i) => log(`${''.padEnd(18)}   --pair ${i + 2}: ${[...new Set([p.display, p.body])].join(' + ')}${p.note ? ` (${p.note})` : ''}`));
+    (d.pairings ?? []).forEach((id, i) => {
+      const p = catalog.pairings.find((x) => x.id === id);
+      if (p) log(`${''.padEnd(18)}   --pair ${i + 2}: ${[...new Set([catalog.families[p.display]?.family, catalog.families[p.body]?.family])].join(' + ')} (${p.voice.join(', ')})`);
+    });
   }
   return 0;
 }
@@ -828,14 +962,28 @@ export function cmdDirection(root, args, log = console.log) {
   const themeCss = readIf(root, THEME_FILE);
   const withoutBlock = applyBlock(themeCss, '').trimEnd() + '\n';
   const sources = themeSources(root, withoutBlock).slice(0, -1).concat(withoutBlock);
-  const built = buildDirection(direction, {
+  const catalog = loadFontCatalog(root);
+  // --pairing <id> takes any catalogue pairing; --pair <n> one of the direction's alternatives (1 is its default).
+  const pairingId = typeof args.pairing === 'string' ? args.pairing : args.pair && Number(args.pair) > 1 ? direction.pairings?.[Number(args.pair) - 2] : undefined;
+  const pairing = pairingId ? pairingFonts(catalog, pairingId) : undefined;
+  if (pairingId && !pairing) {
+    log(`No pairing "${pairingId}". List them with: npm run design -- fonts --suggest "<a few words for the voice>"`);
+    return 1;
+  }
+  const options = {
     brand: args.brand && (args.brand.startsWith('#') ? args.brand : `#${args.brand}`),
     display: typeof args.display === 'string' ? args.display : undefined,
     body: typeof args.body === 'string' ? args.body : undefined,
-    pair: args.pair ? Number(args.pair) : undefined,
+    pairing,
     fallbackFonts: Boolean(args['fallback-fonts']),
     seed: typeof args.seed === 'string' ? args.seed : defaultSeed(root),
     sources,
+  };
+  // Build once to learn the fonts, then again with their weight ranges so weights stay drawable.
+  const first = buildDirection(direction, options);
+  const built = buildDirection(direction, {
+    ...options,
+    weights: { display: fontWeights(root, first.fonts.display.pkg, catalog), body: fontWeights(root, first.fonts.body.pkg, catalog) },
   });
 
   if (built.failures.length) {
@@ -862,6 +1010,18 @@ export function cmdDirection(root, args, log = console.log) {
     return 1;
   }
 
+  // Every enabled language must have its letters in the body font; headings may fall back, with a warning.
+  const { subsets: needed, system } = requiredSubsets(projectLocales(root));
+  const lacking = (pkg) => [...needed].filter((sub) => !fontSubsets(root, pkg, catalog).has(sub));
+  const bodyLacks = lacking(built.fonts.body.pkg);
+  const displayLacks = built.fonts.display.pkg === built.fonts.body.pkg ? [] : lacking(built.fonts.display.pkg);
+  if (bodyLacks.length && !args['allow-missing-scripts']) {
+    const alternatives = suggestPairings(catalog, direction.feel, { subsets: needed, limit: 4 }).map((p) => p.id);
+    log(`${built.fonts.body.family} has no ${bodyLacks.join(', ')} letters, which this site's languages need. Nothing was written.`);
+    log(`Pick a body font that covers them${alternatives.length ? `, such as --pairing ${alternatives.join(', --pairing ')}` : ''}, or add --allow-missing-scripts to accept a fallback font for those languages.`);
+    return 1;
+  }
+
   const config = readIf(root, CONFIG_FILE);
   const nextConfig = addFontsToConfig(config, fonts);
   fs.writeFileSync(path.join(root, THEME_FILE), applyBlock(themeCss, built.css));
@@ -871,6 +1031,8 @@ export function cmdDirection(root, args, log = console.log) {
   if (built.choices.length) log(`Variation for seed "${built.seed}": ${built.choices.join(', ')}. Same seed, same result; --seed preset for the plain direction.`);
   log(`Fonts: ${[...new Set([built.fonts.display.family, built.fonts.body.family])].join(' + ')}${nextConfig !== config ? `; registered in ${CONFIG_FILE}` : ''}.`);
   for (const a of built.adjustments) log(`Adjusted: ${a}.`);
+  if (displayLacks.length) log(`Note: ${built.fonts.display.family} has no ${displayLacks.join(', ')} letters, so headings in those languages fall back to ${built.fonts.body.family}.`);
+  if (system.length) log(`Note: ${system.join(', ')} use a script no fontsource Latin family covers; text in those languages uses the visitor's system font.`);
   const report = fontsReport(root);
   if (report.unused.length) log(`No longer used: ${report.unused.join(', ')}. Run \`npm run design -- fonts --fix\` to stop loading them.`);
   log('Next: set branding.colors.themeColor in src/config/site.config.ts to the brand colour, and record the direction in .agents/site.md → Design.');
@@ -933,7 +1095,31 @@ function cmdTokens(root, args, log) {
   return failing.length ? 1 : 0;
 }
 
+function cmdSuggest(root, args, log) {
+  const catalog = loadFontCatalog(root);
+  const { subsets, system } = requiredSubsets(projectLocales(root));
+  const results = suggestPairings(catalog, args.suggest, { subsets, limit: Number(args.limit) || 6 });
+  if (args.json) {
+    log(JSON.stringify(results, null, 2));
+    return results.length ? 0 : 1;
+  }
+  if (!results.length) {
+    log(`No pairing matches "${args.suggest}" for this site's languages. Try other words (warm, literary, technical, playful, elegant, civic, bold, minimal…).`);
+    return 1;
+  }
+  const name = (pkg) => catalog.families[pkg]?.family ?? pkg;
+  log(`Pairings for "${args.suggest}"${subsets.size > 1 ? ` covering ${[...subsets].join(', ')}` : ''}:`);
+  for (const p of results) {
+    const fonts = p.display === p.body ? name(p.display) : `${name(p.display)} + ${name(p.body)}`;
+    log(`  ${p.id.padEnd(26)} ${fonts.padEnd(36)} ${p.voice.join(', ')}. Suits ${p.suits}.${p.displayCovers ? '' : ' (headings fall back in some of your languages)'}`);
+  }
+  log('Apply one: npm run design -- direction --base <direction> --pairing <pairing>. It prints the install command for any font that isn\'t installed yet.');
+  if (system.length) log(`Note: ${system.join(', ')} use a script these families don't cover; that text uses the visitor's system font.`);
+  return 0;
+}
+
 export function cmdFonts(root, args, log = console.log) {
+  if (typeof args.suggest === 'string') return cmdSuggest(root, args, log);
   let report = fontsReport(root);
   if (args.fix) {
     const config = readIf(root, CONFIG_FILE);
@@ -1068,10 +1254,11 @@ function cmdCompare(root, args, log) {
 
 const HELP = `Usage: npm run design -- <command>
 
-  direction --base <id> [--brand <hex>] [--seed <text>|preset] [--pair <n>] [--display <family>] [--body <family>] [--fallback-fonts] [--dry-run]
+  direction --base <id> [--brand <hex>] [--seed <text>|preset] [--pairing <id> | --pair <n>] [--display <family>] [--body <family>] [--fallback-fonts] [--dry-run]
   direction --list
   tokens [--json]
   fonts [--fix] [--json]
+  fonts --suggest "<words for the voice>" [--json]
   compare <other project> [--json]
 
 See .agents/design.md.`;

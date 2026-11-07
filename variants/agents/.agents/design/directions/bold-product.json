@@ -84,16 +84,9 @@
       "neutral"
     ]
   },
-  "fontPairs": [
-    {
-      "display": "Bricolage Grotesque",
-      "body": "Onest",
-      "note": "characterful"
-    },
-    {
-      "display": "Unbounded",
-      "body": "Instrument Sans",
-      "note": "loud, wide display"
-    }
+  "pairings": [
+    "bricolage-onest",
+    "unbounded-instrument",
+    "sora-rethink"
   ]
 }
