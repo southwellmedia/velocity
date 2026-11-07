@@ -585,6 +585,8 @@ export function findHardcoded(source) {
     .replace(/<!--[\s\S]*?-->/g, keep)
     .replace(/<(script|style|pre|code)\b[\s\S]*?<\/\1>/gi, keep);
   body = blankExpressions(body);
+  // Content hidden from everyone, such as a honeypot field, isn't user-facing.
+  body = body.replace(/<([a-zA-Z][\w-]*)\b[^>]*\baria-hidden=["']true["'][^>]*>[\s\S]*?<\/\1>/g, keep);
   const hits = [];
   const at = (index, text) => hits.push({ line: lineOf(source, start + index), text: text.trim().replace(/\s+/g, ' ') });
   for (const m of body.matchAll(UI_ATTRS)) at(m.index, `${m[1]}="${m[2]}"`);

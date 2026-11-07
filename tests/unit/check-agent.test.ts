@@ -265,6 +265,13 @@ describe('check:agent', () => {
       expect(files).toEqual(['src/components/ui/Edited/Edited.astro', 'src/components/ui/PlanBadge/PlanBadge.astro']);
     });
 
+    it('ignores content hidden from everyone, such as a honeypot field', async () => {
+      const root = project({
+        'src/views/Form.astro': '<div class="hidden" aria-hidden="true">\n  <label>Website <input name="website" /></label>\n</div>\n',
+      });
+      expect(await findings(root, 'strings/hardcoded')).toEqual([]);
+    });
+
     it('lets a deliberately single-language file opt out', async () => {
       const root = project({ 'src/views/Legal.astro': `<!-- ${check.ALLOW_HARDCODED} -->\n<p>Terms of service</p>\n` });
       expect(await findings(root, 'strings/hardcoded')).toEqual([]);

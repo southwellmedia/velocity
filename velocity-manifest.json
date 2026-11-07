@@ -466,6 +466,14 @@
       "toVersion": "2.4.0",
       "title": "Agent-ready check",
       "description": "npm run check:agent scans your source and build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links, forms still on their stubs, edits to Velocity-owned files and hardcoded text. It now runs at the end of npm run validate; if you customized validate, append && node scripts/check-agent.mjs yourself. create-velocity-astro 2.1 and later record .velocity/baseline.json during the upgrade, so it can warn about edits to Velocity-owned files; with an older CLI, run npm run check:agent -- --write-baseline once and commit the file. Your contact and newsletter Actions are yours, so they weren't changed; check:agent still finds their original TODOs."
+    },
+    {
+      "fromVersion": "2.4.0",
+      "toVersion": "2.4.1",
+      "title": "Delete Velocity's copy of the check:agent test",
+      "description": "Velocity 2.4.0 copied its own unit test for check:agent into tests/unit/check-agent.test.ts. Upgrades replace scripts/check-agent.mjs but leave tests/ alone, so that test can fail after a later upgrade. Delete tests/unit/check-agent.test.ts unless you've made it your own.",
+      "pattern": "scripts/check-agent\\.mjs",
+      "searchPaths": ["tests/unit/"]
     }
   ],
   "scaffold": {
@@ -550,6 +558,7 @@
       "scripts/check-registry.mjs",
       "scripts/generate-components-ref.mjs",
       "tests/unit/components-ref.test.ts",
+      "tests/unit/check-agent.test.ts",
       "tests/unit/scaffold.test.ts",
       ".github/workflows/scaffold.yml"
     ],
