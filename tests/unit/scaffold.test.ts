@@ -181,8 +181,8 @@ describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (
       expect(text, doc).not.toMatch(/check:registry|test:scaffold|variants\//);
       const paths = backticked(text)
         .filter((ref) => /^(src|tests|integrations|\.agents)\//.test(ref))
-        // Worked examples and templates aren't real paths, and the site brief is written by the agent
-        .filter((ref) => !/[<*…]|pricing|\/Name/i.test(ref) && ref !== '.agents/site.md')
+        // Worked examples and templates aren't real paths; the brief and a custom direction are written by the agent
+        .filter((ref) => !/[<*…]|pricing|\/Name/i.test(ref) && !['.agents/site.md', 'src/styles/direction.json'].includes(ref))
         // Created when the first photo is added (see MediaSlot)
         .filter((ref) => ref !== 'src/assets/photos/')
         // Demo files are named as signals of a demo project; minimal projects don't have them.
