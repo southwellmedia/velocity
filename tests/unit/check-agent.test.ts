@@ -167,9 +167,10 @@ describe('check:agent', () => {
       'src/pages/dashboard.astro': '---\nexport const prerender = false;\n---\n<p>Dashboard</p>\n',
       'src/pages/users/[id].astro': '---\nexport const prerender = false;\n---\n',
       'src/pages/api/ping.ts': 'export const prerender = false;\nexport const GET = () => new Response();\n',
-      'astro.config.mjs': "export default { redirects: { '/old': '/' } };\n",
+      'astro.config.mjs':
+        "export default { redirects: { '/moved': { status: 301, destination: '/' }, '/old': '/' }, site: 'https://x.dev' };\n",
       'dist/index.html': page(
-        '<a href="/dashboard">a</a><a href="/users/42">b</a><a href="/api/ping">c</a><a href="/old">d</a><a href="/users">missing</a>',
+        '<a href="/dashboard">a</a><a href="/users/42">b</a><a href="/api/ping">c</a><a href="/old">d</a><a href="/moved">e</a><a href="/users">missing</a>',
       ),
     });
     const broken = (await findings(root, 'links/broken')).map((f) => f.message);
@@ -177,7 +178,9 @@ describe('check:agent', () => {
     expect(broken[0]).toContain('/users');
 
     const withBase = project({
-      'dist/index.html': page('<link rel="stylesheet" href="/docs/_astro/site.css"><a href="/docs/about/">ok</a><a href="/docs/nope/">bad</a>'),
+      'dist/index.html': page(
+        '<link rel="stylesheet" href="/docs/_astro/site.css"><a href="/docs">home</a><a href="/docs/about/">ok</a><a href="/docs/nope/">bad</a>',
+      ),
       'dist/about/index.html': page('<h1>About</h1>'),
       'dist/_astro/site.css': '',
     });
@@ -238,7 +241,8 @@ describe('check:agent', () => {
         'src/pages/pricing.astro': '<h1>Simple pricing</h1>\n',
         'src/components/pricing/PlanCard.astro': '<button aria-label="Choose this plan">Choose</button>\n',
         'src/components/pricing/Toggle.tsx':
-          'export default function Toggle() {\n  return <button title="Billing">Switch to yearly</button>;\n}\n',
+          'export default function Toggle() {\n  return <button title="Billing">Switch to yearly&nbsp;</button>;\n}\n',
+        'src/components/pricing/Sep.tsx': 'export const Sep = () => <span>&middot;</span>;\n',
       });
       const hits = (await findings(root, 'strings/hardcoded')).map((f) => `${f.file}:${f.line} ${f.message.split('"')[1]}`);
       expect(hits).toEqual(
@@ -246,7 +250,7 @@ describe('check:agent', () => {
           'src/pages/pricing.astro:1 Simple pricing',
           'src/components/pricing/PlanCard.astro:1 aria-label=',
           'src/components/pricing/Toggle.tsx:2 title=',
-          'src/components/pricing/Toggle.tsx:2 Switch to yearly',
+          'src/components/pricing/Toggle.tsx:2 Switch to yearly&nbsp;',
         ]),
       );
     });

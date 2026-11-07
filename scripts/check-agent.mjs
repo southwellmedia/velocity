@@ -246,8 +246,11 @@ export function serverRoutes(root) {
     out.push(toRegex(route.replace(/\/+$/, '') || '/'));
   }
   const config = ['astro.config.mjs', 'astro.config.ts', 'astro.config.js'].find((f) => fs.existsSync(path.join(root, f)));
-  const block = config && read(root, config).match(/redirects\s*:\s*\{([\s\S]*?)\}/)?.[1];
-  for (const m of block?.matchAll(/['"`](\/[^'"`]*)['"`]\s*:/g) ?? []) out.push(toRegex(m[1].replace(/\/$/, '') || '/'));
+  const block = config && balancedBlock(read(root, config), /redirects\s*:\s*\{/);
+  // Top-level keys only: '/old': '/new' or '/old': { status, destination }.
+  for (const m of block?.matchAll(/['"`](\/[^'"`]*)['"`]\s*:/g) ?? []) {
+    if (depthAt(block, m.index) === 0) out.push(toRegex(m[1].replace(/\/$/, '') || '/'));
+  }
   return out;
 }
 
@@ -260,6 +263,41 @@ function pageSourceOptsOut(root, page) {
     ? [`src/pages/${route}.astro`, `src/pages/${route}/index.astro`, `src/pages/${route}.md`, `src/pages/${route}.mdx`]
     : ['src/pages/index.astro'];
   return candidates.some((rel) => fs.existsSync(path.join(root, rel)) && read(root, rel).includes(SINGLE_LANGUAGE));
+}
+
+/** The text between `opener` (ending in "{") and its matching "}", skipping braces inside strings. */
+function balancedBlock(text, opener) {
+  const m = opener.exec(text);
+  if (!m) return undefined;
+  let depth = 1;
+  let quote = null;
+  const start = m.index + m[0].length;
+  for (let i = start; i < text.length; i++) {
+    const c = text[i];
+    if (quote) {
+      if (c === '\\') i++;
+      else if (c === quote) quote = null;
+    } else if (c === '"' || c === "'" || c === '`') quote = c;
+    else if (c === '{') depth++;
+    else if (c === '}' && --depth === 0) return text.slice(start, i);
+  }
+  return undefined;
+}
+
+/** Brace depth at `index` within `text`, ignoring braces inside strings. */
+function depthAt(text, index) {
+  let depth = 0;
+  let quote = null;
+  for (let i = 0; i < index; i++) {
+    const c = text[i];
+    if (quote) {
+      if (c === '\\') i++;
+      else if (c === quote) quote = null;
+    } else if (c === '"' || c === "'" || c === '`') quote = c;
+    else if (c === '{') depth++;
+    else if (c === '}') depth--;
+  }
+  return depth;
 }
 
 /** The site's base path (astro.config `base`), read from where the build put its assets, or ''. */
@@ -316,6 +354,7 @@ export function checkBuild(root, distRel, { keyIsRaw = () => false, defaultLocal
     const file = `${distRel}/${page}`;
     const html = fs.readFileSync(path.join(distRoot, page), 'utf8');
     const markup = markupOnly(html);
+    const base = basePathOf(html);
 
     // On a multilingual site every page Velocity routes carries hreflang alternates.
     // A page with none was built outside the localized routes: it exists in one
@@ -387,8 +426,8 @@ export function checkBuild(root, distRel, { keyIsRaw = () => false, defaultLocal
         else if (value.startsWith('/') && !value.startsWith('//')) {
           const url = new URL(value, 'https://site.invalid');
           // Links that carry the site's base path resolve against the build without it.
-          const base = basePathOf(html);
-          const pathname = base && url.pathname.startsWith(`${base}/`) ? url.pathname.slice(base.length) : url.pathname;
+          let pathname = url.pathname;
+          if (base && (pathname === base || pathname.startsWith(`${base}/`))) pathname = pathname.slice(base.length) || '/';
           if (/^\/_(actions|image|server-islands)\//.test(pathname) || pathname === '/_image') continue;
           // Server-rendered routes and redirects aren't in the static build but do exist.
           if (dynamic.some((re) => re.test(pathname.replace(/\/$/, '') || '/'))) continue;
@@ -613,7 +652,8 @@ export function findHardcodedJsx(source, ts) {
   const visit = (node) => {
     if (ts.isJsxText(node)) {
       const text = node.getText(sf).trim();
-      if (/[A-Za-zÀ-ÿ]{2,}/.test(text) && !/^[a-z][\w.-]*$/.test(text)) at(node, text);
+      // Same exclusions as .astro files: entities and lone lowercase identifiers.
+      if (/[A-Za-zÀ-ÿ]{2,}/.test(text) && !/^&[a-z]+;$/.test(text) && !/^[a-z][\w.-]*$/.test(text)) at(node, text);
     } else if (ts.isJsxAttribute(node) && node.initializer && ts.isStringLiteral(node.initializer)) {
       const name = node.name.getText(sf);
       if (/^(alt|title|aria-label|placeholder|label)$/.test(name) && /[A-Za-z]{2}/.test(node.initializer.text)) {
