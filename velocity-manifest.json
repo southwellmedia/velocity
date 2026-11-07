@@ -37,6 +37,7 @@
       "tests/e2e/site.ts",
       "src/components/hero/",
       ".agents/velocity.md",
+      ".agents/components.md",
       ".agents/skills/",
       ".claude/skills/",
       "scripts/check-agent.mjs"
@@ -541,12 +542,16 @@
       "scripts/scaffold.mjs",
       "scripts/scaffold-matrix.mjs",
       "scripts/check-registry.mjs",
+      "scripts/generate-components-ref.mjs",
+      "tests/unit/components-ref.test.ts",
       "tests/unit/scaffold.test.ts",
       ".github/workflows/scaffold.yml"
     ],
     "cleanupScripts": [
       "test:scaffold",
-      "check:registry"
+      "check:registry",
+      "check:components",
+      "generate:components"
     ]
   },
   "packageJson": {

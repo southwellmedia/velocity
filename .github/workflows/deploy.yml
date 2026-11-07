@@ -47,6 +47,10 @@ jobs:
           DEPLOY_TARGET: node
           SITE_URL: ${{ secrets.SITE_URL }}
 
+      # Raw translation keys, CSP problems, broken links (see .agents/velocity.md)
+      - name: Agent-ready check
+        run: pnpm check:agent
+
       - name: Install Playwright browser
         run: pnpm exec playwright install --with-deps chromium
 

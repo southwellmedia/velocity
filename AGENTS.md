@@ -21,7 +21,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 
 ## Where things live
 
-- `src/components/ui/` — design-system primitives (one folder per component, with `*.variants.ts` using CVA). Catalogued in `component-registry.json`; keep the registry in sync when adding, renaming, or changing a component's file dependencies.
+- `src/components/ui/` — design-system primitives (one folder per component, with `*.variants.ts` using CVA). Catalogued in `component-registry.json`; keep the registry in sync when adding, renaming, or changing a component's file dependencies. Each entry has a hand-written `description`, `example` and optional `useInstead`, which `pnpm generate:components` turns into `variants/agents/.agents/components.md` for user projects. A stale file fails `pnpm test`.
 - `src/components/patterns/` — compositions of primitives (ContactForm, NewsletterForm, SearchInput…).
 - `src/components/site/` — `SiteHeader` and `SiteFooter`, owned by the project. Every layout renders them. Don't render `Header` or `Footer` from a layout directly.
 - `src/views/` — page content. `src/pages/*.astro` are thin wrappers that render a view with a locale; `src/pages/[lang]/` holds the localized wrappers.

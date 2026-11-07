@@ -82,11 +82,29 @@
     },
     "component": {
       "type": "object",
-      "required": ["name", "category", "files", "dependencies", "premium"],
+      "required": ["name", "description", "category", "files", "dependencies", "premium", "example"],
       "properties": {
         "name": {
           "type": "string",
           "description": "Display name of the component"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "One line: what the component is for. Shown in .agents/components.md"
+        },
+        "useInstead": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Short notes steering agents to the right component or approach (e.g. \"Use Button with href for links styled as buttons\")"
+        },
+        "example": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Short, valid Astro usage snippet that imports the component by its real path and uses real props"
         },
         "category": {
           "type": "string",

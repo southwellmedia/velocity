@@ -9,6 +9,8 @@ description: Add a new page or route to this Velocity site, with its view, local
 
 `PageLayout` renders the site's header and footer from `src/components/site/`, so a new page matches the rest of the site. For page content, reach for `Section`, `PageHeader` and `MediaSlot` in `src/components/patterns/` first.
 
+Before you write page content, read `.agents/components.md`. It lists every component Velocity ships, with import paths, props, variants and examples, so you can compose the page from existing components instead of reading their source or writing new markup. Check that a component's import path exists in this project before using it; to add a missing one, use the `velocity-add-component` skill.
+
 A Velocity page is a view plus thin wrappers, registered in the route config. Creating only `src/pages/<slug>.astro` leaves the page without localized URLs, hreflang links or test coverage.
 
 ## Choose the names
