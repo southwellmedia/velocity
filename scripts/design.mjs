@@ -83,8 +83,9 @@ export function toHex(color) {
     .join('')}`;
 }
 
+/** Relative luminance of the colour as the browser paints it: rounded to 8-bit sRGB first, as axe measures. */
 export function luminance(color) {
-  const [r, g, b] = toLinearSrgb(color);
+  const [r, g, b] = toLinearSrgb(color).map((v) => toLinear(Math.round(clamp01(fromLinear(v)) * 255) / 255));
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
@@ -367,6 +368,8 @@ function semanticTokens(spec, hue) {
   const tint = { hue: spec.neutral?.hue ?? hue, chroma: spec.neutral?.chroma ?? 0 };
   const n = (s) => formatOklch(neutral(s, tint));
   const brandPrimary = spec.primary === 'brand';
+  // Velocity's gray-400 sits right at 4.5:1 on gray-800; a little lighter keeps tinted neutrals above AA.
+  const mutedDark = formatOklch(oklch(66, tint.chroma, tint.hue));
   const invert = spec.invert === 'brand'
     ? { 950: formatOklch(oklch(15, 0.05, hue)), 900: formatOklch(oklch(19, 0.06, hue)), 800: formatOklch(oklch(25, 0.07, hue)), 700: formatOklch(oklch(33, 0.07, hue)) }
     : { 950: n(950), 900: n(900), 800: n(800), 700: n(700) };
@@ -391,7 +394,7 @@ function semanticTokens(spec, hue) {
   };
   const dark = {
     '--background': n(950), '--background-secondary': n(900), '--background-tertiary': n(800), '--background-elevated': n(900),
-    '--foreground': n(50), '--foreground-secondary': n(300), '--foreground-muted': n(400),
+    '--foreground': n(50), '--foreground-secondary': n(300), '--foreground-muted': mutedDark,
     '--foreground-subtle': formatOklch(oklch(60, tint.chroma, tint.hue)),
     '--border': n(800), '--border-strong': n(700), '--border-subtle': n(900),
     '--primary': brandPrimary ? 'var(--brand-400)' : n(0),
@@ -399,7 +402,7 @@ function semanticTokens(spec, hue) {
     '--primary-foreground': n(950),
     '--secondary': n(800), '--secondary-hover': n(700), '--secondary-foreground': n(100),
     '--accent': 'var(--brand-500)', '--accent-hover': 'var(--brand-600)', '--accent-light': 'var(--brand-900)',
-    '--muted': n(800), '--muted-foreground': n(400),
+    '--muted': n(800), '--muted-foreground': mutedDark,
     '--card': n(900), '--card-border': n(800),
     '--input-bg': n(900), '--input-border': n(700), '--input-focus': brandPrimary ? 'var(--brand-400)' : n(0),
     '--ring': brandPrimary ? 'var(--brand-400)' : n(0),
@@ -409,7 +412,7 @@ function semanticTokens(spec, hue) {
     '--surface-invert-tertiary': spec.invert === 'brand' ? invert[700] : n(700),
     '--on-invert': n(50),
     '--on-invert-secondary': spec.invert === 'brand' ? n(200) : n(300),
-    '--on-invert-muted': spec.invert === 'brand' ? n(300) : n(400),
+    '--on-invert-muted': spec.invert === 'brand' ? n(300) : mutedDark,
     '--border-invert': spec.invert === 'brand' ? invert[700] : n(700),
     '--border-invert-strong': n(600),
   };
@@ -550,7 +553,7 @@ export function registeredFonts(config) {
   return [...config.matchAll(/fontsourceVariable\(\{([^}]*)\}\)/g)].map((m) => {
     const get = (k) => new RegExp(`${k}:\\s*'([^']*)'`).exec(m[1])?.[1];
     return { name: get('name'), pkg: get('pkg'), cssVariable: get('cssVariable'), source: m[0] };
-  });
+  }).filter((f) => f.name && f.pkg && f.cssVariable); // skips the helper's own definition, `fontsourceVariable({ name, pkg, … })`
 }
 
 /** Weight range of an installed @fontsource-variable package, or undefined when it isn't installed. */

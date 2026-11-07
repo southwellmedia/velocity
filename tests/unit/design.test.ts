@@ -235,6 +235,19 @@ describe('npm run design -- direction', () => {
 });
 
 describe('npm run design -- fonts', () => {
+  it('reads the real astro.config.mjs, ignoring the helper definition', () => {
+    const config = fs.readFileSync(path.join(REPO, 'astro.config.mjs'), 'utf8');
+    expect(design.registeredFonts(config).map((f: { name: string }) => f.name)).toEqual(['Manrope', 'Outfit', 'JetBrains Mono']);
+    const root = project({ installed: allFonts, files: { 'astro.config.mjs': config } });
+    expect(run(root, 'direction', '--base', 'editorial').code).toBe(0);
+    const next = read(root, 'astro.config.mjs');
+    expect(next).toContain("fontsourceVariable({ name: 'Source Sans 3'");
+    expect(next).toContain('function fontsourceVariable({ name, pkg, cssVariable, weight, fallbacks })');
+    expect(run(root, 'fonts', '--fix').code).toBe(0);
+    expect(read(root, 'astro.config.mjs')).toContain('function fontsourceVariable({ name, pkg, cssVariable, weight, fallbacks })');
+    expect(design.fontsReport(root).findings).toEqual([]);
+  });
+
   it('is clean on the scaffold', () => {
     const report = design.fontsReport(project());
     expect(report.findings).toEqual([]);
