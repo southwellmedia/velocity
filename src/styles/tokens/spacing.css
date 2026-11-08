@@ -45,18 +45,12 @@
   --space-96: 24rem; /* 384px */
 
   /* ---------------------------------------------------------------------------
-     Theme control - multiplies the section padding tokens below. Below 1 is
-     denser, above 1 airier. Override in src/styles/theme.css (on :root only).
-     --------------------------------------------------------------------------- */
-  --theme-section-space: 1;
-
-  /* ---------------------------------------------------------------------------
      Semantic Spacing
      --------------------------------------------------------------------------- */
   /* Top padding that clears a fixed header. Set to 0 in your theme if yours is sticky. */
   --header-offset: 4rem;
 
-  --space-section: calc(clamp(var(--space-16), 10vw, var(--space-24)) * var(--theme-section-space));
+  --space-section: clamp(var(--space-16), 10vw, var(--space-24));
   --space-section-header: clamp(var(--space-6), 5vw, var(--space-16));
   --space-container-x: clamp(var(--space-4), 5vw, var(--space-8));
   --space-stack-sm: var(--space-2);
@@ -69,10 +63,10 @@
   /* ---------------------------------------------------------------------------
      Section Padding - Size Variants
      --------------------------------------------------------------------------- */
-  --space-section-sm: calc(clamp(var(--space-12), 6vw, var(--space-16)) * var(--theme-section-space));
-  --space-section-md: calc(clamp(var(--space-16), 8vw, var(--space-24)) * var(--theme-section-space));
-  --space-section-lg: calc(clamp(var(--space-20), 10vw, var(--space-32)) * var(--theme-section-space));
-  --space-section-xl: calc(clamp(var(--space-28), 12vw, var(--space-40)) * var(--theme-section-space));
+  --space-section-sm: clamp(var(--space-12), 6vw, var(--space-16));
+  --space-section-md: clamp(var(--space-16), 8vw, var(--space-24));
+  --space-section-lg: clamp(var(--space-20), 10vw, var(--space-32));
+  --space-section-xl: clamp(var(--space-28), 12vw, var(--space-40));
 
   /* ---------------------------------------------------------------------------
      Section Grid Gaps - Fluid Scaling

@@ -16,7 +16,6 @@ Examples use npm. Use the package manager this project was installed with.
 | Health check | `GET http://localhost:<port>/_astro/status` |
 | Full validation | `npm run validate` (lint → check → unit tests → build → agent-ready check) |
 | Agent-ready check | `npm run check:agent` after a build; `-- --json` for machine-readable output |
-| Design | `npm run design -- direction --list`, `-- direction --base <id> --brand "#hex"`, `-- tokens` (contrast matrix), `-- fonts`. See `.agents/design.md` |
 | Unit tests | `npm test` |
 | E2E + a11y | `npm run build && npm run test:e2e` |
 
@@ -27,11 +26,10 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 ## Where things live
 
 - `src/components/site/`: this site's `SiteHeader` and `SiteFooter`. Every layout renders them, so change the header or footer here, never in `src/layouts/` or `src/components/layout/`.
-- `src/styles/theme.css`: picks the active theme. Themes load last, so they can override any token. `--brand-hue` recolours the brand scale. `npm run design -- direction` writes a design direction into it as a marked block. Read `.agents/design.md` before changing the site's look: it covers directions, theme controls and the design rules for pages and sections.
+- `src/styles/theme.css`: picks the active theme. Themes load last, so they can override any token. `--brand-hue` recolours the brand scale.
 - `src/views/`: page content. `src/pages/*.astro` are thin wrappers that render a view with a locale, and `src/pages/[lang]/` holds the localized wrappers. The 404 page's content is `src/views/NotFoundView.astro`, so customize it there, not in `src/pages/404.astro`.
 - `src/components/ui/`: design-system primitives, one folder per component with a `*.variants.ts` file using CVA. Read `.agents/components.md` before using or building a component: it lists every component Velocity ships with its purpose, props, variants, an example and what to use instead.
 - `src/components/patterns/`: compositions of primitives, such as `SearchInput`.
-- `src/components/sections/`: this site's page sections, yours. Start from the recipes in `.agents/recipes.md` (sources in `.agents/design/sections/`).
 - `src/config/nav.config.ts`: routes (with translated slugs), nav items, and header and footer defaults.
 - `src/config/site.config.ts`: site name, URL and metadata, and `defaultTheme` ('system', 'light' or 'dark') for visitors who haven't used the theme toggle.
 - `src/i18n/`: enabled locales (`locales.mjs`), your site copy (`translations/<locale>.ts`), and helpers (`useTranslations`, `getLocale`, `localizeRoute`, `localizePath`).
@@ -43,7 +41,7 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 
 ## The site brief
 
-If `.agents/site.md` exists, read it before changing pages, copy or styles: it records what the site is, its design direction and section rhythm, the facts the user gave, and what's still a placeholder. When you change the site, update its Sitemap, Design, Placeholders and Decisions log. It's the project's file; upgrades never touch it. The `velocity-start-site` skill creates it.
+If `.agents/site.md` exists, read it before changing pages, copy or styles: it records what the site is, the look the user asked for, the facts the user gave, and what's still a placeholder. When you change the site, update its Sitemap, Placeholders and Decisions log. It's the project's file; upgrades never touch it. The `velocity-start-site` skill creates it.
 
 ## Who owns which files
 
@@ -58,14 +56,15 @@ New files you add inside Velocity's folders stay in place. Only files Velocity s
 
 ## Before you say you're done
 
-If the site has a brief, every placeholder `check:agent` lists must be in its Placeholders section, and every design warning you leave must have a Decisions log entry. Run `npm run validate`, which ends with `check:agent`, then `npm run build && npm run test:e2e` for accessibility and CSP in a real browser. `check:agent` scans the source and the build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links and anchors, pages that exist in only one language on a multilingual site, forms still on their stubs, edits to Velocity-owned files, hardcoded user-facing text, remaining placeholders, the scaffold's default identity, and the design rules below. Each finding prints the file, the rule below that it breaks, and the fix. Errors fail; warnings are worth fixing or explaining to the user, and notices are information only. A file that is deliberately single-language can opt out of the hardcoded-text warning with a `velocity-allow-hardcoded` comment, and a page in `src/pages/` can opt out of the one-language-only warning with a `velocity-single-language` comment.
+If the site has a brief, every placeholder `check:agent` lists must be in its Placeholders section. Run `npm run validate`, which ends with `check:agent`, then `npm run build && npm run test:e2e` for accessibility and CSP in a real browser. `check:agent` scans the source and the build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links and anchors, pages that exist in only one language on a multilingual site, forms still on their stubs, edits to Velocity-owned files, hardcoded user-facing text, remaining placeholders, the scaffold's default identity, and pages with more than one `<h1>`. Each finding prints the file, the rule below that it breaks, and the fix. Errors fail; warnings are worth fixing or explaining to the user, and notices are information only. A file that is deliberately single-language can opt out of the hardcoded-text warning with a `velocity-allow-hardcoded` comment, and a page in `src/pages/` can opt out of the one-language-only warning with a `velocity-single-language` comment.
 
 ## Rules
 
 - **No hardcoded user-facing strings.** Use `const t = useTranslations(locale)` in views and `useTranslations(getLocale(Astro))` in components. Add new strings to `src/i18n/translations/<locale>.ts`, not `src/i18n/ui.ts`. Keys in translations override `ui.ts`, and missing keys fall back to English. `ui.ts` only translates en, es and fr, so for any other locale translate its keys into `translations/<locale>.ts` (see the `velocity-add-locale` skill). A key missing from English renders as the raw key; `npm run check:agent` reports it with the file and line.
 - **Internal links** go through `localizeRoute` or `localizePath`.
 - **Placeholders:** never invent facts: prices, phone numbers, addresses, opening hours, testimonials, client logos, statistics, awards or team members. Where the user hasn't given one, write the marker `[[placeholder: what goes here]]` in the copy, and render images through `MediaSlot`, which shows a labelled placeholder until the photo exists. `check:agent` lists every remaining placeholder (`content/placeholder`) and any scaffold identity left in `site.config.ts` or an unset `SITE_URL` (`config/default-identity`). List them all in your handoff.
-- **Design:** follow `.agents/design.md`. Primitives in `src/components/ui/` and `src/components/hero/` are Velocity's: wrap them in a section in `src/components/sections/` and pass classes, never edit them (wrap, never fork). Use semantic Tailwind classes (`bg-background`, `text-foreground-muted`, `bg-brand-600`), never raw colours or palette classes, and the spacing and type scales, never arbitrary values such as `py-[73px]`. One `<h1>` per page. Once `.agents/site.md` exists, `check:agent` warns on raw colours (`design/raw-color`), arbitrary values (`design/arbitrary-value`) and a theme with no direction (`design/default-theme`); it always warns on several `<h1>`s (`design/multiple-h1`). For a genuine exception add a `/* velocity-allow: reason */` comment on the line above and record why in `.agents/site.md` → Decisions log. Sections copied from `.agents/design/sections/` carry a `@velocity-section` stamp; when Velocity ships a newer version, `check:agent` prints a `design/section-outdated` notice with what changed, and you apply it by hand.
+- **Colors:** use semantic Tailwind classes (`bg-background`, `text-foreground-muted`, `bg-brand-600`), never raw colors.
+- **One `<h1>` per page.** `check:agent` warns when a built page has more (`a11y/multiple-h1`).
 - **Static first.** Pages are prerendered. Only Actions, and anything explicitly marked `export const prerender = false`, run on the server. Don't add `output: 'server'`.
 - **Markup must be valid HTML.** Astro 7's Rust compiler errors on unclosed tags and won't fix invalid nesting such as `<div>` inside `<p>`. `BaseLayout` owns the only `<main>`.
 - **Whitespace:** `compressHTML: true` is deliberate. Don't switch to `'jsx'` without auditing inline text.

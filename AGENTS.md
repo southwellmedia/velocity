@@ -13,8 +13,7 @@ Astro 7 · Tailwind CSS v4 · TypeScript (strict) · React 19 islands · Node �
 | Dev server (background, safe for agents) | `pnpm dev:bg`, then `pnpm astro dev status`, `pnpm astro dev logs`, `pnpm astro dev stop` |
 | Health check | `GET http://localhost:4321/_astro/status` |
 | Full validation | `pnpm validate` (lint → check → unit tests → build → agent-ready check) |
-| Agent-ready check | `pnpm check:agent` (after a build): raw translation keys, CSP, broken links, stubbed forms, Velocity-owned edits, hardcoded strings, placeholders, default identity, design rules |
-| Design engine | `pnpm design tokens` (resolved tokens + contrast matrix), `pnpm design direction --base <id>`, `pnpm design fonts` |
+| Agent-ready check | `pnpm check:agent` (after a build): raw translation keys, CSP, broken links, stubbed forms, Velocity-owned edits, hardcoded strings, placeholders, default identity, multiple `<h1>`s |
 | Unit tests | `pnpm test` |
 | E2E + a11y | `pnpm build && pnpm test:e2e` |
 | Agent benchmark | `pnpm bench:selftest` (no model calls); `pnpm bench --model <id>` for real runs, see `benchmark/README.md` |
@@ -32,8 +31,6 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 - `src/lib/blog.ts` — the only place that maps posts to URLs (`getPosts`, `getPostUrl`).
 - `src/actions/index.ts` — Astro Actions. Form schemas live in `src/lib/forms.ts` and endpoint delivery in `src/lib/form-delivery.ts`, so tests can import them.
 - `src/content.config.ts` — content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`). Project-specific collections go in `src/config/collections.ts`, which upgrades leave alone.
-- `scripts/design.mjs` and `variants/agents/.agents/design/` — the design engine and the five design directions (JSON) it applies to a project's `theme.css`; `variants/agents/.agents/design.md` is the guide projects receive. Every base theme and direction must pass `pnpm design tokens` (AA in light and dark); `tests/unit/design.test.ts` enforces it. When you add a token that text sits on, add the pair to `PAIRS` in the engine.
-- `variants/agents/.agents/design/sections/` and `variants/agents/.agents/recipes.md` — section sources projects copy into `src/components/sections/`, and their index. Each source carries a `@velocity-section Name@version` stamp (bump it, and add a `@changed <version>: …` line, when you change a source), a `@requires` line naming the registry entries it imports, and takes copy as props. `tests/unit/design.test.ts` keeps sources, registry and `recipes.md` in sync; `pnpm test:scaffold --only=sections` builds them all from a project, with `check:agent`. Fixture pages: `variants/fixtures/sections/`.
 - `src/styles/tokens/` and `src/styles/themes/` — design tokens (OKLCH). Use semantic Tailwind classes (`bg-background`, `text-foreground-muted`, `bg-brand-600`), never raw colors. `src/styles/theme.css` picks the active theme and upgrades leave it alone.
 - `integrations/` — local Astro integrations: `deploy-target.mjs` (adapter + cache provider detection), `pagefind.mjs` (search index).
 - `velocity-manifest.json` — consumed by `create-velocity-astro` to upgrade user projects. Breaking changes need a migration entry with `fromVersion`/`toVersion`.

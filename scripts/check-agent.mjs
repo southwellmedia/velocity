@@ -24,13 +24,9 @@
  *   strings/hardcoded      user-facing text written into a view or component         (warning)
  *   content/placeholder    a [[placeholder: …]] marker or an empty MediaSlot still on a page (warning)
  *   config/default-identity  site.config.ts still has the scaffold's name, author or email, or the build uses example.com (warning)
- *   design/multiple-h1     a built page with more than one <h1>                       (warning)
- *   design/raw-color       hex/rgb/oklch literals or palette classes in views, sections or site/ (warning, once .agents/site.md exists)
- *   design/arbitrary-value arbitrary spacing or type values such as py-[73px]         (warning, once .agents/site.md exists)
- *   design/default-theme   .agents/site.md exists but theme.css is still the scaffold's (warning)
- *   design/section-outdated a copied section whose Velocity source has a newer version (notice: never fails, not even with --strict)
+ *   a11y/multiple-h1     a built page with more than one <h1>                       (warning)
  *
- * Notices are information only. --strict turns warnings into errors.
+ * --strict turns warnings into errors.
  */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -54,11 +50,7 @@ const RULES = {
   'strings/hardcoded': { severity: 'warning', ref: 'Rules → No hardcoded user-facing strings' },
   'content/placeholder': { severity: 'warning', ref: 'Rules → Placeholders' },
   'config/default-identity': { severity: 'warning', ref: 'Rules → Placeholders' },
-  'design/multiple-h1': { severity: 'warning', ref: 'Rules → Design' },
-  'design/raw-color': { severity: 'warning', ref: 'Rules → Design' },
-  'design/arbitrary-value': { severity: 'warning', ref: 'Rules → Design' },
-  'design/default-theme': { severity: 'warning', ref: 'Rules → Design' },
-  'design/section-outdated': { severity: 'notice', ref: 'Rules → Design' },
+  'a11y/multiple-h1': { severity: 'warning', ref: 'Rules → Accessibility is tested' },
 };
 
 function finding(rule, { file, line, message, fix }) {
@@ -592,13 +584,10 @@ export function checkOwnership(root) {
   for (const [rel, hash] of Object.entries(files ?? {})) {
     const abs = path.join(root, rel);
     if (!fs.existsSync(abs) || sha256(fs.readFileSync(abs)) === hash) continue;
-    const primitive = /^src\/components\/(ui|hero)\//.test(rel);
     out.push(finding('ownership/edited', {
       file: rel,
       message: 'This file is Velocity-owned and the next upgrade replaces it, losing the edit.',
-      fix: primitive
-        ? 'Undo the edit and wrap the primitive instead (wrap, never fork): build the look in a section in src/components/sections/ that renders this component and passes classes or props. See .agents/design.md → The layers. If the primitive genuinely can\'t be bent far enough, tell the user it\'s a Velocity issue.'
-        : 'Make the change in a file you own (src/components/site/, src/views/, src/components/patterns/, src/styles/theme.css, translations), or tell the user the edit will need reapplying after upgrades.',
+      fix: 'Make the change in a file you own (src/components/site/, src/views/, src/components/patterns/, src/styles/theme.css, translations), or tell the user the edit will need reapplying after upgrades.',
     }));
   }
   return { findings: out, skipped: false };
@@ -742,7 +731,6 @@ export async function checkHardcoded(root) {
 // Placeholders and identity
 
 export const PLACEHOLDER = /\[\[placeholder:\s*([^\]]*?)\s*\]\]/g;
-export const SITE_BRIEF = '.agents/site.md';
 
 /** Regular expressions for MediaSlot's placeholder aria-label in every locale ui.ts translates. */
 function mediaPlaceholderPatterns(dicts) {
@@ -841,92 +829,9 @@ export function checkIdentity(root, distRel) {
 }
 
 // ---------------------------------------------------------------------------
-// Design (.agents/design.md)
+// Headings
 
-/** Where the project's own design lives: the rules below scan only these. */
-const DESIGN_DIRS = ['src/components/sections', 'src/views', 'src/components/site'];
-export const ALLOW_DESIGN = 'velocity-allow:';
-
-const PALETTE = 'slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose';
-const COLOR_UTIL = 'bg|text|border(?:-[xytrbl])?|ring|ring-offset|fill|stroke|from|via|to|outline|decoration|divide|accent|caret|shadow|placeholder';
-const PALETTE_CLASS = new RegExp(`(?<![\\w-])(?:[\\w-]+:)*(?:${COLOR_UTIL})-(?:(?:${PALETTE})-(?:50|[1-9]00|950)|white|black)(?:\\/\\d+)?(?![\\w-])`, 'g');
-const ARBITRARY_COLOR = /(?<![\w-])(?:[\w-]+:)*[\w-]+-\[(?:#[0-9a-fA-F]{3,8}|(?:rgba?|hsla?|oklch|oklab|lab|lch)\([^\]]*\))\]/g;
-const COLOR_FUNCTION = /(?:#[0-9a-fA-F]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|lab|lch)\([^)]*\))/g;
-const SPACING_TYPE = 'p|px|py|pt|pr|pb|pl|ps|pe|m|mx|my|mt|mr|mb|ml|ms|me|gap|gap-x|gap-y|space-x|space-y|text|leading|tracking';
-const ARBITRARY_VALUE = new RegExp(`(?<![\\w-])(?:[\\w-]+:)*-?(?:${SPACING_TYPE})-\\[([^\\]]+)\\]`, 'g');
-
-function designFiles(root) {
-  return DESIGN_DIRS.flatMap((dir) => walk(root, dir, (f) => /\.(astro|tsx|jsx|css)$/.test(f)));
-}
-
-/** Lines the file opts out of: the line with a velocity-allow comment and the line after it. */
-function allowedLines(text) {
-  const lines = new Set();
-  text.split('\n').forEach((line, i) => {
-    if (line.includes(ALLOW_DESIGN)) lines.add(i + 1).add(i + 2);
-  });
-  return lines;
-}
-
-/** Style blocks and style="" attributes, where colour literals mean a hardcoded colour. */
-function styleRanges(text) {
-  return [...text.matchAll(/<style\b[^>]*>[\s\S]*?<\/style>|\bstyle\s*=\s*(?:"[^"]*"|'[^']*')/gi)].map((m) => [m.index, m.index + m[0].length]);
-}
-
-/** design/raw-color and design/arbitrary-value, for projects with a brief. */
-export function checkDesignSource(root) {
-  if (!fs.existsSync(path.join(root, SITE_BRIEF))) return [];
-  const out = [];
-  for (const file of designFiles(root)) {
-    const text = read(root, file);
-    const allowed = allowedLines(text);
-    const seen = new Set();
-    const report = (rule, index, value, fix) => {
-      const line = lineOf(text, index);
-      const id = `${rule}:${line}:${value}`;
-      if (allowed.has(line) || seen.has(id)) return;
-      seen.add(id);
-      const message = rule === 'design/raw-color'
-        ? `"${value}" is a fixed colour: it ignores dark mode and the site's design direction.`
-        : `"${value}" is an arbitrary value outside the spacing and type scale.`;
-      out.push(finding(rule, { file, line, message, fix }));
-    };
-    const colorFix = 'Use a semantic token class instead (bg-background-secondary, text-foreground-muted, border-border, bg-brand-600; see .agents/design.md → Rules). For a genuine exception add a /* velocity-allow: reason */ comment on the line above and record why in .agents/site.md → Decisions log.';
-    for (const m of text.matchAll(PALETTE_CLASS)) report('design/raw-color', m.index, m[0], colorFix);
-    for (const m of text.matchAll(ARBITRARY_COLOR)) report('design/raw-color', m.index, m[0], colorFix);
-    const css = file.endsWith('.css');
-    for (const [start, end] of css ? [[0, text.length]] : styleRanges(text)) {
-      for (const m of text.slice(start, end).matchAll(COLOR_FUNCTION)) report('design/raw-color', start + m.index, m[0], colorFix);
-    }
-    for (const m of text.matchAll(ARBITRARY_VALUE)) {
-      const value = m[1];
-      // Token references (py-[var(--space-section-md)]) and colours (handled above) are fine here.
-      if (/var\(--/.test(value) || /^(#|color:|rgb|hsl|oklch)/.test(value) || !/\d/.test(value)) continue;
-      report('design/arbitrary-value', m.index, m[0], 'Use the spacing scale (p-6, gap-8, py-[var(--space-section-md)]) or the type scale (text-sm … text-7xl); theme controls in theme.css change them site-wide. For a genuine exception add a /* velocity-allow: reason */ comment on the line above and record why in .agents/site.md → Decisions log.');
-    }
-  }
-  return out;
-}
-
-/** Whether theme.css still only imports a base theme, with no direction or overrides. */
-export function isScaffoldTheme(themeCss) {
-  const rest = themeCss.replace(/\/\*[\s\S]*?\*\//g, '').replace(/@import\s+[^;]+;/g, '').trim();
-  return rest === '';
-}
-
-/** design/default-theme: a brief exists but the site still has the scaffold's look. */
-export function checkDefaultTheme(root) {
-  const theme = 'src/styles/theme.css';
-  if (!fs.existsSync(path.join(root, SITE_BRIEF)) || !fs.existsSync(path.join(root, theme))) return [];
-  if (!isScaffoldTheme(read(root, theme))) return [];
-  return [finding('design/default-theme', {
-    file: theme,
-    message: 'The site has a brief but still uses the scaffold\'s theme, so it looks like every other Velocity site.',
-    fix: 'Apply the direction in .agents/site.md → Design: npm run design -- direction --base <id> --brand "<hex>" (list them with -- direction --list).',
-  })];
-}
-
-/** design/multiple-h1: built pages with more than one <h1>. */
+/** a11y/multiple-h1: built pages with more than one <h1>. */
 export function checkHeadings(root, distRel) {
   if (!distRel) return [];
   const out = [];
@@ -935,53 +840,10 @@ export function checkHeadings(root, distRel) {
     const html = fs.readFileSync(path.join(distRoot, page), 'utf8');
     const count = [...markupOnly(html).matchAll(/<h1\b/gi)].length;
     if (count < 2) continue;
-    out.push(finding('design/multiple-h1', {
+    out.push(finding('a11y/multiple-h1', {
       file: `${distRel}/${page}`,
       message: `/${page.replace(/index\.html$/, '').replace(/\.html$/, '')} has ${count} <h1> elements; screen readers and search engines expect one.`,
       fix: 'Keep the Hero or PageHeader heading as the only <h1> and make the others <h2>. Check sections you added: a section heading is an <h2>.',
-    }));
-  }
-  return out;
-}
-
-/** Where Velocity ships section sources: the project's copy of the agents overlay, or this repo's. */
-const SECTION_SOURCES = ['.agents/design/sections', 'variants/agents/.agents/design/sections'];
-export const SECTION_STAMP = /@velocity-section\s+([\w-]+)@(\d+\.\d+\.\d+)/;
-
-const semver = (v) => v.split('.').map(Number);
-const newer = (a, b) => {
-  const [x, y] = [semver(a), semver(b)];
-  for (let i = 0; i < 3; i++) if (x[i] !== y[i]) return x[i] > y[i];
-  return false;
-};
-
-/**
- * design/section-outdated: sections copied into src/components/sections/ carry a
- * `@velocity-section Name@version` stamp. When Velocity's shipped source is newer,
- * list what changed (its `@changed <version>: …` lines) so the project can apply it
- * by hand. The project's copy is never edited. Unstamped sections are skipped.
- */
-export function checkSections(root) {
-  const dir = SECTION_SOURCES.find((d) => fs.existsSync(path.join(root, d)));
-  if (!dir) return [];
-  const sources = new Map();
-  for (const file of walk(root, dir, (f) => f.endsWith('.astro'))) {
-    const text = read(root, file);
-    const stamp = SECTION_STAMP.exec(text);
-    if (stamp) sources.set(stamp[1], { file, version: stamp[2], text });
-  }
-  const out = [];
-  for (const file of walk(root, 'src/components/sections', (f) => f.endsWith('.astro'))) {
-    const stamp = SECTION_STAMP.exec(read(root, file));
-    const source = stamp && sources.get(stamp[1]);
-    if (!source || !newer(source.version, stamp[2])) continue;
-    const changes = [...source.text.matchAll(/@changed\s+(\d+\.\d+\.\d+):\s*(.+)/g)]
-      .filter((m) => newer(m[1], stamp[2]))
-      .map((m) => `${m[1]}: ${m[2].trim()}`);
-    out.push(finding('design/section-outdated', {
-      file,
-      message: `${stamp[1]} was copied at ${stamp[2]}; Velocity now ships ${source.version}.${changes.length ? ` Changes: ${changes.join('; ')}.` : ''}`,
-      fix: `Compare with ${source.file} and apply the changes you want by hand, then update the stamp to ${stamp[1]}@${source.version}. Your copy is yours: nothing changes it automatically.`,
     }));
   }
   return out;
@@ -1023,9 +885,6 @@ export async function run(root, { strict = false } = {}) {
     ...checkPlaceholders(root, distRel, dicts),
     ...checkIdentity(root, distRel),
     ...checkHeadings(root, distRel),
-    ...checkDesignSource(root),
-    ...checkDefaultTheme(root),
-    ...checkSections(root),
   );
 
   if (strict) for (const f of findings) if (f.severity === 'warning') f.severity = 'error';
