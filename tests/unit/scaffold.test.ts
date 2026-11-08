@@ -29,7 +29,6 @@ function agentDocs(dir: string) {
   return [
     path.join(dir, 'AGENTS.md'),
     path.join(dir, '.agents/velocity.md'),
-    path.join(dir, '.agents/design.md'),
     ...fs.readdirSync(skills).map((name) => path.join(skills, name, 'SKILL.md')),
   ];
 }
@@ -212,12 +211,6 @@ describe('template extension points', () => {
     expect(fs.existsSync(path.join(process.cwd(), file))).toBe(true);
     expect(manifest.files.protected).toContain(file);
     expect(manifest.files.seed).toContain(file);
-  });
-
-  it('gives projects a sections folder that upgrades add but never touch', () => {
-    expect(fs.existsSync(path.join(process.cwd(), 'src/components/sections/README.md'))).toBe(true);
-    expect(manifest.files.protected).toContain('src/components/sections/');
-    expect(manifest.files.seed).toContain('src/components/sections/README.md');
   });
 
   it.each(['Section', 'PageHeader', 'MediaSlot'])('adds the %s pattern to upgraded projects', (name) => {

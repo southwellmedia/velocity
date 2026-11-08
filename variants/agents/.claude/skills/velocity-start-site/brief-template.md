@@ -27,14 +27,7 @@ Status: draft
 
 ## Design
 
-- Direction:
-- Why:
-- Brand colour:
-- Fonts:
-- Radius and density:
-- Imagery:
-- Section rhythm:
-  - Home:
+<!-- What the user said about the look: colours, fonts, feel, sites they like. -->
 
 ## Languages
 

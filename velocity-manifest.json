@@ -1,5 +1,5 @@
 {
-  "version": "2.5.0",
+  "version": "2.5.1",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -38,13 +38,9 @@
       "src/components/hero/",
       ".agents/velocity.md",
       ".agents/components.md",
-      ".agents/design/",
-      ".agents/design.md",
-      ".agents/recipes.md",
       ".agents/skills/",
       ".claude/skills/",
-      "scripts/check-agent.mjs",
-      "scripts/design.mjs"
+      "scripts/check-agent.mjs"
     ],
     "protected": [
       "astro.config.mjs",
@@ -59,7 +55,6 @@
       "src/components/landing/",
       "src/components/blog/",
       "src/components/patterns/",
-      "src/components/sections/",
       ".env",
       ".env.example",
       "src/actions/",
@@ -74,7 +69,6 @@
       "src/components/patterns/Section.astro",
       "src/components/patterns/PageHeader.astro",
       "src/components/patterns/MediaSlot.astro",
-      "src/components/sections/README.md",
       "src/components/site/",
       "src/config/collections.ts",
       "src/styles/theme.css",
@@ -495,6 +489,16 @@
       "title": "Set the default theme in site.config.ts",
       "description": "To make the site light or dark by default instead of following the visitor's system setting, set defaultTheme: 'light' or 'dark' in src/config/site.config.ts (add defaultTheme?: 'system' | 'light' | 'dark' to its SiteConfig interface if your copy predates it). If you had edited src/layouts/theme-script.js for this, this upgrade replaced it; your version is in .velocity-backup/."
     }
+,
+    {
+      "fromVersion": "2.5.0",
+      "toVersion": "2.5.1",
+      "title": "Design tools removed",
+      "description": "Velocity 2.5.1 removes the design engine, quick themes and example sections added in 2.5.0, so this upgrade deletes scripts/design.mjs, .agents/design/, .agents/design.md and .agents/recipes.md (backed up to .velocity-backup/). Delete the \"design\" script from package.json. Anything you built stays yours: a direction block in src/styles/theme.css keeps its colours and fonts, sections in src/components/sections/ are untouched, and your .agents/site.md brief is kept.",
+      "pattern": "scripts/design\\.mjs",
+      "searchPaths": ["package.json"],
+      "remove": ["scripts/design.mjs", ".agents/design", ".agents/design.md", ".agents/recipes.md"]
+    }
   ],
   "scaffold": {
     "schemaVersion": 1,
@@ -579,7 +583,6 @@
       "scripts/generate-components-ref.mjs",
       "tests/unit/components-ref.test.ts",
       "tests/unit/check-agent.test.ts",
-      "tests/unit/design.test.ts",
       "tests/unit/scaffold.test.ts",
       ".github/workflows/scaffold.yml"
     ],
@@ -618,9 +621,6 @@
       },
       "check:agent": {
         "value": "node scripts/check-agent.mjs"
-      },
-      "design": {
-        "value": "node scripts/design.mjs"
       }
     }
   }
