@@ -493,8 +493,8 @@
     {
       "fromVersion": "2.5.0",
       "toVersion": "2.5.1",
-      "title": "Design tools removed",
-      "description": "Velocity 2.5.1 removes the design engine, quick themes and example sections added in 2.5.0, so this upgrade deletes scripts/design.mjs, .agents/design/, .agents/design.md and .agents/recipes.md (backed up to .velocity-backup/). Delete the \"design\" script from package.json. Anything you built stays yours: a direction block in src/styles/theme.css keeps its colours and fonts, sections in src/components/sections/ are untouched, and your .agents/site.md brief is kept.",
+      "title": "Unused files removed",
+      "description": "This upgrade deletes files Velocity no longer ships (scripts/design.mjs, .agents/design/, .agents/design.md, .agents/recipes.md), backed up to .velocity-backup/. If package.json has a \"design\" script, delete it. Your theme, components and .agents/site.md brief are not touched.",
       "pattern": "scripts/design\\.mjs",
       "searchPaths": ["package.json"],
       "remove": ["scripts/design.mjs", ".agents/design", ".agents/design.md", ".agents/recipes.md"]
