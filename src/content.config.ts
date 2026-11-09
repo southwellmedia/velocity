@@ -1,29 +1,41 @@
-import { defineCollection } from 'astro:content';
+import { defineCollection, type SchemaContext } from 'astro:content';
 import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 import { defaultLocale, locales } from './i18n/locales.mjs';
-import { siteCollections } from './config/collections';
+import * as site from './config/collections';
 
 const locale = z.enum(locales).default(defaultLocale);
+
+// src/config/collections.ts is the project's own file, which upgrades leave alone.
+// It can export siteCollections (extra collections) and blogFields (extra fields
+// for the blog's frontmatter, merged into the schema below). Both are optional.
+type BlogFields = typeof site extends { blogFields: (context: SchemaContext) => infer Shape extends z.ZodRawShape }
+  ? Shape
+  : Record<never, never>;
+const { siteCollections = {}, blogFields } = site as {
+  siteCollections?: Record<string, ReturnType<typeof defineCollection>>;
+  blogFields?: (context: SchemaContext) => BlogFields;
+};
 
 // Blog collection with Content Layer API
 const blog = defineCollection({
   // deferRender (Astro 7.1): render Markdown/MDX on demand instead of during
   // content sync — keeps memory flat as the blog grows.
   loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog', deferRender: true }),
-  schema: ({ image }) =>
+  schema: (context) =>
     z.object({
       title: z.string().max(100),
       description: z.string().max(200),
       publishedAt: z.coerce.date(),
       updatedAt: z.coerce.date().optional(),
       author: z.string().default('Team'),
-      image: image().optional(),
+      image: context.image().optional(),
       imageAlt: z.string().optional(),
       tags: z.array(z.string()).default([]),
       draft: z.boolean().default(false),
       featured: z.boolean().default(false),
       locale,
+      ...(blogFields?.(context) ?? ({} as BlogFields)),
     }),
 });
 

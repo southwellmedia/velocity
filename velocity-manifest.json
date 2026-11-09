@@ -1,5 +1,5 @@
 {
-  "version": "2.6.0",
+  "version": "2.6.1",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -506,6 +506,12 @@
       "toVersion": "2.6.0",
       "title": "New page sections in src/components/blocks/",
       "description": "Velocity now ships page sections you can compose pages from: PageHero, CtaBand, Faq, Steps, Testimonials and Hours, plus the Band they sit in, in src/components/blocks/ (Velocity-owned, replaced on upgrade). Icon now draws any Lucide icon by name (the lucide package, added by this upgrade); the names you already use keep working. Sections you wrote yourself in src/components/sections/ are yours and are not touched. Button gained variant=\"brand\". New theme tokens --brand-fill, --brand-fill-hover and --brand-ink control brand-coloured buttons and bands; if your brand colour is dark, set --brand-ink to white in your theme."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.6.1",
+      "title": "Add blog fields without editing content.config.ts",
+      "description": "src/config/collections.ts can now export blogFields, a function returning extra Zod fields for the blog's frontmatter, which content.config.ts merges into the blog schema with their types. If you added fields to the blog schema in content.config.ts, this upgrade replaced it and saved your version in .velocity-backup/: move those fields into blogFields. Your collections.ts is not touched."
     }
   ],
   "scaffold": {
