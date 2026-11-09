@@ -13,7 +13,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-22c55e" alt="License" /></a>
 </p>
 
-![velocity — an Astro 7 starter kit with 46 components, theming and AI agent tooling built in](https://raw.githubusercontent.com/yasirwhite/opendemo-media/main/southwellmedia-velocity/velocity-demo.gif)
+![velocity — an Astro 7 starter kit with 70 components, theming and AI agent tooling built in](https://raw.githubusercontent.com/yasirwhite/opendemo-media/main/southwellmedia-velocity/velocity-demo.gif)
 
 ---
 

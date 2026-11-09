@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "border-accent-on-rounded",
+        "value": "*",
+        "files": [
+          "src/components/ui/content/Kbd/Kbd.astro"
+        ],
+        "createdAt": "2026-11-09T18:56:41.980Z",
+        "reason": "Claude triage: Kbd's border-b-2 is the conventional keycap edge in the neutral border token, not an accent stripe"
+      }
+    ]
+  }
+}
