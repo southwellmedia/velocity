@@ -103,6 +103,9 @@
   --color-brand-700: var(--brand-700);
   --color-brand-800: var(--brand-800);
   --color-brand-900: var(--brand-900);
+  --color-brand-fill: var(--brand-fill);
+  --color-brand-fill-hover: var(--brand-fill-hover);
+  --color-brand-ink: var(--brand-ink);
 
   /* Font Sizes - matches original design scale */
   --font-size-xs: 0.75rem;     /* 12px */
@@ -270,6 +273,32 @@
     --color-ring: var(--on-invert);
     --color-primary: var(--on-invert);
     --color-primary-foreground: var(--surface-invert);
+  }
+
+  /* Brand section - a band filled with --brand-fill (Band tone="brand").
+     Text uses --brand-ink, which passes AA on the fill, and primary buttons
+     become ink with brand-coloured text. Same in light and dark mode. */
+  .brand-section,
+  .dark .brand-section {
+    color: var(--color-foreground);
+
+    --color-background: var(--brand-fill);
+    --color-foreground: var(--brand-ink);
+    --color-foreground-secondary: var(--brand-ink);
+    --color-foreground-muted: var(--brand-ink);
+    --color-foreground-subtle: var(--brand-ink);
+    --color-border: color-mix(in oklch, var(--brand-ink) 25%, transparent);
+    --color-border-strong: color-mix(in oklch, var(--brand-ink) 45%, transparent);
+    --color-secondary: color-mix(in oklch, var(--brand-ink) 10%, var(--brand-fill));
+    --color-secondary-foreground: var(--brand-ink);
+    --color-secondary-hover: color-mix(in oklch, var(--brand-ink) 18%, var(--brand-fill));
+    --color-card: color-mix(in oklch, var(--brand-ink) 8%, var(--brand-fill));
+    --color-card-border: color-mix(in oklch, var(--brand-ink) 25%, transparent);
+    --color-muted: color-mix(in oklch, var(--brand-ink) 10%, var(--brand-fill));
+    --color-muted-foreground: var(--brand-ink);
+    --color-ring: var(--brand-ink);
+    --color-primary: var(--brand-ink);
+    --color-primary-foreground: var(--brand-fill);
   }
 
   /* Container */

@@ -1,0 +1,107 @@
+---
+/**
+ * A closing call to action: a heading, a lead and the buttons you pass in the
+ * default slot, on a rounded panel. Put it near the end of a page, or use
+ * `bare` for the panel alone inside your own section.
+ *
+ *   tone     brand | invert (default) | secondary
+ *   stacked  buttons under the copy instead of beside it
+ *
+ * Slots: default (buttons), background (a layer behind the copy, such as a
+ * photo under a scrim). Extra attributes (e.g. data-reveal) go on the panel.
+ */
+import type { HTMLAttributes } from 'astro/types';
+import { cn } from '@/lib/cn';
+import { bandInnerVariants, type BandWidth } from './band.variants';
+
+interface Props extends Omit<HTMLAttributes<'div'>, 'title'> {
+  title: string;
+  lead?: string;
+  eyebrow?: string;
+  /** The panel's colour. brand and invert stand out; secondary is quieter */
+  tone?: 'brand' | 'invert' | 'secondary';
+  stacked?: boolean;
+  width?: BandWidth;
+  /** Render only the panel, without the surrounding section */
+  bare?: boolean;
+  /** Replace the title and lead classes, e.g. with a template's own type */
+  titleClass?: string;
+  leadClass?: string;
+  id?: string;
+  class?: string;
+}
+
+const {
+  title,
+  lead,
+  eyebrow,
+  tone = 'invert',
+  stacked = false,
+  width = 'default',
+  bare = false,
+  titleClass = 'font-display text-foreground text-3xl leading-[1.05] tracking-tight text-balance',
+  leadClass = 'text-foreground-secondary mt-3 text-base',
+  id,
+  class: className,
+  ...attrs
+} = Astro.props;
+const panel = {
+  brand: 'brand-section bg-background',
+  invert: 'invert-section bg-background',
+  secondary: 'bg-background-secondary border-border border',
+};
+// A conditional <Fragment slot="background"> still counts as a slot, so check what it renders
+const background = Astro.slots.has('background') ? (await Astro.slots.render('background')).trim() : '';
+const actions = Astro.slots.has('default') ? (await Astro.slots.render('default')).trim() : '';
+---
+
+{
+  bare ? (
+    <div
+      id={id}
+      class={cn(
+        'relative isolate flex gap-8 overflow-hidden rounded-[var(--theme-radius-xl)] p-8 md:p-12',
+        stacked ? 'flex-col items-start justify-center' : 'flex-col lg:flex-row lg:items-center lg:justify-between',
+        panel[tone],
+        className
+      )}
+      {...attrs}
+    >
+      {background && (
+        <div class="absolute inset-0 -z-10" aria-hidden="true">
+          <Fragment set:html={background} />
+        </div>
+      )}
+      <div class={cn('relative min-w-0', stacked ? 'max-w-2xl' : 'max-w-xl')}>
+        {eyebrow && <p class="mb-3 text-[0.8125rem] font-semibold tracking-[0.06em] uppercase opacity-85">{eyebrow}</p>}
+        <h2 class={titleClass}>{title}</h2>
+        {lead && <p class={leadClass}>{lead}</p>}
+      </div>
+      {actions && (
+        <div class="relative flex max-w-full flex-wrap gap-3 lg:shrink-0">
+          <Fragment set:html={actions} />
+        </div>
+      )}
+    </div>
+  ) : (
+    <section id={id} class="scroll-mt-24 py-[var(--space-section-sm)]">
+      <div class={bandInnerVariants({ width })}>
+        <Astro.self
+          title={title}
+          lead={lead}
+          eyebrow={eyebrow}
+          tone={tone}
+          stacked={stacked}
+          titleClass={titleClass}
+          leadClass={leadClass}
+          class={className}
+          bare
+          {...attrs}
+        >
+          {actions && <Fragment set:html={actions} />}
+          {background && <Fragment slot="background" set:html={background} />}
+        </Astro.self>
+      </div>
+    </section>
+  )
+}

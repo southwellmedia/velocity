@@ -165,21 +165,12 @@ export function extractSlots(root, file) {
   return [...new Set(names)];
 }
 
-/** Keys of an untyped top-level `const icons = { ... }` map (the Icon component's names). */
-export function extractIconNames(root, file) {
-  if (!file.endsWith('.astro')) return [];
-  const sf = parse(file, frontmatter(read(root, file)));
-  for (const stmt of sf.statements) {
-    if (!ts.isVariableStatement(stmt)) continue;
-    for (const d of stmt.declarationList.declarations) {
-      if (d.name.getText(sf) !== 'icons' || d.type || !d.initializer) continue;
-      let init = d.initializer;
-      if (ts.isAsExpression(init)) init = init.expression;
-      if (!ts.isObjectLiteralExpression(init)) continue;
-      return init.properties.filter((p) => p.name).map((p) => p.name.getText(sf).replace(/^['"]|['"]$/g, ''));
-    }
-  }
-  return [];
+/** Brand marks the Icon component draws itself; every other name comes from Lucide. */
+export function extractBrandIconNames(root, file) {
+  if (!file.endsWith('Icon/Icon.astro')) return [];
+  const brands = file.replace(/Icon\.astro$/, 'brand-icons.ts');
+  const source = read(root, brands);
+  return [...source.matchAll(/^\s+'?([a-z0-9-]+)'?: '/gm)].map((m) => m[1]);
 }
 
 /** True when a .tsx file exports a component under this name. */
@@ -331,9 +322,14 @@ export function generate(root = repoRoot) {
     const slots = extractSlots(root, file);
     if (slots.length) out.push(`**Slots:** ${slots.map((s) => `\`${s}\``).join(', ')}`, '');
 
-    const icons = extractIconNames(root, file);
-    if (icons.length) {
-      out.push('### Icon names', '', `Unknown names render the \`x\` icon. ${icons.map((n) => `\`${n}\``).join(', ')}`, '');
+    const brands = extractBrandIconNames(root, file);
+    if (brands.length) {
+      out.push(
+        '### Icon names',
+        '',
+        `Any Lucide icon by its kebab-case name, aliases included: https://lucide.dev/icons. Don't draw your own SVG or add another icon set. Brand marks Lucide doesn't ship: ${brands.map((n) => `\`${n}\``).join(', ')}. An unknown name renders the \`x\` icon and warns during the build.`,
+        ''
+      );
     }
 
     const variantFiles = c.files.filter((f) => f.endsWith('.variants.ts'));

@@ -14,7 +14,7 @@ This file lists every component Velocity ships. Read it before reading component
 
 | Component | Import | Description |
 |-----------|--------|-------------|
-| [Button](#button) | `@/components/ui/form/Button/Button.astro` | Button or button-styled link with variants, sizes, loading state and optional leading/trailing icons. |
+| [Button](#button) | `@/components/ui/form/Button/Button.astro` | Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons. |
 | [Input](#input) | `@/components/ui/form/Input/Input.astro` | Text input with built-in label, hint, error message and optional leading/trailing icons. |
 | [Textarea](#textarea) | `@/components/ui/form/Textarea/Textarea.astro` | Multi-line text field with built-in label, hint and error message. |
 | [Select](#select) | `@/components/ui/form/Select/Select.astro` | Native `<select>` built from an options array, with label, placeholder, hint and error. |
@@ -38,7 +38,7 @@ This file lists every component Velocity ships. Read it before reading component
 | [VerticalTabs](#verticaltabs) | `@/components/ui/overlay/VerticalTabs/VerticalTabs.astro` | Side-list tabs with optional descriptions and icons that turn into a dropdown or bottom sheet on mobile; panels use data-tab-content. |
 | [Accordion](#accordion) | `@/components/ui/overlay/Accordion/Accordion.astro` | Collapsible sections built on native `<details>`/`<summary>` (works without JS), with an exclusive single-open mode. |
 | [Separator](#separator) | `@/components/ui/layout/Separator/Separator.astro` | Horizontal or vertical divider line, optionally with a centered label. |
-| [Icon](#icon) | `@/components/ui/primitives/Icon/Icon.astro` | Inline SVG icon from a built-in set of Lucide paths (plus a few brand icons), sized by preset. |
+| [Icon](#icon) | `@/components/ui/primitives/Icon/Icon.astro` | Inline SVG icon: any Lucide icon by its kebab-case name (lucide.dev/icons), drawn at build time, plus a few brand marks, sized by preset. |
 | [CodeBlock](#codeblock) | `@/components/ui/content/CodeBlock/CodeBlock.astro` | Static code display with a window header, optional filename, line numbers and a copy button. |
 | [Logo](#logo) | `@/components/ui/marketing/Logo/Logo.astro` | The site's logo, rendered inline from the SVGs in src/assets/branding/ (logomark or full), with light/dark versions. |
 | [CTA](#cta) | `@/components/ui/marketing/CTA/CTA.astro` | Closing call-to-action band centered, with logo, heading, description and actions slots (each rendered only when filled). |
@@ -57,13 +57,20 @@ This file lists every component Velocity ships. Read it before reading component
 | [Footer](#footer) | `@/components/layout/Footer.astro` | Site footer in simple, columns, minimal or stacked layouts, with nav, link groups, social and legal links, tagline and copyright. |
 | [ConsentBanner](#consentbanner) | `@/components/ui/overlay/ConsentBanner/ConsentBanner.astro` | Cookie consent banner and settings dialog with Google Consent Mode v2; renders only when PUBLIC_CONSENT_ENABLED is true. |
 | [GoogleMap](#googlemap) | `@/components/ui/data-display/GoogleMap/GoogleMap.astro` | Consent-aware Google Maps embed by coordinates or address; shows a setup prompt without PUBLIC_GOOGLE_MAPS_API_KEY and a placeholder until consent. |
-| [Section](#section) | `@/components/patterns/Section.astro` | Page section with standard spacing and width, an optional eyebrow/title/lead heading block, action slot and tinted tone. |
+| [Section](#section) | `@/components/patterns/Section.astro` | Page section with standard spacing and width, an optional eyebrow/title/lead heading block, action slot, and tone (default, secondary, invert, brand), width and pad. A thin wrapper over blocks/Band. |
 | [PageHeader](#pageheader) | `@/components/patterns/PageHeader.astro` | Opening band for inner pages with eyebrow, title and lead; holds the page's only `<h1>`. |
 | [MediaSlot](#mediaslot) | `@/components/patterns/MediaSlot.astro` | Optimized image from src/assets/photos/`<photo>` at a fixed aspect ratio, or a labelled placeholder until the photo exists. |
+| [Band](#band) | `@/components/blocks/Band.astro` | Page band with tone (default, secondary, invert, brand), width (default, wide, narrow), padding, an optional eyebrow/title/lead heading and a background slot for a photo or texture layer. Every section renders one. |
+| [PageHero](#pagehero) | `@/components/blocks/PageHero.astro` | Opening band for inner pages: the page's only `<h1>`, eyebrow, lead, tone, size, and slots for breadcrumbs, content after the title and a wide-screen aside. |
+| [CtaBand](#ctaband) | `@/components/blocks/CtaBand.astro` | Closing call-to-action panel with a heading, lead and your buttons, on a brand, invert or secondary tone. |
+| [Faq](#faq) | `@/components/blocks/Faq.astro` | Questions and answers as an accordion, stacked in a narrow band or split with the heading beside the answers, with FAQPage JSON-LD. |
+| [Steps](#steps) | `@/components/blocks/Steps.astro` | Numbered how-it-works steps in columns or a list, in its own band or bare inside another layout. |
+| [Testimonials](#testimonials) | `@/components/blocks/Testimonials.astro` | Customer quotes in a grid of cards with name, role, optional avatar and star rating. |
+| [Hours](#hours) | `@/components/blocks/Hours.astro` | Opening hours table (days as row headers, times in tabular figures) with an optional note and per-row data attributes for a "today" highlight; in its own band or bare inside another layout. |
 
 ## Button
 
-Button or button-styled link with variants, sizes, loading state and optional leading/trailing icons.
+Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons.
 
 - **Import:** `import Button from '@/components/ui/form/Button/Button.astro';`
 - **React island:** `import { Button } from '@/components/ui/form/Button/Button';`
@@ -75,7 +82,7 @@ Button or button-styled link with variants, sizes, loading state and optional le
 
 | Prop | Type | Default | Required | Notes |
 |------|------|---------|----------|-------|
-| `variant` | `'primary' \| 'secondary' \| 'outline' \| 'ghost' \| 'link' \| 'destructive'` | `'primary'` |  |  |
+| `variant` | `'brand' \| 'primary' \| 'secondary' \| 'outline' \| 'ghost' \| 'link' \| 'destructive'` | `'primary'` |  |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |  |  |
 | `loading` | `boolean` | `false` |  |  |
 | `fullWidth` | `boolean` | `false` |  |  |
@@ -97,7 +104,7 @@ CVA definitions from `button.variants.ts`.
 
 | Variant | Options | Default |
 |---------|---------|---------|
-| `variant` | `primary`, `secondary`, `outline`, `ghost`, `link`, `destructive` | `primary` |
+| `variant` | `brand`, `primary`, `secondary`, `outline`, `ghost`, `link`, `destructive` | `primary` |
 | `size` | `sm`, `md`, `lg` | `md` |
 | `fullWidth` | `true` |  |
 | `icon` | `true` |  |
@@ -109,7 +116,7 @@ CVA definitions from `button.variants.ts`.
 import Button from '@/components/ui/form/Button/Button.astro';
 ---
 
-<Button variant="primary" size="lg" trailingIcon="arrow-right" href="/contact">Get in touch</Button>
+<Button variant="brand" size="lg" trailingIcon="arrow-right" href="/contact">Get in touch</Button>
 <Button variant="outline" type="submit" loading>Saving</Button>
 ```
 
@@ -118,6 +125,7 @@ import Button from '@/components/ui/form/Button/Button.astro';
 - Use Button with href for links styled as buttons, not a styled `<a>`; external URLs get target="_blank" and rel automatically.
 - Use icon (with size) for square icon-only buttons, and give them an aria-label.
 - Use the link variant for inline text actions, not a plain `<button>` with custom classes.
+- Use variant="brand" for the main action in the brand colour (its text uses --brand-ink, so it passes contrast) instead of custom bg-brand classes; restyle tones in a wrapper, not by editing Button.
 
 ## Input
 
@@ -1262,25 +1270,31 @@ import Separator from '@/components/ui/layout/Separator/Separator.astro';
 
 ## Icon
 
-Inline SVG icon from a built-in set of Lucide paths (plus a few brand icons), sized by preset.
+Inline SVG icon: any Lucide icon by its kebab-case name (lucide.dev/icons), drawn at build time, plus a few brand marks, sized by preset.
 
 - **Import:** `import Icon from '@/components/ui/primitives/Icon/Icon.astro';`
 - **React island:** `import { Icon } from '@/components/ui/primitives/Icon/Icon';`
 - **Registry id:** `icon` · **Category:** UI Components / Primitives
-- **Files:** `src/components/ui/primitives/Icon/Icon.astro`, `src/components/ui/primitives/Icon/index.ts`, `src/components/ui/primitives/Icon/Icon.tsx`
+- **Files:** `src/components/ui/primitives/Icon/Icon.astro`, `src/components/ui/primitives/Icon/index.ts`, `src/components/ui/primitives/Icon/Icon.tsx`, `src/components/ui/primitives/Icon/brand-icons.ts`
 
 ### Props
 
 | Prop | Type | Default | Required | Notes |
 |------|------|---------|----------|-------|
-| `name` | `string` |  | yes |  |
+| `name` | `IconName \| (string & {})` |  | yes | A Lucide icon name, e.g. "map-pin", or a brand mark |
 | `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` |  |  |
 | `class` | `string` |  |  |  |
 | `strokeWidth` | `number` | `2` |  |  |
 
+Types:
+
+```ts
+type IconName = LucideIconName | BrandIconName;
+```
+
 ### Icon names
 
-Unknown names render the `x` icon. `menu`, `x`, `chevron-down`, `chevron-right`, `chevron-left`, `arrow-right`, `arrow-left`, `arrow-up-right`, `external-link`, `search`, `plus`, `minus`, `check`, `copy`, `download`, `upload`, `eye`, `eye-off`, `edit`, `trash`, `share`, `archive`, `sun`, `moon`, `monitor`, `mail`, `phone`, `map-pin`, `calendar`, `clock`, `video`, `stethoscope`, `heart-pulse`, `baby`, `github`, `twitter`, `linkedin`, `file-text`, `book`, `image`, `zap`, `box`, `layout`, `globe`, `layers`, `shield`, `code`, `terminal`, `palette`, `settings`, `users`, `heart`, `star`, `trending-up`, `trending-down`, `inbox`, `toggle-left`, `table`, `alert-circle`, `alert-triangle`, `check-circle`, `x-circle`, `info`, `loader`, `brand-astro`, `brand-tailwind`, `brand-typescript`, `brand-react`
+Any Lucide icon by its kebab-case name, aliases included: https://lucide.dev/icons. Don't draw your own SVG or add another icon set. Brand marks Lucide doesn't ship: `github`, `twitter`, `linkedin`, `brand-astro`, `brand-tailwind`, `brand-typescript`, `brand-react`. An unknown name renders the `x` icon and warns during the build.
 
 ### Example
 
@@ -1289,13 +1303,14 @@ Unknown names render the `x` icon. `menu`, `x`, `chevron-down`, `chevron-right`,
 import Icon from '@/components/ui/primitives/Icon/Icon.astro';
 ---
 
-<Icon name="check-circle" size="sm" class="text-success" />
+<Icon name="calendar-check" size="sm" class="text-primary" />
 ```
 
 ### Use instead
 
 - Use the leadingIcon/trailingIcon props of Button and Input instead of placing Icon inside them by hand.
-- Only the names under Icon names exist; add a path to the icons map in Icon.astro for new ones, rather than importing an icon library.
+- Use any Lucide icon by name (https://lucide.dev/icons). Do not hand-draw SVGs, copy icon paths into a wrapper, or add another icon set.
+- In a React island that needs the icon in its server HTML, import it from lucide-react by name (import { MapPin } from "lucide-react").
 
 ## CodeBlock
 
@@ -2055,10 +2070,11 @@ import GoogleMap from '@/components/ui/data-display/GoogleMap/GoogleMap.astro';
 
 ## Section
 
-Page section with standard spacing and width, an optional eyebrow/title/lead heading block, action slot and tinted tone.
+Page section with standard spacing and width, an optional eyebrow/title/lead heading block, action slot, and tone (default, secondary, invert, brand), width and pad. A thin wrapper over blocks/Band.
 
 - **Import:** `import Section from '@/components/patterns/Section.astro';`
 - **Registry id:** `section` · **Category:** Patterns
+- **Uses:** Band
 - **Files:** `src/components/patterns/Section.astro`
 
 ### Props
@@ -2069,7 +2085,9 @@ Page section with standard spacing and width, an optional eyebrow/title/lead hea
 | `eyebrow` | `string` |  |  |  |
 | `title` | `string` |  |  |  |
 | `lead` | `string` |  |  |  |
-| `tone` | `'default' \| 'secondary'` | `'default'` |  | 'secondary' adds the tinted background |
+| `tone` | `BandTone` | `'default'` |  | secondary is tinted, invert is dark, brand is filled with the brand colour |
+| `width` | `BandWidth` |  |  |  |
+| `pad` | `BandPad` |  |  |  |
 | `class` | `string` |  |  |  |
 
 **Slots:** `action`, `default`
@@ -2120,7 +2138,7 @@ import PageHeader from '@/components/patterns/PageHeader.astro';
 
 ### Use instead
 
-- Use Hero for landing pages. Do not add another `<h1>` to a page that uses PageHeader.
+- Use Hero for landing pages and blocks/PageHero when the opening band needs breadcrumbs, buttons or an image. Do not add another `<h1>` to a page that uses PageHeader.
 
 ## MediaSlot
 
@@ -2157,3 +2175,365 @@ import MediaSlot from '@/components/patterns/MediaSlot.astro';
 ### Use instead
 
 - Use MediaSlot for page photos instead of a raw `<img>`; drop the file into src/assets/photos/ and it appears.
+
+## Band
+
+Page band with tone (default, secondary, invert, brand), width (default, wide, narrow), padding, an optional eyebrow/title/lead heading and a background slot for a photo or texture layer. Every section renders one.
+
+- **Import:** `import Band from '@/components/blocks/Band.astro';`
+- **Registry id:** `band` · **Category:** Sections
+- **Files:** `src/components/blocks/Band.astro`, `src/components/blocks/band.variants.ts`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `width` | `BandWidth` | `'default'` |  |  |
+| `pad` | `BandPad` | `'md'` |  |  |
+| `centered` | `boolean` | `false` |  | Center the heading block |
+| `innerClass` | `string` |  |  | Extra classes for the inner container |
+| `eyebrowClass` | `string` | computed |  | Replace the eyebrow and title classes, e.g. with a template's own display type |
+| `titleClass` | `string` | computed |  |  |
+
+Also accepts: `Omit<HTMLAttributes<'section'>, 'title'>`.
+
+**Slots:** `action`, `default`
+
+### Variants
+
+CVA definitions from `band.variants.ts`.
+
+`bandVariants`:
+
+| Variant | Options | Default |
+|---------|---------|---------|
+| `tone` | `default`, `secondary`, `invert`, `brand` | `default` |
+| `pad` | `md`, `sm`, `none` | `md` |
+
+`bandInnerVariants`:
+
+| Variant | Options | Default |
+|---------|---------|---------|
+| `width` | `default`, `wide`, `narrow` | `default` |
+
+### Example
+
+```astro
+---
+import Band from '@/components/blocks/Band.astro';
+---
+
+<Band eyebrow="Why us" title="Built for speed" tone="invert" width="wide">
+  <div class="grid gap-6 md:grid-cols-3"><!-- cards --></div>
+</Band>
+```
+
+### Use instead
+
+- Use Band (or Section) for a custom content band instead of hand-rolled `<section>` padding, container and background classes.
+- Use tone="invert" or tone="brand" for contrast bands; text and buttons inside recolour automatically.
+
+## PageHero
+
+Opening band for inner pages: the page's only `<h1>`, eyebrow, lead, tone, size, and slots for breadcrumbs, content after the title and a wide-screen aside.
+
+- **Import:** `import PageHero from '@/components/blocks/PageHero.astro';`
+- **Registry id:** `page-hero` · **Category:** Sections
+- **Uses:** Band
+- **Files:** `src/components/blocks/PageHero.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `title` | `string` |  | yes |  |
+| `eyebrow` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'secondary'` |  |  |
+| `width` | `BandWidth` | `'default'` |  |  |
+| `size` | `'md' \| 'lg'` | `'md'` |  | lg for pages that open with a statement (About, a landing page) |
+| `class` | `string` |  |  |  |
+
+**Slots:** `breadcrumbs`, `default`, `aside`
+
+### Example
+
+```astro
+---
+import PageHero from '@/components/blocks/PageHero.astro';
+import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
+import Button from '@/components/ui/form/Button/Button.astro';
+---
+
+<PageHero eyebrow="Services" title="Family medicine" lead="Care for every age, same-week appointments.">
+  <Breadcrumbs slot="breadcrumbs" items={[{ label: 'Home', href: '/' }, { label: 'Services' }]} />
+  <Button variant="brand" size="lg" href="/book">Book a visit</Button>
+</PageHero>
+```
+
+### Use instead
+
+- Use PageHero for inner pages that need breadcrumbs, buttons, a search form or an image; PageHeader is the plain version. Don't add another `<h1>`.
+- Put seo/Breadcrumbs in the breadcrumbs slot instead of building your own trail.
+
+## CtaBand
+
+Closing call-to-action panel with a heading, lead and your buttons, on a brand, invert or secondary tone.
+
+- **Import:** `import CtaBand from '@/components/blocks/CtaBand.astro';`
+- **Registry id:** `cta-band` · **Category:** Sections
+- **Uses:** Band
+- **Files:** `src/components/blocks/CtaBand.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `title` | `string` |  | yes |  |
+| `lead` | `string` |  |  |  |
+| `eyebrow` | `string` |  |  |  |
+| `tone` | `'brand' \| 'invert' \| 'secondary'` | `'invert'` |  | The panel's colour. brand and invert stand out; secondary is quieter |
+| `stacked` | `boolean` | `false` |  |  |
+| `width` | `BandWidth` | `'default'` |  |  |
+| `bare` | `boolean` | `false` |  | Render only the panel, without the surrounding section |
+| `titleClass` | `string` | computed |  | Replace the title and lead classes, e.g. with a template's own type |
+| `leadClass` | `string` | computed |  |  |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Also accepts: `Omit<HTMLAttributes<'div'>, 'title'>`.
+
+### Example
+
+```astro
+---
+import CtaBand from '@/components/blocks/CtaBand.astro';
+import Button from '@/components/ui/form/Button/Button.astro';
+---
+
+<CtaBand title="Ready to start?" lead="Set up takes five minutes." tone="brand">
+  <Button size="lg" href="/contact">Get in touch</Button>
+</CtaBand>
+```
+
+### Use instead
+
+- Use CtaBand to close a page with an action instead of a hand-built dark box; put Buttons in the default slot.
+
+## Faq
+
+Questions and answers as an accordion, stacked in a narrow band or split with the heading beside the answers, with FAQPage JSON-LD.
+
+- **Import:** `import Faq from '@/components/blocks/Faq.astro';`
+- **Registry id:** `faq` · **Category:** Sections
+- **Uses:** Band, Accordion
+- **Files:** `src/components/blocks/Faq.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `items` | `{ question: string; answer: string }[]` |  | yes |  |
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `layout` | `'stacked' \| 'split'` | `'stacked'` |  |  |
+| `variant` | `'default' \| 'card'` | `'default'` |  | Accordion style and text size |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |  |  |
+| `exclusive` | `boolean` | `false` |  | Only one answer open at a time |
+| `openFirst` | `boolean` | `true` |  | Open the first answer |
+| `schema` | `boolean` | `true` |  | Emit FAQPage JSON-LD |
+| `bare` | `boolean` | `false` |  | Render only the accordion and its data, without a band |
+| `accordionClass` | `string` |  |  | Classes for the accordion, e.g. a template's accordion styling |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+### Example
+
+```astro
+---
+import Faq from '@/components/blocks/Faq.astro';
+---
+
+<Faq
+  eyebrow="FAQ"
+  title="Common questions"
+  items={[
+    { question: 'Do you take walk-ins?', answer: 'Yes, every weekday morning.' },
+    { question: 'Is parking free?', answer: 'Yes, behind the building.' },
+  ]}
+/>
+```
+
+### Use instead
+
+- Use Faq for question-and-answer content instead of Accordion plus hand-written FAQ structured data.
+
+## Steps
+
+Numbered how-it-works steps in columns or a list, in its own band or bare inside another layout.
+
+- **Import:** `import Steps from '@/components/blocks/Steps.astro';`
+- **Registry id:** `steps` · **Category:** Sections
+- **Uses:** Band
+- **Files:** `src/components/blocks/Steps.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `items` | `{ title: string; body?: string }[]` |  | yes |  |
+| `layout` | `'list' \| 'row' \| 'large'` | `'list'` |  |  |
+| `padded` | `boolean` | `layout !== 'list'` |  |  |
+| `headingLevel` | `'h3' \| 'h4' \| 'span'` | `'h3'` |  |  |
+| `numberClass` | `string` |  |  | Extra classes for the numbers and step titles, e.g. a template's display type |
+| `titleClass` | `string` |  |  |  |
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `bare` | `boolean` | `false` |  | Render only the list, without a band |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Also accepts: `Omit<HTMLAttributes<'ol'>, 'title'>`.
+
+### Example
+
+```astro
+---
+import Steps from '@/components/blocks/Steps.astro';
+---
+
+<Steps
+  title="How it works"
+  items={[
+    { title: 'Book online', body: 'Pick a time that suits you.' },
+    { title: 'Visit us', body: 'Arrive ten minutes early.' },
+    { title: 'Follow up', body: 'Results in your inbox.' },
+  ]}
+/>
+```
+
+### Use instead
+
+- Use Steps for any numbered process (how it works, your first visit) instead of a hand-numbered list.
+
+## Testimonials
+
+Customer quotes in a grid of cards with name, role, optional avatar and star rating.
+
+- **Import:** `import Testimonials from '@/components/blocks/Testimonials.astro';`
+- **Registry id:** `testimonials` · **Category:** Sections
+- **Uses:** Band, Card, Icon
+- **Files:** `src/components/blocks/Testimonials.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `items` | `Testimonial[]` |  | yes |  |
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `columns` | `2 \| 3` | `3` |  | Cards per row from lg up |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Testimonial {
+  quote: string;
+  name: string;
+  role?: string;
+  /** Image URL for a small round portrait */
+  avatar?: string;
+  rating?: 1 | 2 | 3 | 4 | 5;
+}
+```
+
+### Example
+
+```astro
+---
+import Testimonials from '@/components/blocks/Testimonials.astro';
+---
+
+<Testimonials
+  title="What customers say"
+  items={[
+    { quote: 'Fast, friendly and on time.', name: 'Ana Ruiz', role: 'Patient since 2021', rating: 5 },
+    { quote: 'The best decision we made this year.', name: 'Sam Lee', role: 'Owner, Lee & Co' },
+  ]}
+/>
+```
+
+### Use instead
+
+- Use Testimonials for quotes and reviews instead of hand-built quote cards. Only publish real, permitted testimonials.
+
+## Hours
+
+Opening hours table (days as row headers, times in tabular figures) with an optional note and per-row data attributes for a "today" highlight; in its own band or bare inside another layout.
+
+- **Import:** `import Hours from '@/components/blocks/Hours.astro';`
+- **Registry id:** `hours` · **Category:** Sections
+- **Uses:** Band
+- **Files:** `src/components/blocks/Hours.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `rows` | `Row[]` |  | yes |  |
+| `note` | `string` |  |  |  |
+| `caption` | `string` |  |  | Screen-reader caption for the table; defaults to "Hours" |
+| `header` | `boolean` | `true` |  | Show the Day / Hours column headers (they're always there for screen readers) |
+| `dayLabel` | `string` |  |  | Column header text; defaults to the built-in "Day" and "Hours" |
+| `timeLabel` | `string` |  |  |  |
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `bare` | `boolean` | `false` |  | Render only the table and note, without a band |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Row {
+  days: string;
+  time: string;
+  /** data-* attributes for the row, e.g. { from: '1', to: '5' } becomes data-from / data-to */
+  data?: Record<string, string | number>;
+}
+```
+
+### Example
+
+```astro
+---
+import Hours from '@/components/blocks/Hours.astro';
+---
+
+<Hours
+  bare
+  rows={[
+    { days: 'Mon–Fri', time: '8:00–18:00' },
+    { days: 'Sat', time: '9:00–13:00' },
+  ]}
+  note="Closed on public holidays."
+/>
+```
+
+### Use instead
+
+- Use Hours for opening times instead of a hand-built table or list.

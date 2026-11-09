@@ -1,0 +1,122 @@
+---
+/**
+ * A numbered process in one of three layouts:
+ *
+ *   list   a compact list with the number beside each step (default)
+ *   row    steps side by side on wide screens, the number above each
+ *   large  big light numerals beside each step, for a feature section
+ *
+ * Renders in its own band with a heading, or `bare` to sit inside another
+ * layout, such as a column beside a photo. `padded` writes 01, 02… (the default
+ * for row and large). Extra attributes (e.g. data-reveal-group) go on the <ol>.
+ */
+import type { HTMLAttributes } from 'astro/types';
+import { cn } from '@/lib/cn';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Props extends Omit<HTMLAttributes<'ol'>, 'title'> {
+  items: { title: string; body?: string }[];
+  layout?: 'list' | 'row' | 'large';
+  padded?: boolean;
+  headingLevel?: 'h3' | 'h4' | 'span';
+  /** Extra classes for the numbers and step titles, e.g. a template's display type */
+  numberClass?: string;
+  titleClass?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  /** Render only the list, without a band */
+  bare?: boolean;
+  id?: string;
+  class?: string;
+}
+
+const {
+  items,
+  layout = 'list',
+  padded = layout !== 'list',
+  headingLevel: Heading = 'h3',
+  numberClass,
+  titleClass,
+  eyebrow,
+  title,
+  lead,
+  tone = 'default',
+  bare = false,
+  id,
+  class: className,
+  ...attrs
+} = Astro.props;
+const number = (index: number) => (padded ? String(index + 1).padStart(2, '0') : String(index + 1));
+const num = cn('font-display text-primary leading-none font-extrabold', numberClass);
+const head = cn('font-display text-foreground m-0 font-bold', titleClass);
+---
+
+{
+  bare ? (
+    <Fragment>
+      {layout === 'list' && (
+        <ol class={cn('border-border border-b', className)} {...attrs}>
+          {items.map((step, index) => (
+            <li class="border-border grid grid-cols-[3rem_minmax(0,1fr)] gap-4 border-t py-5">
+              <span class={cn(num, 'text-[1.75rem]')} aria-hidden="true">
+                {number(index)}
+              </span>
+              <div>
+                <Heading class={cn(head, 'text-[1.0625rem]')}>{step.title}</Heading>
+                {step.body && <p class="text-foreground-secondary mt-1 text-sm">{step.body}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+      {layout === 'row' && (
+        <ol
+          class={cn('grid gap-8 sm:grid-cols-2', items.length > 3 ? 'lg:grid-cols-4' : 'lg:grid-cols-3', className)}
+          {...attrs}
+        >
+          {items.map((step, index) => (
+            <li class="border-border flex flex-col gap-2.5 border-t-2 pt-5">
+              <span class={cn(num, 'text-sm')} aria-hidden="true">
+                {number(index)}
+              </span>
+              <Heading class={cn(head, 'text-lg')}>{step.title}</Heading>
+              {step.body && <p class="text-foreground-secondary m-0 text-[0.9375rem]">{step.body}</p>}
+            </li>
+          ))}
+        </ol>
+      )}
+      {layout === 'large' && (
+        <ol class={className} {...attrs}>
+          {items.map((step, index) => (
+            <li class="border-border grid grid-cols-[4.5rem_minmax(0,1fr)] gap-6 border-t py-8 last:border-b sm:grid-cols-[6rem_minmax(0,1fr)]">
+              <span class={cn(num, 'text-6xl font-light tracking-[-0.04em] sm:text-7xl')} aria-hidden="true">
+                {number(index)}
+              </span>
+              <div class="flex flex-col gap-2 pt-2">
+                <Heading class={cn(head, 'text-2xl sm:text-3xl')}>{step.title}</Heading>
+                {step.body && <p class="text-foreground-secondary m-0 text-lg">{step.body}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+      )}
+    </Fragment>
+  ) : (
+    <Band id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone}>
+      <Astro.self
+        items={items}
+        layout={layout}
+        padded={padded}
+        headingLevel={Heading}
+        numberClass={numberClass}
+        titleClass={titleClass}
+        class={className}
+        bare
+        {...attrs}
+      />
+    </Band>
+  )
+}

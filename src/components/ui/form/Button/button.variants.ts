@@ -12,6 +12,8 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
+        brand:
+          'bg-brand-fill text-brand-ink hover:bg-brand-fill-hover focus-visible:ring-brand-600 active:scale-[0.98]',
         primary:
           'bg-primary text-primary-foreground hover:bg-primary/90 active:scale-[0.98]',
         secondary:
