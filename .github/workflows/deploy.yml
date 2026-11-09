@@ -65,6 +65,46 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
+  # Builds for each serverless host and runs its server function: a form
+  # submission must reach a mock endpoint, and failures must surface as errors
+  # (scripts/smoke-adapter.mjs). The Node adapter is covered by the E2E job.
+  # Remove the hosts you don't deploy to.
+  adapters:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [vercel, netlify, cloudflare]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Cloudflare's adapter is opt-in (it pulls in workerd), so add it here
+      - name: Install the Cloudflare adapter
+        if: matrix.target == 'cloudflare'
+        run: pnpm add @astrojs/cloudflare
+
+      - name: Build
+        run: pnpm build
+        env:
+          DEPLOY_TARGET: ${{ matrix.target }}
+
+      - name: Smoke test the ${{ matrix.target }} build
+        run: node scripts/smoke-adapter.mjs ${{ matrix.target }}
+
   # Deployment is handled by your host's Git integration (Vercel, Netlify,
   # Cloudflare). The adapter is auto-detected there — no workflow needed.
   # To deploy from CI instead, add a job here that runs after `validate`.

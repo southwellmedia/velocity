@@ -144,7 +144,7 @@ Built-in UI strings (navigation, blog, forms, search) live in `src/i18n/ui.ts` f
 
 The contact and newsletter forms validate on the server with Astro Actions. Delivery is up to you:
 
-- Set `CONTACT_FORM_ENDPOINT` and/or `NEWSLETTER_ENDPOINT` in `.env` to forward each submission as JSON to your own endpoint (a webhook, serverless function, Zapier, Formspree…). `NEWSLETTER_API_KEY`, when set, is sent as a Bearer token. If the endpoint fails, the form shows its error message.
+- Set `CONTACT_FORM_ENDPOINT` and/or `NEWSLETTER_ENDPOINT` in `.env` to forward each submission as JSON to your own endpoint (a webhook, serverless function, Zapier, Formspree…). `NEWSLETTER_API_KEY`, when set, is sent as a Bearer token. If the endpoint fails, the form shows its error message. Set `FORMS_REQUIRE_DELIVERY=true` in production so a form with no delivery configured shows its error too, rather than reporting success.
 - Or replace the forwarding in `src/actions/index.ts` with your provider's SDK (Resend, Postmark, Mailchimp, a CRM).
 
 Until one of these is set up, submissions are discarded and the server logs a warning, so a missing setup is easy to spot.

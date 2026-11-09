@@ -59,7 +59,10 @@ export async function resolveDeployTarget(env = process.env) {
     case 'cloudflare': {
       const { default: cloudflare } = await importAdapter('@astrojs/cloudflare', name);
       const { cacheCloudflare } = await import('@astrojs/cloudflare/cache');
-      return { name, adapter: cloudflare(), cacheProvider: cacheCloudflare() };
+      // Prerender in Node: share images and the image service use sharp, which
+      // workerd can't load, so a workerd prerender fails the build.
+      // On-demand routes (Actions) still run in the Worker.
+      return { name, adapter: cloudflare({ prerenderEnvironment: 'node' }), cacheProvider: cacheCloudflare() };
     }
     default: {
       const { default: node } = await importAdapter('@astrojs/node', name);

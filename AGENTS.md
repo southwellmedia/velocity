@@ -16,6 +16,7 @@ Astro 7 路 Tailwind CSS v4 路 TypeScript (strict) 路 React 19 islands 路 Node 鈮
 | Agent-ready check | `pnpm check:agent` (after a build): raw translation keys, CSP, broken links, stubbed forms, Velocity-owned edits, hardcoded strings, placeholders, default identity, multiple `<h1>`s |
 | Unit tests | `pnpm test` |
 | E2E + a11y | `pnpm build && pnpm test:e2e` |
+| Adapter smoke test | `DEPLOY_TARGET=vercel pnpm build && pnpm test:adapter vercel` (also `netlify`, `cloudflare` with `@astrojs/cloudflare` installed) |
 | Agent benchmark | `pnpm bench:selftest` (no model calls); `pnpm bench --model <id>` for real runs, see `benchmark/README.md` |
 
 When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on supported platforms, to background mode; a lockfile prevents duplicate servers. Use `astro dev --ignore-lock` only if you need a second server deliberately. Structured logs: `astro dev --json`.

@@ -47,6 +47,42 @@ export async function postJson(
   if (!response.ok) throw new DeliveryError(response.status);
 }
 
+/**
+ * A form with no delivery configured while FORMS_REQUIRE_DELIVERY is on. Its
+ * message names the variable to set; it holds no secret, so it is safe to log.
+ */
+export class DeliveryNotConfiguredError extends Error {
+  constructor(
+    readonly form: string,
+    readonly envVar: string
+  ) {
+    super(
+      `[velocity] The ${form} form has no delivery configured and FORMS_REQUIRE_DELIVERY is on, so the submission was rejected. ` +
+        `Set ${envVar} where the server runs, or add your provider in src/actions/index.ts.`
+    );
+    this.name = 'DeliveryNotConfiguredError';
+  }
+}
+
+/**
+ * What a form does when no delivery is configured.
+ *
+ * - `required` false (the default): warn once and let the action report
+ *   success, so a fresh project's forms work before a provider is chosen.
+ * - `required` true (FORMS_REQUIRE_DELIVERY=true): throw, so the visitor sees
+ *   the form's error instead of a success for a message nobody receives. Turn
+ *   it on in production once the site is live.
+ */
+export function handleUndelivered(
+  form: string,
+  envVar: string,
+  required: boolean | undefined,
+  log: (message: string) => void = console.warn
+): void {
+  if (required) throw new DeliveryNotConfiguredError(form, envVar);
+  warnUndelivered(form, envVar, log);
+}
+
 const warned = new Set<string>();
 
 /**
@@ -63,7 +99,8 @@ export function warnUndelivered(
   warned.add(form);
   log(
     `[velocity] The ${form} form has no delivery configured, so submissions are discarded. ` +
-      `Set ${envVar} in .env or add your provider in src/actions/index.ts.`
+      `Set ${envVar} in .env or add your provider in src/actions/index.ts. ` +
+      `Set FORMS_REQUIRE_DELIVERY=true in production to reject submissions instead.`
   );
 }
 

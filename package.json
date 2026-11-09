@@ -40,6 +40,7 @@
     "test:e2e": "playwright test",
     "validate": "eslint . && astro check && vitest run && astro build && node scripts/check-agent.mjs",
     "check:agent": "node scripts/check-agent.mjs",
+    "test:adapter": "node scripts/smoke-adapter.mjs",
     "test:scaffold": "node scripts/scaffold-matrix.mjs",
     "check:registry": "node scripts/check-registry.mjs",
     "check:components": "node scripts/generate-components-ref.mjs --check",

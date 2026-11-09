@@ -1,7 +1,12 @@
 import { ActionError, defineAction } from 'astro:actions';
-import { CONTACT_FORM_ENDPOINT, NEWSLETTER_API_KEY, NEWSLETTER_ENDPOINT } from 'astro:env/server';
+import {
+  CONTACT_FORM_ENDPOINT,
+  FORMS_REQUIRE_DELIVERY,
+  NEWSLETTER_API_KEY,
+  NEWSLETTER_ENDPOINT,
+} from 'astro:env/server';
 import { contactSchema, newsletterSchema } from '@/lib/forms';
-import { postJson, warnUndelivered, DeliveryError } from '@/lib/form-delivery';
+import { postJson, handleUndelivered, DeliveryError, DeliveryNotConfiguredError } from '@/lib/form-delivery';
 
 /**
  * Astro Actions — type-safe server functions for Velocity's forms.
@@ -20,6 +25,9 @@ import { postJson, warnUndelivered, DeliveryError } from '@/lib/form-delivery';
  * - With neither, submissions are discarded and the server logs a warning.
  *   That path is marked @velocity-stub; `npm run check:agent` warns about it
  *   while the endpoint isn't set. Delete the marker once a provider is wired.
+ * - FORMS_REQUIRE_DELIVERY=true turns that discard path into an error, so a
+ *   production site whose endpoint went missing shows the form's error
+ *   instead of telling visitors their message was sent.
  */
 export const server = {
   contact: defineAction({
@@ -35,7 +43,7 @@ export const server = {
       }
 
       // @velocity-stub contact (no delivery configured: discarded, see npm run check:agent)
-      warnUndelivered('contact', 'CONTACT_FORM_ENDPOINT');
+      await deliver('contact', async () => handleUndelivered('contact', 'CONTACT_FORM_ENDPOINT', FORMS_REQUIRE_DELIVERY));
       if (import.meta.env.DEV) {
         // eslint-disable-next-line no-console
         console.log('[actions.contact]', data);
@@ -59,7 +67,9 @@ export const server = {
       }
 
       // @velocity-stub newsletter (no delivery configured: discarded, see npm run check:agent)
-      warnUndelivered('newsletter', 'NEWSLETTER_ENDPOINT');
+      await deliver('newsletter', async () =>
+        handleUndelivered('newsletter', 'NEWSLETTER_ENDPOINT', FORMS_REQUIRE_DELIVERY)
+      );
       if (import.meta.env.DEV) {
         // eslint-disable-next-line no-console
         console.log('[actions.newsletter]', email);
@@ -77,6 +87,10 @@ async function deliver(form: string, send: () => Promise<void>): Promise<void> {
   try {
     await send();
   } catch (error) {
+    if (error instanceof DeliveryNotConfiguredError) {
+      console.error(error.message);
+      throw new ActionError({ code: 'INTERNAL_SERVER_ERROR', message: `The ${form} form is not configured.` });
+    }
     // Log only the status: a fetch error's message can include the endpoint URL and any token in it.
     const status = error instanceof DeliveryError ? error.status : undefined;
     console.error(`[actions.${form}] delivery failed${status ? ` (HTTP ${status})` : ' (endpoint unreachable or timed out)'}`);

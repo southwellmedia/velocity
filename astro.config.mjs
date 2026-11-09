@@ -87,6 +87,9 @@ export default defineConfig({
       CONTACT_FORM_ENDPOINT: envField.string({ context: 'server', access: 'secret', optional: true }),
       NEWSLETTER_ENDPOINT: envField.string({ context: 'server', access: 'secret', optional: true }),
       NEWSLETTER_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
+      // Reject form submissions that have nowhere to go (src/lib/form-delivery.ts).
+      // 'secret' only so it is read when the server starts, not inlined at build.
+      FORMS_REQUIRE_DELIVERY: envField.boolean({ context: 'server', access: 'secret', optional: true, default: false }),
       GOOGLE_SITE_VERIFICATION: envField.string({ context: 'server', access: 'public', optional: true }),
       BING_SITE_VERIFICATION: envField.string({ context: 'server', access: 'public', optional: true }),
       PUBLIC_GOOGLE_MAPS_API_KEY: envField.string({ context: 'client', access: 'public', optional: true, default: '' }),

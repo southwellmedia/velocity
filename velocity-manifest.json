@@ -40,7 +40,8 @@
       ".agents/components.md",
       ".agents/skills/",
       ".claude/skills/",
-      "scripts/check-agent.mjs"
+      "scripts/check-agent.mjs",
+      "scripts/smoke-adapter.mjs"
     ],
     "protected": [
       "astro.config.mjs",
@@ -621,6 +622,9 @@
       },
       "check:agent": {
         "value": "node scripts/check-agent.mjs"
+      },
+      "test:adapter": {
+        "value": "node scripts/smoke-adapter.mjs"
       }
     }
   }

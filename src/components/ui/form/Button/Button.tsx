@@ -56,18 +56,37 @@ export function Button(props: ButtonProps) {
     ...rest
   } = props;
 
+  const isDisabled = disabled || loading;
   const classes = cn(buttonVariants({ variant, size, fullWidth, icon }), className);
 
   if ('href' in props && props.href) {
-    const isExternal = isExternalUrl(props.href);
-    const linkProps = rest as AnchorHTMLAttributes<HTMLAnchorElement>;
+    const { href, target, rel, ...linkProps } = rest as AnchorHTMLAttributes<HTMLAnchorElement>;
+    const isExternal = isExternalUrl(href!);
+
+    // Same as Button.astro: a disabled link has no href, so it can't be
+    // followed, focused or opened in a new tab, and says so to assistive tech.
+    if (isDisabled) {
+      return (
+        <a
+          ref={ref as Ref<HTMLAnchorElement>}
+          className={cn(classes, 'pointer-events-none')}
+          {...linkProps}
+          aria-disabled="true"
+          tabIndex={-1}
+        >
+          {loading && <LoadingSpinner />}
+          {children}
+        </a>
+      );
+    }
 
     return (
       <a
         ref={ref as Ref<HTMLAnchorElement>}
         className={classes}
-        target={linkProps.target ?? (isExternal ? '_blank' : undefined)}
-        rel={isExternal ? 'noopener noreferrer' : linkProps.rel}
+        href={href}
+        target={target ?? (isExternal ? '_blank' : undefined)}
+        rel={rel ?? (isExternal ? 'noopener noreferrer' : undefined)}
         {...linkProps}
       >
         {loading && <LoadingSpinner />}
@@ -80,8 +99,8 @@ export function Button(props: ButtonProps) {
     <button
       ref={ref as Ref<HTMLButtonElement>}
       className={classes}
-      disabled={disabled || loading}
       {...(rest as ButtonHTMLAttributes<HTMLButtonElement>)}
+      disabled={isDisabled}
     >
       {loading && <LoadingSpinner />}
       {children}

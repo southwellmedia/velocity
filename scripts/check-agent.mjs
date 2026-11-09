@@ -549,7 +549,7 @@ export function checkFormStubs(root) {
             message: endpoint
               ? `actions.${name} discards submissions unless ${endpoint} is set where the server runs (it isn't set here), yet visitors are told their message was sent.`
               : `actions.${name} reports success but delivers nothing. Visitors think their message was sent.`,
-            fix: 'Set the endpoint variable named above in .env and on the host, or wire a provider (see the velocity-connect-forms skill) and delete the @velocity-stub line. Either way, send a real test message first. Secrets go through astro:env.',
+            fix: 'Set the endpoint variable named above in .env and on the host, or wire a provider (see the velocity-connect-forms skill) and delete the @velocity-stub line. Either way, send a real test message first. Secrets go through astro:env. Set FORMS_REQUIRE_DELIVERY=true in production so a missing endpoint shows the form\'s error instead of a false success.',
           }));
         }
       });

@@ -78,6 +78,43 @@ test('component showcase dialog opens and closes under the CSP', async ({ page }
   await expect(cancel).toBeHidden();
 });
 
+test.describe('dropdown keyboard interaction', () => {
+  test.skip(!hasRoute('components'), 'no component showcase in this project');
+
+  test('arrows skip disabled items and Escape returns focus to the trigger', async ({ page }) => {
+    await page.goto('/components');
+    const dropdown = page.locator('[data-dropdown]').first();
+    const trigger = dropdown.getByRole('button', { name: 'Actions' });
+    const menu = dropdown.getByRole('menu', { includeHidden: true });
+    const focused = () => page.evaluate(() => document.activeElement?.textContent?.trim());
+
+    await trigger.focus();
+    await page.keyboard.press('Enter');
+    await expect(menu).toBeVisible();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(await focused()).toBe('Edit');
+
+    // "Delete" is disabled: End and wrap-around both stop at "Archive".
+    await page.keyboard.press('End');
+    expect(await focused()).toBe('Archive');
+    await page.keyboard.press('ArrowDown');
+    expect(await focused()).toBe('Edit');
+    await page.keyboard.press('ArrowUp');
+    expect(await focused()).toBe('Archive');
+
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(trigger).toBeFocused();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  });
+
+  test('a disabled item is not a link', async ({ page }) => {
+    await page.goto('/components');
+    const item = page.locator('[data-dropdown] [role="menuitem"][aria-disabled="true"]').first();
+    await expect(item).not.toHaveAttribute('href');
+  });
+});
+
 test('only the Latin font is preloaded, and other scripts have a font', async ({ page }) => {
   await page.goto('/');
   await expect(page.locator('link[rel="preload"][as="font"]')).toHaveCount(1);

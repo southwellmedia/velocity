@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DeliveryError, postJson, resetDeliveryWarnings, warnUndelivered } from '@/lib/form-delivery';
+import {
+  DeliveryError,
+  DeliveryNotConfiguredError,
+  handleUndelivered,
+  postJson,
+  resetDeliveryWarnings,
+  warnUndelivered,
+} from '@/lib/form-delivery';
 
 function fakeFetch(status: number) {
   return vi.fn(async () => new Response(null, { status }));
@@ -66,5 +73,31 @@ describe('warnUndelivered', () => {
     warnUndelivered('contact', 'CONTACT_FORM_ENDPOINT', log);
     warnUndelivered('newsletter', 'NEWSLETTER_ENDPOINT', log);
     expect(log).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('handleUndelivered', () => {
+  afterEach(() => resetDeliveryWarnings());
+
+  it('only warns by default, so a fresh project still reports success', () => {
+    const log = vi.fn();
+    expect(() => handleUndelivered('contact', 'CONTACT_FORM_ENDPOINT', false, log)).not.toThrow();
+    expect(() => handleUndelivered('contact', 'CONTACT_FORM_ENDPOINT', undefined, log)).not.toThrow();
+    expect(log).toHaveBeenCalledOnce();
+  });
+
+  it('rejects the submission when delivery is required', () => {
+    const log = vi.fn();
+    const error = (() => {
+      try {
+        handleUndelivered('newsletter', 'NEWSLETTER_ENDPOINT', true, log);
+      } catch (e) {
+        return e;
+      }
+    })();
+    expect(error).toBeInstanceOf(DeliveryNotConfiguredError);
+    expect((error as Error).message).toContain('NEWSLETTER_ENDPOINT');
+    expect((error as Error).message).toContain('FORMS_REQUIRE_DELIVERY');
+    expect(log).not.toHaveBeenCalled();
   });
 });

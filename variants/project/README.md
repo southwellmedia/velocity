@@ -23,7 +23,7 @@ By hand:
 - **Navigation:** `src/config/nav.config.ts`
 - **Home page:** `src/views/HomeView.astro`
 - **Colors and theme:** `src/styles/theme.css`
-- **Forms:** set `CONTACT_FORM_ENDPOINT` / `NEWSLETTER_ENDPOINT` in `.env`, or wire your provider in `src/actions/index.ts`. Hosting platforms read these from their environment settings. A self-hosted Node server doesn't load `.env` by itself: start it with `node --env-file=.env dist/server/entry.mjs` or set the variables in its environment. Until delivery is configured, submissions are discarded and the server logs a warning.
+- **Forms:** set `CONTACT_FORM_ENDPOINT` / `NEWSLETTER_ENDPOINT` in `.env`, or wire your provider in `src/actions/index.ts`. Hosting platforms read these from their environment settings. A self-hosted Node server doesn't load `.env` by itself: start it with `node --env-file=.env dist/server/entry.mjs` or set the variables in its environment. Until delivery is configured, submissions are discarded and the server logs a warning; set `FORMS_REQUIRE_DELIVERY=true` in production to reject them with the form's error instead.
 
 ## Commands
 

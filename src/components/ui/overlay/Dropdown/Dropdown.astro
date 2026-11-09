@@ -59,7 +59,7 @@ const iconMap: Record<string, string> = {
         <div class="my-1.5 h-px bg-border" role="separator" />
       ) : (
         <a
-          href={item.href || '#'}
+          href={item.disabled ? undefined : item.href || '#'}
           class={cn(
             'flex items-center gap-2.5 px-3 py-2 text-sm rounded-md',
             'transition-colors outline-none',
@@ -70,7 +70,7 @@ const iconMap: Record<string, string> = {
           )}
           role="menuitem"
           tabindex={item.disabled ? -1 : 0}
-          aria-disabled={item.disabled}
+          aria-disabled={item.disabled ? 'true' : undefined}
           data-dropdown-item={index}
         >
           {item.icon && (
@@ -91,37 +91,56 @@ const iconMap: Record<string, string> = {
 </div>
 
 <script>
+  const FOCUSABLE = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
   function initDropdowns() {
     document.querySelectorAll<HTMLElement>('[data-dropdown]').forEach((dropdown) => {
       if (dropdown.dataset.dropdownInit) return;
       dropdown.dataset.dropdownInit = 'true';
 
-      const trigger = dropdown.querySelector('[data-dropdown-trigger]');
+      const trigger = dropdown.querySelector<HTMLElement>('[data-dropdown-trigger]');
       const menu = dropdown.querySelector<HTMLElement>('[data-dropdown-menu]');
-      const items = dropdown.querySelectorAll<HTMLElement>('[data-dropdown-item]');
+      // Keyboard navigation only visits items that can be activated.
+      const items = [...dropdown.querySelectorAll<HTMLElement>('[data-dropdown-item]')].filter(
+        (item) => item.getAttribute('aria-disabled') !== 'true'
+      );
+      // The wrapper div can't take focus; the button or link slotted into it can.
+      const triggerControl = trigger?.querySelector<HTMLElement>(FOCUSABLE) ?? null;
       let isOpen = false;
       let focusedIndex = -1;
 
+      triggerControl?.setAttribute('aria-haspopup', 'menu');
+      triggerControl?.setAttribute('aria-expanded', 'false');
+
       function open() {
         isOpen = true;
+        // Show the menu at once: a transitioning `visibility` is still hidden at
+        // its first frame, and focus() on a hidden item does nothing. Closing
+        // goes back to transition-all, so the menu still fades out.
+        if (menu) menu.style.transitionProperty = 'opacity, transform';
         menu?.classList.remove('opacity-0', 'invisible', 'translate-y-1');
         menu?.classList.add('opacity-100', 'visible', 'translate-y-0');
-        focusedIndex = 0;
-        items[0]?.focus();
+        triggerControl?.setAttribute('aria-expanded', 'true');
+        focusItem(0);
       }
 
-      function close() {
+      function close({ restoreFocus = false } = {}) {
+        if (!isOpen) return;
         isOpen = false;
+        if (menu) menu.style.transitionProperty = '';
         menu?.classList.add('opacity-0', 'invisible', 'translate-y-1');
         menu?.classList.remove('opacity-100', 'visible', 'translate-y-0');
+        triggerControl?.setAttribute('aria-expanded', 'false');
         focusedIndex = -1;
+        if (restoreFocus) triggerControl?.focus();
       }
 
       function focusItem(index: number) {
+        if (items.length === 0) return;
         if (index < 0) index = items.length - 1;
         if (index >= items.length) index = 0;
         focusedIndex = index;
-        items[index]?.focus();
+        items[index].focus();
       }
 
       trigger?.addEventListener('click', (e) => {
@@ -162,8 +181,8 @@ const iconMap: Record<string, string> = {
             break;
           case 'Escape':
             e.preventDefault();
-            close();
-            (trigger as HTMLElement)?.focus();
+            e.stopPropagation();
+            close({ restoreFocus: true });
             break;
           case 'Tab':
             close();
@@ -176,11 +195,13 @@ const iconMap: Record<string, string> = {
       });
 
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && isOpen) close();
+        if (e.key !== 'Escape' || !isOpen) return;
+        // Escape from inside the menu or trigger puts focus back on the trigger.
+        close({ restoreFocus: dropdown.contains(document.activeElement) });
       });
     });
   }
 
   initDropdowns();
-  document.addEventListener('astro:page-load', initDropdowns);
+  document.addEventListener('astro:after-swap', initDropdowns);
 </script>
