@@ -1,0 +1,36 @@
+---
+/**
+ * A keyboard key or shortcut. Pass one key as the slot, or several as `keys`
+ * to show a combination such as ⌘ K.
+ *
+ *   <Kbd>Esc</Kbd>
+ *   <Kbd keys={['⌘', 'K']} />
+ */
+import { cn } from '@/lib/cn';
+
+interface Props {
+  keys?: string[];
+  size?: 'sm' | 'md';
+  class?: string;
+}
+
+const { keys, size = 'md', class: className } = Astro.props;
+const key = cn(
+  'border-border bg-background-secondary text-foreground-secondary inline-flex items-center justify-center rounded-[var(--theme-radius-sm,4px)] border border-b-2 font-mono font-medium leading-none',
+  size === 'sm' ? 'min-w-5 h-5 px-1 text-[0.6875rem]' : 'min-w-6 h-6 px-1.5 text-xs'
+);
+---
+
+{
+  keys ? (
+    <kbd class={cn('inline-flex items-center gap-1', className)}>
+      {keys.map((k) => (
+        <kbd class={key}>{k}</kbd>
+      ))}
+    </kbd>
+  ) : (
+    <kbd class={cn(key, className)}>
+      <slot />
+    </kbd>
+  )
+}

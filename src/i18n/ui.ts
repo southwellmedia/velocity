@@ -14,6 +14,8 @@ const en = {
   media: {
     photo: 'Photo',
     placeholder: 'Image placeholder: {name}',
+    play: 'Play video: {title}',
+    playsFrom: 'Plays from {provider}',
   },
 
   sections: {
@@ -31,6 +33,11 @@ const en = {
     breadcrumb: 'Breadcrumb',
     languageSwitcher: 'Choose language',
     togglePassword: 'Toggle password visibility',
+    loading: 'Loading',
+    close: 'Close',
+    dismiss: 'Dismiss',
+    previous: 'Previous',
+    next: 'Next',
   },
   nav: {
     home: 'Home',
@@ -130,6 +137,8 @@ const es: DeepPartial<UIStrings> = {
   media: {
     photo: 'Foto',
     placeholder: 'Espacio para imagen: {name}',
+    play: 'Reproducir vídeo: {title}',
+    playsFrom: 'Se reproduce desde {provider}',
   },
 
   sections: {
@@ -147,6 +156,11 @@ const es: DeepPartial<UIStrings> = {
     breadcrumb: 'Ruta de navegación',
     languageSwitcher: 'Elegir idioma',
     togglePassword: 'Mostrar u ocultar la contraseña',
+    loading: 'Cargando',
+    close: 'Cerrar',
+    dismiss: 'Descartar',
+    previous: 'Anterior',
+    next: 'Siguiente',
   },
   nav: {
     home: 'Inicio',
@@ -242,6 +256,8 @@ const fr: DeepPartial<UIStrings> = {
   media: {
     photo: 'Photo',
     placeholder: 'Emplacement pour image : {name}',
+    play: 'Lire la vidéo : {title}',
+    playsFrom: 'Lecture depuis {provider}',
   },
 
   sections: {
@@ -259,6 +275,11 @@ const fr: DeepPartial<UIStrings> = {
     breadcrumb: "Fil d'Ariane",
     languageSwitcher: 'Choisir la langue',
     togglePassword: 'Afficher ou masquer le mot de passe',
+    loading: 'Chargement',
+    close: 'Fermer',
+    dismiss: 'Ignorer',
+    previous: 'Précédent',
+    next: 'Suivant',
   },
   nav: {
     home: 'Accueil',

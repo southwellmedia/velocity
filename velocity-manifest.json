@@ -1,5 +1,5 @@
 {
-  "version": "2.6.1",
+  "version": "2.6.2",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -512,6 +512,12 @@
       "toVersion": "2.6.1",
       "title": "Add blog fields without editing content.config.ts",
       "description": "src/config/collections.ts can now export blogFields, a function returning extra Zod fields for the blog's frontmatter, which content.config.ts merges into the blog schema with their types. If you added fields to the blog schema in content.config.ts, this upgrade replaced it and saved your version in .velocity-backup/: move those fields into blogFields. Your collections.ts is not touched."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.6.2",
+      "title": "More page sections and components",
+      "description": "src/components/blocks/ gains FeatureGrid, FeatureSplit, Pricing, StatsBand, LogoCloud, Team, Timeline and ContactSection; src/components/ui/ gains Sheet, Popover, Carousel, ToggleGroup, Kbd, Spinner, VideoEmbed (loads YouTube or Vimeo only on play) and AnnouncementBar; and Breadcrumbs (src/components/seo/) is now listed in .agents/components.md. ESLint now ignores .claude/worktrees/, so an agent worktree inside the project no longer breaks npm run lint. Nothing in your project changes and nothing needs doing."
     }
   ],
   "scaffold": {

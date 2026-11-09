@@ -1,0 +1,84 @@
+---
+/**
+ * Features as a grid: an icon, a title and a line or two each, in 2, 3 or 4
+ * columns. `variant="card"` puts each one on a card; `plain` (default) keeps
+ * them open. Renders in its own band, or `bare` inside another layout.
+ */
+import Card from '@/components/ui/data-display/Card/Card.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { cn } from '@/lib/cn';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Feature {
+  title: string;
+  body?: string;
+  /** A Lucide icon name */
+  icon?: string;
+  /** Makes the title a link */
+  href?: string;
+}
+
+interface Props {
+  items: Feature[];
+  columns?: 2 | 3 | 4;
+  variant?: 'plain' | 'card';
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  /** Render only the grid, without a band */
+  bare?: boolean;
+  id?: string;
+  class?: string;
+}
+
+const {
+  items,
+  columns = 3,
+  variant = 'plain',
+  eyebrow,
+  title,
+  lead,
+  tone = 'default',
+  bare = false,
+  id,
+  class: className,
+} = Astro.props;
+const grid = { 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-2 lg:grid-cols-3', 4: 'sm:grid-cols-2 lg:grid-cols-4' };
+const Wrapper = variant === 'card' ? Card : 'div';
+---
+
+{
+  bare ? (
+    <ul class={cn('grid gap-6', grid[columns], variant === 'plain' && 'gap-y-10', className)}>
+      {items.map((item) => (
+        <li class="min-w-0">
+          <Wrapper {...(variant === 'card' ? { padding: 'lg', class: 'h-full' } : { class: 'h-full' })}>
+            <div class="flex h-full flex-col gap-3">
+              {item.icon && (
+                <span class="bg-primary/10 text-primary grid size-10 place-items-center rounded-[var(--theme-radius-lg)]">
+                  <Icon name={item.icon} size="md" />
+                </span>
+              )}
+              <h3 class="font-display text-foreground m-0 text-lg font-bold">
+                {item.href ? (
+                  <a href={item.href} class="hover:text-primary underline-offset-4 hover:underline">
+                    {item.title}
+                  </a>
+                ) : (
+                  item.title
+                )}
+              </h3>
+              {item.body && <p class="text-foreground-secondary m-0 text-[0.9375rem]">{item.body}</p>}
+            </div>
+          </Wrapper>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <Band id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone}>
+      <Astro.self items={items} columns={columns} variant={variant} class={className} bare />
+    </Band>
+  )
+}

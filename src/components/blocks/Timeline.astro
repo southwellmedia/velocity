@@ -1,0 +1,50 @@
+---
+/**
+ * Dated events down a line: a company's history, a product's milestones, a
+ * changelog summary. Each item has a date (any display text: "2024", "March
+ * 2026"), a title and an optional line. List them in the order to read them.
+ * Renders in its own band, or `bare` inside another layout.
+ */
+import { cn } from '@/lib/cn';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Event {
+  date: string;
+  title: string;
+  body?: string;
+}
+
+interface Props {
+  items: Event[];
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  /** Render only the timeline, without a band */
+  bare?: boolean;
+  id?: string;
+  class?: string;
+}
+
+const { items, eyebrow, title, lead, tone = 'default', bare = false, id, class: className } = Astro.props;
+---
+
+{
+  bare ? (
+    <ol class={cn('border-border relative ml-1.5 border-l', className)}>
+      {items.map((item) => (
+        <li class="relative pb-10 pl-8 last:pb-0">
+          <span class="bg-primary ring-background absolute top-1.5 -left-[5px] size-2.5 rounded-full ring-4" aria-hidden="true"></span>
+          <p class="text-primary m-0 text-xs font-bold tracking-[0.12em] uppercase">{item.date}</p>
+          <h3 class="font-display text-foreground mt-1.5 mb-0 text-lg font-bold">{item.title}</h3>
+          {item.body && <p class="text-foreground-secondary mt-1 mb-0 max-w-2xl text-[0.9375rem]">{item.body}</p>}
+        </li>
+      ))}
+    </ol>
+  ) : (
+    <Band id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} width="narrow">
+      <Astro.self items={items} class={className} bare />
+    </Band>
+  )
+}

@@ -1,0 +1,94 @@
+---
+/**
+ * A YouTube or Vimeo video that loads only when the visitor presses play.
+ * Until then the page shows a poster (your image, or a plain frame with the
+ * title) and makes no request to YouTube or Vimeo, so the page stays fast and
+ * no third-party cookies are set before the visitor chooses to watch. YouTube
+ * plays from youtube-nocookie.com; Vimeo with do-not-track on.
+ *
+ *   <VideoEmbed provider="youtube" videoId="dQw4w9WgXcQ" title="Product tour" poster={tourPoster} />
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { getLocale, useTranslations } from '@/i18n';
+import { cn } from '@/lib/cn';
+
+interface Props {
+  provider: 'youtube' | 'vimeo';
+  /** The video's id: what follows v= on YouTube, or the number in a Vimeo URL */
+  videoId: string;
+  /** The video's title: the play button's label and the iframe's title */
+  title: string;
+  poster?: ImageMetadata | string;
+  ratio?: '16/9' | '4/3' | '1/1' | '9/16';
+  class?: string;
+}
+
+const { provider, videoId, title, poster, ratio = '16/9', class: className } = Astro.props;
+const t = useTranslations(getLocale(Astro));
+const id = encodeURIComponent(videoId);
+const src =
+  provider === 'youtube'
+    ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`
+    : `https://player.vimeo.com/video/${id}?autoplay=1&dnt=1`;
+const providerName = provider === 'youtube' ? 'YouTube' : 'Vimeo';
+const aspect = { '16/9': 'aspect-video', '4/3': 'aspect-[4/3]', '1/1': 'aspect-square', '9/16': 'aspect-[9/16]' };
+---
+
+<div
+  class={cn('bg-secondary relative w-full max-w-full overflow-hidden rounded-[var(--theme-radius-xl)]', aspect[ratio], className)}
+  data-video-embed
+  data-src={src}
+  data-title={title}
+>
+  <button type="button" class="group absolute inset-0 size-full cursor-pointer" data-video-play>
+    {
+      poster &&
+        (typeof poster === 'string' ? (
+          <img src={poster} alt="" class="absolute inset-0 size-full object-cover" loading="lazy" decoding="async" />
+        ) : (
+          <Image src={poster} alt="" widths={[640, 960, 1280]} sizes="(min-width: 1024px) 60rem, 100vw" class="absolute inset-0 size-full object-cover" />
+        ))
+    }
+    <span class={cn('absolute inset-0', poster ? 'bg-black/30' : '')} aria-hidden="true"></span>
+    <span class="relative flex size-full flex-col items-center justify-center gap-3 p-4 text-center">
+      <span class="bg-primary text-primary-foreground grid size-16 place-items-center rounded-full shadow-lg transition-transform group-hover:scale-105 group-focus-visible:ring-4 group-focus-visible:ring-ring">
+        <Icon name="play" size="lg" class="ml-0.5 fill-current" />
+      </span>
+      <span class={cn('text-sm font-medium', poster ? 'text-white' : 'text-foreground')}>
+        <span class="sr-only">{t('media.play', { title })}</span>
+        <span aria-hidden="true">{title}</span>
+      </span>
+      <span class={cn('text-xs', poster ? 'text-white/80' : 'text-foreground-muted')}>
+        {t('media.playsFrom', { provider: providerName })}
+      </span>
+    </span>
+  </button>
+</div>
+
+<script>
+  function initVideoEmbeds() {
+    document.querySelectorAll<HTMLElement>('[data-video-embed]').forEach((embed) => {
+      if (embed.dataset.videoInit) return;
+      embed.dataset.videoInit = 'true';
+      embed.querySelector('[data-video-play]')?.addEventListener(
+        'click',
+        () => {
+          const iframe = document.createElement('iframe');
+          iframe.src = embed.dataset.src ?? '';
+          iframe.title = embed.dataset.title ?? '';
+          iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+          iframe.allowFullscreen = true;
+          iframe.className = 'absolute inset-0 size-full border-0';
+          embed.replaceChildren(iframe);
+          iframe.focus();
+        },
+        { once: true }
+      );
+    });
+  }
+
+  initVideoEmbeds();
+  document.addEventListener('astro:after-swap', initVideoEmbeds);
+</script>

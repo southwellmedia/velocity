@@ -1,0 +1,32 @@
+---
+/**
+ * A loading spinner with a screen-reader label ("Loading" by default).
+ * It inherits the text colour; with reduced motion it stops spinning.
+ */
+import { getLocale, useTranslations } from '@/i18n';
+import { cn } from '@/lib/cn';
+
+interface Props {
+  size?: 'sm' | 'md' | 'lg';
+  /** What's loading, for screen readers */
+  label?: string;
+  class?: string;
+}
+
+const { size = 'md', label, class: className } = Astro.props;
+const t = useTranslations(getLocale(Astro));
+const sizes = { sm: 'size-4', md: 'size-6', lg: 'size-8' };
+---
+
+<span role="status" class={cn('inline-flex items-center', className)}>
+  <svg
+    class={cn(sizes[size], 'animate-spin motion-reduce:animate-none')}
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+  >
+    <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.5" opacity="0.25"></circle>
+    <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"></path>
+  </svg>
+  <span class="sr-only">{label ?? t('a11y.loading')}</span>
+</span>

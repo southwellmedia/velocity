@@ -1,0 +1,59 @@
+---
+/**
+ * A band of headline numbers. `variant="plain"` (default) sets each number
+ * large over its label; `variant="cards"` uses StatCard, with an optional icon
+ * and trend line.
+ */
+import StatCard from '@/components/patterns/StatCard.astro';
+import { cn } from '@/lib/cn';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Stat {
+  value: string;
+  label: string;
+  /** A Lucide icon name (cards only) */
+  icon?: string;
+  trend?: 'up' | 'down' | 'neutral';
+  trendText?: string;
+}
+
+interface Props {
+  stats: Stat[];
+  variant?: 'plain' | 'cards';
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  id?: string;
+  class?: string;
+}
+
+const { stats, variant = 'plain', eyebrow, title, lead, tone = 'default', id, class: className } = Astro.props;
+const columns = stats.length >= 4 ? 'lg:grid-cols-4' : stats.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2';
+---
+
+<Band id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  {
+    variant === 'cards' ? (
+      <ul class={cn('grid gap-6 sm:grid-cols-2', columns)}>
+        {stats.map((stat) => (
+          <li>
+            <StatCard label={stat.label} value={stat.value} icon={stat.icon} trend={stat.trend} trendText={stat.trendText} />
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <dl class={cn('grid gap-x-8 gap-y-10 sm:grid-cols-2', columns)}>
+        {stats.map((stat) => (
+          <div class="border-border flex flex-col-reverse gap-2 border-t pt-6">
+            <dt class="text-foreground-secondary text-sm">{stat.label}</dt>
+            <dd class="font-display text-foreground m-0 text-4xl font-bold tracking-tight tabular-nums sm:text-5xl">
+              {stat.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    )
+  }
+</Band>

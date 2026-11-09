@@ -1,0 +1,91 @@
+---
+/**
+ * A small panel anchored to a button: extra detail, a few actions, a share
+ * menu. Built on the native popover attribute, so opening, closing on Escape or
+ * an outside click, and keyboard focus need no script; a few lines place it
+ * next to its button.
+ *
+ * Put the button's content in the `trigger` slot and the panel in the default slot.
+ *
+ *   <Popover label="Plan details">
+ *     <Fragment slot="trigger"><Icon name="info" size="sm" /> Details</Fragment>
+ *     <p>Billed yearly. Cancel any time.</p>
+ *   </Popover>
+ */
+import { cn } from '@/lib/cn';
+
+interface Props {
+  /** Accessible name for the panel */
+  label: string;
+  /** Which side of the button the panel opens on */
+  placement?: 'bottom' | 'top';
+  align?: 'start' | 'end';
+  /** Classes for the trigger button */
+  triggerClass?: string;
+  class?: string;
+}
+
+const { label, placement = 'bottom', align = 'start', triggerClass, class: className } = Astro.props;
+const id = `popover-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<span class="inline-flex">
+  <button
+    type="button"
+    popovertarget={id}
+    class={cn(
+      'text-foreground hover:bg-secondary focus-visible:ring-ring inline-flex h-9 items-center gap-1.5 rounded-md px-3 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none',
+      triggerClass
+    )}
+    data-popover-trigger
+  >
+    <slot name="trigger" />
+  </button>
+  <div
+    id={id}
+    popover="auto"
+    role="dialog"
+    aria-label={label}
+    data-popover
+    data-placement={placement}
+    data-align={align}
+    class={cn(
+      'bg-card text-foreground border-border m-0 w-max max-w-[min(20rem,calc(100vw-2rem))] rounded-[var(--theme-radius-lg)] border p-4 text-sm shadow-lg',
+      className
+    )}
+  >
+    <slot />
+  </div>
+</span>
+
+<script>
+  const GAP = 8;
+
+  function place(panel: HTMLElement) {
+    const trigger = document.querySelector<HTMLElement>(`[popovertarget="${panel.id}"]`);
+    if (!trigger) return;
+    const t = trigger.getBoundingClientRect();
+    const p = panel.getBoundingClientRect();
+    const above = panel.dataset.placement === 'top' || (t.bottom + GAP + p.height > window.innerHeight && t.top > p.height + GAP);
+    const top = above ? t.top - p.height - GAP : t.bottom + GAP;
+    let left = panel.dataset.align === 'end' ? t.right - p.width : t.left;
+    left = Math.min(Math.max(8, left), window.innerWidth - p.width - 8);
+    panel.style.position = 'fixed';
+    panel.style.inset = 'auto';
+    panel.style.top = `${Math.max(8, top)}px`;
+    panel.style.left = `${left}px`;
+  }
+
+  function initPopovers() {
+    document.querySelectorAll<HTMLElement>('[data-popover]').forEach((panel) => {
+      if (panel.dataset.popoverInit) return;
+      panel.dataset.popoverInit = 'true';
+      panel.addEventListener('toggle', (event) => {
+        if ((event as ToggleEvent).newState === 'open') place(panel);
+      });
+    });
+  }
+
+  initPopovers();
+  document.addEventListener('astro:after-swap', initPopovers);
+</script>

@@ -5,3 +5,5 @@ export * from './Tabs';
 export * from './VerticalTabs';
 export * from './Accordion';
 export * from './ConsentBanner';
+export * from './Sheet';
+export * from './Popover';

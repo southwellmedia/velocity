@@ -50,7 +50,11 @@
     },
     "sections": {
       "name": "Sections",
-      "description": "Full-width page sections - page hero, FAQ, steps, testimonials, call to action, hours"
+      "description": "Full-width page sections - page hero, features, pricing, FAQ, steps, stats, testimonials, logos, team, timeline, contact, call to action, hours"
+    },
+    "seo": {
+      "name": "SEO",
+      "description": "Structured data and page metadata components"
     },
     "hero": {
       "name": "Hero",
@@ -234,6 +238,29 @@
       ],
       "example": "---\nimport Switch from '@/components/ui/form/Switch/Switch.astro';\n---\n\n<Switch name=\"updates\" label=\"Product updates\" description=\"One email a month.\" checked />"
     },
+    "toggle-group": {
+      "name": "ToggleGroup",
+      "description": "A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form.",
+      "category": "ui",
+      "subcategory": "form",
+      "files": [
+        "src/components/ui/form/ToggleGroup/ToggleGroup.astro",
+        "src/components/ui/form/ToggleGroup/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use ToggleGroup for a short set of mutually exclusive options instead of hand-built segmented buttons; use Tabs when each option shows different content."
+      ],
+      "example": "---\nimport ToggleGroup from '@/components/ui/form/ToggleGroup/ToggleGroup.astro';\n---\n\n<ToggleGroup\n  name=\"billing\"\n  label=\"Billing period\"\n  value=\"monthly\"\n  options={[{ value: 'monthly', label: 'Monthly' }, { value: 'yearly', label: 'Yearly' }]}\n/>"
+    },
     "card": {
       "name": "Card",
       "description": "Surface container with variants and padding; becomes a block link when given href.",
@@ -415,6 +442,29 @@
       "premium": false,
       "example": "---\nimport Skeleton from '@/components/ui/data-display/Skeleton/Skeleton.astro';\n---\n\n<div class=\"flex items-center gap-3\">\n  <Skeleton variant=\"circular\" width=\"40px\" height=\"40px\" />\n  <Skeleton variant=\"text\" width=\"60%\" />\n</div>"
     },
+    "carousel": {
+      "name": "Carousel",
+      "description": "A sideways-scrolling row of slides on CSS scroll snap (swipe, trackpad, keyboard) with previous / next buttons; 1-4 slides in view.",
+      "category": "ui",
+      "subcategory": "data-display",
+      "files": [
+        "src/components/ui/data-display/Carousel/Carousel.astro",
+        "src/components/ui/data-display/Carousel/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Carousel for galleries and card rows that scroll sideways instead of a hand-built slider script."
+      ],
+      "example": "---\nimport Carousel from '@/components/ui/data-display/Carousel/Carousel.astro';\nimport Card from '@/components/ui/data-display/Card/Card.astro';\n---\n\n<Carousel label=\"Customer stories\" perView={3}>\n  <Card>One</Card>\n  <Card>Two</Card>\n  <Card>Three</Card>\n  <Card>Four</Card>\n</Carousel>"
+    },
     "alert": {
       "name": "Alert",
       "description": "Inline message box (info, success, warning, error) with an icon, optional title and dismiss button.",
@@ -487,6 +537,27 @@
       ],
       "example": "---\nimport Tooltip from '@/components/ui/feedback/Tooltip/Tooltip.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Tooltip content=\"Copy to clipboard\" position=\"bottom\">\n  <Button variant=\"ghost\" size=\"sm\" icon leadingIcon=\"copy\" aria-label=\"Copy\" />\n</Tooltip>"
     },
+    "spinner": {
+      "name": "Spinner",
+      "description": "A loading spinner that inherits the text colour, with a screen-reader label; stops with reduced motion.",
+      "category": "ui",
+      "subcategory": "feedback",
+      "files": [
+        "src/components/ui/feedback/Spinner/Spinner.astro",
+        "src/components/ui/feedback/Spinner/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": []
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Spinner for a loading state outside a button; Button has its own loading prop."
+      ],
+      "example": "---\nimport Spinner from '@/components/ui/feedback/Spinner/Spinner.astro';\n---\n\n<Spinner size=\"sm\" label=\"Loading results\" />"
+    },
     "dialog": {
       "name": "Dialog",
       "description": "Accessible modal with focus trap, Escape/backdrop close, title, description and a footer slot. Open it with window.openDialog(id).",
@@ -512,6 +583,29 @@
       ],
       "example": "---\nimport Dialog from '@/components/ui/overlay/Dialog/Dialog.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Button variant=\"destructive\" id=\"delete-trigger\">Delete project</Button>\n\n<Dialog id=\"delete-dialog\" title=\"Delete project?\" description=\"This can't be undone.\" size=\"sm\">\n  <p class=\"text-sm text-foreground-muted\">All deployments will be removed.</p>\n  <div slot=\"footer\" class=\"flex justify-end gap-3\">\n    <Button variant=\"outline\" data-dialog-close>Cancel</Button>\n    <Button variant=\"destructive\" data-dialog-close>Delete</Button>\n  </div>\n</Dialog>\n\n<script>\n  const w = window as Window & { openDialog?: (id: string) => void };\n  document.getElementById('delete-trigger')?.addEventListener('click', () => w.openDialog?.('delete-dialog'));\n</script>"
     },
+    "sheet": {
+      "name": "Sheet",
+      "description": "A panel that slides in from the left, right or bottom (filters, cart, menu), on the native <dialog>: focus stays inside and Escape closes it. Opened by any button with data-sheet-open.",
+      "category": "ui",
+      "subcategory": "overlay",
+      "files": [
+        "src/components/ui/overlay/Sheet/Sheet.astro",
+        "src/components/ui/overlay/Sheet/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Sheet for a side panel or bottom drawer; use Dialog for a centered modal."
+      ],
+      "example": "---\nimport Sheet from '@/components/ui/overlay/Sheet/Sheet.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Button data-sheet-open=\"filters\">Filters</Button>\n<Sheet id=\"filters\" title=\"Filters\" side=\"right\">\n  <p>Filter controls go here.</p>\n  <Button slot=\"footer\" data-sheet-close fullWidth>Show results</Button>\n</Sheet>"
+    },
     "dropdown": {
       "name": "Dropdown",
       "description": "Menu of links or actions (with icons, separators and disabled items) opened from a trigger slot, with keyboard support.",
@@ -535,6 +629,27 @@
         "Use Select for picking a form value."
       ],
       "example": "---\nimport Dropdown from '@/components/ui/overlay/Dropdown/Dropdown.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Dropdown\n  align=\"end\"\n  items={[\n    { label: 'Edit', href: '/settings', icon: 'edit' },\n    { label: '', separator: true },\n    { label: 'Archive', href: '/archive', icon: 'archive', disabled: true },\n  ]}\n>\n  <Button slot=\"trigger\" variant=\"outline\" trailingIcon=\"chevron-down\">Actions</Button>\n</Dropdown>"
+    },
+    "popover": {
+      "name": "Popover",
+      "description": "A small panel anchored to its button (details, a few actions), on the native popover attribute: Escape and outside clicks close it with no script.",
+      "category": "ui",
+      "subcategory": "overlay",
+      "files": [
+        "src/components/ui/overlay/Popover/Popover.astro",
+        "src/components/ui/overlay/Popover/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": []
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Popover for interactive content next to a button; use Tooltip for a short read-only hint and Dropdown for a menu of actions."
+      ],
+      "example": "---\nimport Popover from '@/components/ui/overlay/Popover/Popover.astro';\n---\n\n<Popover label=\"Plan details\">\n  <Fragment slot=\"trigger\">Details</Fragment>\n  <p>Billed yearly. Cancel any time.</p>\n</Popover>"
     },
     "tabs": {
       "name": "Tabs",
@@ -673,6 +788,27 @@
       ],
       "example": "---\nimport CodeBlock from '@/components/ui/content/CodeBlock/CodeBlock.astro';\n---\n\n<CodeBlock filename=\"astro.config.mjs\" code={`export default defineConfig({\\n  site: 'https://example.com',\\n});`} />"
     },
+    "kbd": {
+      "name": "Kbd",
+      "description": "A keyboard key, or a combination such as ⌘ K from a keys array.",
+      "category": "ui",
+      "subcategory": "content",
+      "files": [
+        "src/components/ui/content/Kbd/Kbd.astro",
+        "src/components/ui/content/Kbd/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": []
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Kbd for keys and shortcuts in docs and UI hints instead of styled <code>."
+      ],
+      "example": "---\nimport Kbd from '@/components/ui/content/Kbd/Kbd.astro';\n---\n\nPress <Kbd keys={['⌘', 'K']} /> to search, or <Kbd>Esc</Kbd> to close."
+    },
     "logo": {
       "name": "Logo",
       "description": "The site's logo, rendered inline from the SVGs in src/assets/branding/ (logomark or full), with light/dark versions.",
@@ -713,7 +849,8 @@
       },
       "premium": false,
       "useInstead": [
-        "Use Section for ordinary content bands; CTA is the closing conversion block."
+        "Use Section for ordinary content bands; CTA is the closing conversion block.",
+        "For a closing band built from tokens and Buttons (brand, invert or tinted panel), prefer the CtaBand section; CTA is the centered, slot-based variant."
       ],
       "example": "---\nimport CTA from '@/components/ui/marketing/CTA/CTA.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<CTA variant=\"invert\" size=\"md\">\n  <h2 slot=\"heading\">Ready to launch?</h2>\n  <p slot=\"description\">Start from a site that is fast, accessible and translated.</p>\n  <Button slot=\"actions\" size=\"lg\" href=\"/contact\">Talk to us</Button>\n</CTA>"
     },
@@ -781,6 +918,52 @@
         "Use CodeBlock for static commands, or NpmCopyButton for a copyable install command."
       ],
       "example": "---\nimport TerminalDemo from '@/components/ui/marketing/TerminalDemo/TerminalDemo';\n---\n\n<TerminalDemo client:visible />"
+    },
+    "video-embed": {
+      "name": "VideoEmbed",
+      "description": "A YouTube or Vimeo video that loads only on play: until then a poster and no third-party request or cookies (youtube-nocookie, Vimeo dnt).",
+      "category": "ui",
+      "subcategory": "marketing",
+      "files": [
+        "src/components/ui/marketing/VideoEmbed/VideoEmbed.astro",
+        "src/components/ui/marketing/VideoEmbed/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use VideoEmbed for any YouTube or Vimeo video instead of a raw <iframe>, which loads third-party scripts and cookies on page load."
+      ],
+      "example": "---\nimport VideoEmbed from '@/components/ui/marketing/VideoEmbed/VideoEmbed.astro';\n---\n\n<VideoEmbed provider=\"youtube\" videoId=\"dQw4w9WgXcQ\" title=\"Product tour\" />"
+    },
+    "announcement-bar": {
+      "name": "AnnouncementBar",
+      "description": "A strip above the header for a launch or notice: message, optional link and close button; a dismissed bar stays closed per id.",
+      "category": "ui",
+      "subcategory": "marketing",
+      "files": [
+        "src/components/ui/marketing/AnnouncementBar/AnnouncementBar.astro",
+        "src/components/ui/marketing/AnnouncementBar/index.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use AnnouncementBar for site-wide notices instead of an Alert at the top of a page; change its id for each new announcement."
+      ],
+      "example": "---\nimport AnnouncementBar from '@/components/ui/marketing/AnnouncementBar/AnnouncementBar.astro';\n---\n\n<AnnouncementBar id=\"launch-2-6\" href=\"/blog/velocity-2-6\" linkLabel=\"Read the post\" tone=\"brand\">\n  Velocity 2.6 is out.\n</AnnouncementBar>"
     },
     "contact-form": {
       "name": "ContactForm",
@@ -1156,7 +1339,8 @@
       },
       "premium": false,
       "useInstead": [
-        "Use CtaBand to close a page with an action instead of a hand-built dark box; put Buttons in the default slot."
+        "Use CtaBand to close a page with an action instead of a hand-built dark box; put Buttons in the default slot.",
+        "CTA (ui/marketing) is the older centered variant with logo and slots; use CtaBand for new pages."
       ],
       "example": "---\nimport CtaBand from '@/components/blocks/CtaBand.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<CtaBand title=\"Ready to start?\" lead=\"Set up takes five minutes.\" tone=\"brand\">\n  <Button size=\"lg\" href=\"/contact\">Get in touch</Button>\n</CtaBand>"
     },
@@ -1246,6 +1430,207 @@
         "Use Hours for opening times instead of a hand-built table or list."
       ],
       "example": "---\nimport Hours from '@/components/blocks/Hours.astro';\n---\n\n<Hours\n  bare\n  rows={[\n    { days: 'Mon–Fri', time: '8:00–18:00' },\n    { days: 'Sat', time: '9:00–13:00' },\n  ]}\n  note=\"Closed on public holidays.\"\n/>"
+    },
+    "feature-grid": {
+      "name": "FeatureGrid",
+      "description": "Features in a 2, 3 or 4 column grid: icon, title and a line or two each, open or on cards; in its own band or bare.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/FeatureGrid.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "card",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use FeatureGrid for a set of features or services instead of hand-built icon cards."
+      ],
+      "example": "---\nimport FeatureGrid from '@/components/blocks/FeatureGrid.astro';\n---\n\n<FeatureGrid\n  eyebrow=\"Why Velocity\"\n  title=\"Everything a site needs\"\n  items={[\n    { icon: 'zap', title: 'Fast by default', body: 'Static HTML, no client router.' },\n    { icon: 'globe', title: 'Every language', body: 'Translated URLs and hreflang.' },\n    { icon: 'shield-check', title: 'Strict CSP', body: 'Hash-based script policy.' },\n  ]}\n/>"
+    },
+    "feature-split": {
+      "name": "FeatureSplit",
+      "description": "One feature beside a picture: eyebrow, title, lead, checked points and buttons, with a MediaSlot or your own media; reverse alternates sides.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/FeatureSplit.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "media-slot",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use FeatureSplit for a text-and-image row instead of a hand-built two-column grid; alternate reverse for a feature tour."
+      ],
+      "example": "---\nimport FeatureSplit from '@/components/blocks/FeatureSplit.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<FeatureSplit\n  eyebrow=\"Themes\"\n  title=\"Change the whole look in one file\"\n  lead=\"Semantic tokens feed every component.\"\n  points={['Light and dark', 'OKLCH colours', 'One brand hue']}\n  photo=\"theme-preview\"\n  alt=\"The theme editor\"\n>\n  <Button href=\"/docs/themes\">Read the guide</Button>\n</FeatureSplit>"
+    },
+    "pricing": {
+      "name": "Pricing",
+      "description": "Plans side by side: name, price, description, included features and a button, with one plan highlighted and an optional badge.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/Pricing.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "badge",
+          "card",
+          "button",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Pricing for plan cards instead of hand-built price cards. Prices are display text (\"$29\", \"Free\")."
+      ],
+      "example": "---\nimport Pricing from '@/components/blocks/Pricing.astro';\n---\n\n<Pricing\n  title=\"Simple pricing\"\n  plans={[\n    { name: 'Starter', price: '$0', period: '/ month', features: ['1 site', 'Community support'], cta: { label: 'Start free', href: '/signup' } },\n    { name: 'Pro', price: '$29', period: '/ month', features: ['10 sites', 'Email support'], cta: { label: 'Go Pro', href: '/signup?plan=pro' }, highlighted: true, badge: 'Most popular' },\n  ]}\n  note=\"Prices exclude tax.\"\n/>"
+    },
+    "logo-cloud": {
+      "name": "LogoCloud",
+      "description": "A row of customer or partner logos under a short label, muted until hovered; imported images or public/ paths.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/LogoCloud.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use LogoCloud for \"trusted by\" logos instead of a hand-built image row."
+      ],
+      "example": "---\nimport LogoCloud from '@/components/blocks/LogoCloud.astro';\nimport acme from '@/assets/logos/acme.svg';\n---\n\n<LogoCloud\n  label=\"Trusted by teams at\"\n  logos={[\n    { name: 'Acme', src: acme },\n    { name: 'Globex', src: '/logos/globex.svg', href: 'https://example.com' },\n  ]}\n/>"
+    },
+    "stats-band": {
+      "name": "StatsBand",
+      "description": "A band of headline numbers, set large over their labels or as StatCards with icons and trends.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/StatsBand.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "stat-card"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use StatsBand for a row of headline figures; use StatCard alone for a single metric in a dashboard."
+      ],
+      "example": "---\nimport StatsBand from '@/components/blocks/StatsBand.astro';\n---\n\n<StatsBand\n  tone=\"secondary\"\n  stats={[\n    { value: '100', label: 'Lighthouse performance' },\n    { value: '0 KB', label: 'JavaScript by default' },\n    { value: '3', label: 'Languages out of the box' },\n  ]}\n/>"
+    },
+    "contact-section": {
+      "name": "ContactSection",
+      "description": "Heading and ways to reach you (icon, label, linked value) beside ContactForm on a card; extra content such as Hours in the default slot.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/ContactSection.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "contact-form",
+          "card",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use ContactSection for a contact page or band instead of placing ContactForm beside hand-built details."
+      ],
+      "example": "---\nimport ContactSection from '@/components/blocks/ContactSection.astro';\n---\n\n<ContactSection\n  eyebrow=\"Contact\"\n  title=\"Talk to a person\"\n  lead=\"We answer within a day.\"\n  details={[\n    { icon: 'mail', label: 'Email', value: 'hello@example.com', href: 'mailto:hello@example.com' },\n    { icon: 'phone', label: 'Phone', value: '+1 555 0100', href: 'tel:+15550100' },\n    { icon: 'map-pin', label: 'Office', value: '12 Main St, Dallas' },\n  ]}\n/>"
+    },
+    "timeline": {
+      "name": "Timeline",
+      "description": "Dated events down a line (history, milestones): date, title and an optional line each; in its own band or bare.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/Timeline.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Timeline for dated events in order; use Steps for a numbered process."
+      ],
+      "example": "---\nimport Timeline from '@/components/blocks/Timeline.astro';\n---\n\n<Timeline\n  title=\"Our story\"\n  items={[\n    { date: '2021', title: 'Founded in Dallas', body: 'Two people and a client list.' },\n    { date: '2024', title: 'Velocity 1.0' },\n    { date: '2026', title: 'Velocity 2.6', body: 'Page sections and every Lucide icon.' },\n  ]}\n/>"
+    },
+    "team": {
+      "name": "Team",
+      "description": "People in a grid: portrait (MediaSlot or placeholder), name, role, an optional line and icon links.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/Team.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "media-slot",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Team for staff, providers or speakers instead of hand-built profile cards."
+      ],
+      "example": "---\nimport Team from '@/components/blocks/Team.astro';\n---\n\n<Team\n  title=\"Meet the team\"\n  people={[\n    { name: 'Ana Ruiz', role: 'Founder', photo: 'ana', links: [{ label: 'Email', href: 'mailto:ana@example.com', icon: 'mail' }] },\n    { name: 'Sam Lee', role: 'Designer' },\n  ]}\n/>"
+    },
+    "breadcrumbs": {
+      "name": "Breadcrumbs",
+      "description": "Breadcrumb trail with BreadcrumbList structured data; an item without href is the current page.",
+      "category": "seo",
+      "files": [
+        "src/components/seo/Breadcrumbs.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": []
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Breadcrumbs for any page trail, e.g. in PageHero's breadcrumbs slot, instead of a hand-built list and hand-written BreadcrumbList data."
+      ],
+      "example": "---\nimport Breadcrumbs from '@/components/seo/Breadcrumbs.astro';\n---\n\n<Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Blog', href: '/blog' }, { label: 'Hello world' }]} />"
     }
   }
 }

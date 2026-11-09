@@ -1,0 +1,82 @@
+---
+/**
+ * Plans side by side: name, price, a line of description, what's included and
+ * a button. Mark one plan `highlighted` to set it apart, and give it a `badge`
+ * such as "Most popular". Prices are display text, so write them as you want
+ * them shown ("$29", "Free", "Let's talk").
+ */
+import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import Card from '@/components/ui/data-display/Card/Card.astro';
+import Button from '@/components/ui/form/Button/Button.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { cn } from '@/lib/cn';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Plan {
+  name: string;
+  price: string;
+  /** After the price, e.g. "/ month" */
+  period?: string;
+  description?: string;
+  features?: string[];
+  cta: { label: string; href: string };
+  highlighted?: boolean;
+  badge?: string;
+}
+
+interface Props {
+  plans: Plan[];
+  /** A line under the plans, e.g. taxes or a trial */
+  note?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  id?: string;
+  class?: string;
+}
+
+const { plans, note, eyebrow, title, lead, tone = 'default', id, class: className } = Astro.props;
+const columns = plans.length >= 4 ? 'lg:grid-cols-4' : plans.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2';
+---
+
+<Band id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} centered={!!title} class={className}>
+  <ul class={cn('grid items-stretch gap-6 md:grid-cols-2', columns)}>
+    {
+      plans.map((plan) => (
+        <li class="min-w-0">
+          <Card padding="lg" class={cn('flex h-full flex-col gap-6', plan.highlighted && 'border-primary ring-primary ring-1')}>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="font-display text-foreground m-0 text-lg font-bold">{plan.name}</h3>
+              {plan.badge && (
+                <Badge variant={plan.highlighted ? 'brand' : 'default'} pill>
+                  {plan.badge}
+                </Badge>
+              )}
+            </div>
+            <p class="m-0 flex flex-wrap items-baseline gap-x-1.5">
+              <span class="font-display text-foreground text-4xl font-bold tracking-tight">{plan.price}</span>
+              {plan.period && <span class="text-foreground-muted text-sm">{plan.period}</span>}
+            </p>
+            {plan.description && <p class="text-foreground-secondary m-0 text-sm">{plan.description}</p>}
+            {plan.features && plan.features.length > 0 && (
+              <ul class="flex flex-col gap-2.5 text-sm">
+                {plan.features.map((feature) => (
+                  <li class="text-foreground-secondary flex gap-2.5">
+                    <Icon name="check" size="sm" class="text-primary mt-0.5" />
+                    <span>{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Button href={plan.cta.href} variant={plan.highlighted ? 'primary' : 'outline'} fullWidth class="mt-auto">
+              {plan.cta.label}
+            </Button>
+          </Card>
+        </li>
+      ))
+    }
+  </ul>
+  {note && <p class="text-foreground-muted mt-8 text-center text-sm">{note}</p>}
+</Band>
