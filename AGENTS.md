@@ -32,7 +32,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 - `src/config/nav.config.ts` — routes (with translated slugs), nav items, header/footer defaults (CTA, actions, extra links).
 - `src/lib/blog.ts` — the only place that maps posts to URLs (`getPosts`, `getPostUrl`).
 - `src/actions/index.ts` — Astro Actions. Form schemas live in `src/lib/forms.ts` and endpoint delivery in `src/lib/form-delivery.ts`, so tests can import them.
-- `src/content.config.ts` — content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`). Project-specific collections go in `src/config/collections.ts`, which upgrades leave alone.
+- `src/content.config.ts` — content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`). Project-specific collections (`siteCollections`) and extra blog frontmatter fields (`blogFields`) go in `src/config/collections.ts`, which upgrades leave alone.
 - `src/styles/tokens/` and `src/styles/themes/` — design tokens (OKLCH). Use semantic Tailwind classes (`bg-background`, `text-foreground-muted`, `bg-brand-600`), never raw colors. `src/styles/theme.css` picks the active theme and upgrades leave it alone.
 - `integrations/` — local Astro integrations: `deploy-target.mjs` (adapter + cache provider detection), `pagefind.mjs` (search index).
 - `velocity-manifest.json` — consumed by `create-velocity-astro` to upgrade user projects. Breaking changes need a migration entry with `fromVersion`/`toVersion`.

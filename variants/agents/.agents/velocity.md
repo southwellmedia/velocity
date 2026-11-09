@@ -36,7 +36,7 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 - `src/config/site.config.ts`: site name, URL and metadata, and `defaultTheme` ('system', 'light' or 'dark') for visitors who haven't used the theme toggle.
 - `src/i18n/`: enabled locales (`locales.mjs`), your site copy (`translations/<locale>.ts`), and helpers (`useTranslations`, `getLocale`, `localizeRoute`, `localizePath`).
 - `src/lib/blog.ts`: the only place that maps posts to URLs (`getPosts`, `getPostUrl`).
-- `src/content.config.ts`: Velocity's content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`). Add your own in `src/config/collections.ts`, which is merged in.
+- `src/content.config.ts`: Velocity's content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`). Add your own collections (`siteCollections`) and extra blog frontmatter fields (`blogFields`) in `src/config/collections.ts`, which is merged in. Never edit `content.config.ts` to change the blog schema.
 - `src/styles/tokens/` and `src/styles/themes/`: design tokens (OKLCH). `src/styles/theme.css` picks the active theme.
 - `integrations/`: local Astro integrations for deploy target detection and the Pagefind search index.
 - `component-registry.json`: reference list of the components Velocity ships, including ones not installed here. You don't need to add your own components to it.
