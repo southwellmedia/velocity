@@ -1,0 +1,91 @@
+---
+/**
+ * A strip above the header for a launch, a sale or a notice: a short message,
+ * an optional link and an optional close button. A dismissed bar stays closed
+ * in that browser until you change its `id`, so give each announcement its own.
+ *
+ * Put it before the header, e.g. in src/components/site/SiteHeader.astro.
+ *
+ *   <AnnouncementBar id="launch-2-6" href="/blog/velocity-2-6" linkLabel="Read the post">
+ *     Velocity 2.6 is out: page sections and every Lucide icon.
+ *   </AnnouncementBar>
+ */
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { getLocale, useTranslations } from '@/i18n';
+import { cn } from '@/lib/cn';
+
+interface Props {
+  /** Identifies this announcement; dismissing it is remembered per id */
+  id: string;
+  href?: string;
+  linkLabel?: string;
+  dismissible?: boolean;
+  tone?: 'brand' | 'invert' | 'secondary';
+  class?: string;
+}
+
+const { id, href, linkLabel, dismissible = true, tone = 'invert', class: className } = Astro.props;
+const t = useTranslations(getLocale(Astro));
+const tones = {
+  brand: 'brand-section bg-background',
+  invert: 'invert-section bg-background',
+  secondary: 'bg-background-secondary border-border border-b',
+};
+---
+
+<div class={cn('relative text-sm', tones[tone], className)} data-announcement={id}>
+  <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-3 gap-y-1 py-2.5 pr-12 pl-6 text-center">
+    <p class="text-foreground m-0"><slot /></p>
+    {
+      href && linkLabel && (
+        <a href={href} class="text-foreground inline-flex items-center gap-1 font-semibold underline underline-offset-4">
+          {linkLabel}
+          <Icon name="arrow-right" size="xs" />
+        </a>
+      )
+    }
+  </div>
+  {
+    dismissible && (
+      <button
+        type="button"
+        class="text-foreground-secondary hover:text-foreground focus-visible:ring-ring absolute top-1/2 right-3 grid size-8 -translate-y-1/2 place-items-center rounded-md focus-visible:ring-2 focus-visible:outline-none"
+        aria-label={t('a11y.dismiss')}
+        data-announcement-dismiss
+      >
+        <Icon name="x" size="sm" />
+      </button>
+    )
+  }
+</div>
+
+<script>
+  const key = (id: string) => `velocity-announcement:${id}`;
+
+  function initAnnouncements() {
+    document.querySelectorAll<HTMLElement>('[data-announcement]').forEach((bar) => {
+      if (bar.dataset.announcementInit) return;
+      bar.dataset.announcementInit = 'true';
+      const id = bar.dataset.announcement ?? '';
+      try {
+        if (localStorage.getItem(key(id))) {
+          bar.hidden = true;
+          return;
+        }
+      } catch {
+        // Storage can be blocked; the bar then simply shows
+      }
+      bar.querySelector('[data-announcement-dismiss]')?.addEventListener('click', () => {
+        bar.hidden = true;
+        try {
+          localStorage.setItem(key(id), '1');
+        } catch {
+          // Dismissed for this page view only
+        }
+      });
+    });
+  }
+
+  initAnnouncements();
+  document.addEventListener('astro:after-swap', initAnnouncements);
+</script>

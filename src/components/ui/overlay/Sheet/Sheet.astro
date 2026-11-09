@@ -1,0 +1,117 @@
+---
+/**
+ * A panel that slides in from the side or the bottom: filters, a cart, a menu.
+ * Built on the native <dialog> element, so focus stays inside, Escape closes it
+ * and the page behind is inert, with no focus-trap script.
+ *
+ * Open it from any button with data-sheet-open="<id>"; buttons inside with
+ * data-sheet-close close it, as do Escape and a click on the backdrop.
+ *
+ *   <Button data-sheet-open="filters">Filters</Button>
+ *   <Sheet id="filters" title="Filters" side="right">…</Sheet>
+ */
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { getLocale, useTranslations } from '@/i18n';
+import { cn } from '@/lib/cn';
+
+interface Props {
+  id: string;
+  title: string;
+  description?: string;
+  side?: 'left' | 'right' | 'bottom';
+  size?: 'sm' | 'md' | 'lg';
+  class?: string;
+}
+
+const { id, title, description, side = 'right', size = 'md', class: className } = Astro.props;
+const t = useTranslations(getLocale(Astro));
+const widths = { sm: 'sm:max-w-sm', md: 'sm:max-w-md', lg: 'sm:max-w-xl' };
+const placement = {
+  left: cn('mr-auto h-full max-h-none w-full', widths[size]),
+  right: cn('ml-auto h-full max-h-none w-full', widths[size]),
+  bottom: 'mt-auto w-full max-w-none max-h-[85vh] rounded-t-[var(--theme-radius-xl)]',
+};
+---
+
+<dialog
+  id={id}
+  class={cn('velocity-sheet bg-background text-foreground border-border m-0 border p-0 shadow-xl', placement[side], className)}
+  data-sheet
+  data-side={side}
+  aria-labelledby={`${id}-title`}
+  aria-describedby={description ? `${id}-description` : undefined}
+>
+  <div class="flex h-full max-h-[inherit] flex-col">
+    <div class="border-border flex items-start justify-between gap-4 border-b px-6 py-4">
+      <div>
+        <h2 id={`${id}-title`} class="text-foreground m-0 text-lg font-semibold">{title}</h2>
+        {description && <p id={`${id}-description`} class="text-foreground-muted mt-1 text-sm">{description}</p>}
+      </div>
+      <button
+        type="button"
+        class="text-foreground-muted hover:text-foreground focus-visible:ring-ring -mr-2 grid size-9 place-items-center rounded-md focus-visible:ring-2 focus-visible:outline-none"
+        data-sheet-close
+        aria-label={t('a11y.close')}
+      >
+        <Icon name="x" size="md" />
+      </button>
+    </div>
+    <div class="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+      <slot />
+    </div>
+    {Astro.slots.has('footer') && (
+      <div class="border-border border-t px-6 py-4">
+        <slot name="footer" />
+      </div>
+    )}
+  </div>
+</dialog>
+
+<style>
+  .velocity-sheet::backdrop {
+    background: color-mix(in oklch, var(--color-foreground) 45%, transparent);
+  }
+  .velocity-sheet[open] {
+    animation: velocity-sheet-in 220ms ease-out;
+  }
+  .velocity-sheet[data-side='left'][open] {
+    --sheet-from: translateX(-100%);
+  }
+  .velocity-sheet[data-side='right'][open] {
+    --sheet-from: translateX(100%);
+  }
+  .velocity-sheet[data-side='bottom'][open] {
+    --sheet-from: translateY(100%);
+  }
+  @keyframes velocity-sheet-in {
+    from {
+      transform: var(--sheet-from);
+    }
+  }
+</style>
+
+<script>
+  function initSheets() {
+    if (document.documentElement.dataset.sheetsInit) return;
+    document.documentElement.dataset.sheetsInit = 'true';
+
+    document.addEventListener('click', (event) => {
+      const target = event.target as Element;
+      const opener = target.closest<HTMLElement>('[data-sheet-open]');
+      if (opener) {
+        const sheet = document.getElementById(opener.dataset.sheetOpen ?? '');
+        if (sheet instanceof HTMLDialogElement) sheet.showModal();
+        return;
+      }
+      if (target.closest('[data-sheet-close]')) {
+        target.closest('dialog')?.close();
+        return;
+      }
+      // A click on the dialog element itself is a click on its backdrop
+      if (target instanceof HTMLDialogElement && target.hasAttribute('data-sheet')) target.close();
+    });
+  }
+
+  initSheets();
+  document.addEventListener('astro:after-swap', initSheets);
+</script>

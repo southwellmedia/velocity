@@ -59,6 +59,16 @@ import StatsBand from '@/components/blocks/StatsBand.astro';
 import Pricing from '@/components/blocks/Pricing.astro';
 import LogoCloud from '@/components/blocks/LogoCloud.astro';
 import ContactSection from '@/components/blocks/ContactSection.astro';
+import Timeline from '@/components/blocks/Timeline.astro';
+import Team from '@/components/blocks/Team.astro';
+import Kbd from '@/components/ui/content/Kbd/Kbd.astro';
+import Spinner from '@/components/ui/feedback/Spinner/Spinner.astro';
+import ToggleGroup from '@/components/ui/form/ToggleGroup/ToggleGroup.astro';
+import Sheet from '@/components/ui/overlay/Sheet/Sheet.astro';
+import Popover from '@/components/ui/overlay/Popover/Popover.astro';
+import Carousel from '@/components/ui/data-display/Carousel/Carousel.astro';
+import VideoEmbed from '@/components/ui/marketing/VideoEmbed/VideoEmbed.astro';
+import AnnouncementBar from '@/components/ui/marketing/AnnouncementBar/AnnouncementBar.astro';
 
 // LogoCloud demo: wordmarks drawn as SVG, so the demo ships no logo files
 const wordmark = (name: string) =>
@@ -1077,6 +1087,17 @@ const categories = [
             <ToastDemo client:load />
           </div>
         </div>
+        <div class="component-showcase">
+          <div class="showcase-header">
+            <span class="showcase-label">Announcement bar</span>
+            <span class="showcase-hint">Dismissible strip above the header; remembered per id</span>
+          </div>
+          <div class="showcase-content">
+            <AnnouncementBar id="showcase-demo" href="#sections" linkLabel="See the sections" tone="brand" class="rounded-lg">
+              Velocity 2.6 is out: page sections and every Lucide icon.
+            </AnnouncementBar>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1193,6 +1214,38 @@ const categories = [
                 <p>Configure your project settings. Use Home/End to jump to first/last tab.</p>
               </div>
             </Tabs>
+          </div>
+        </div>
+        <div class="component-showcase">
+          <div class="showcase-header">
+            <span class="showcase-label">Sheet</span>
+            <span class="showcase-hint">Side or bottom panel on the native dialog element</span>
+          </div>
+          <div class="showcase-content">
+            <div class="flex flex-wrap gap-3">
+              <Button variant="outline" data-sheet-open="demo-sheet-right">Open from the right</Button>
+              <Button variant="outline" data-sheet-open="demo-sheet-bottom">Open from the bottom</Button>
+            </div>
+            <Sheet id="demo-sheet-right" title="Filters" description="A panel for filters, a cart or a menu." side="right">
+              <p class="text-foreground-secondary text-sm">Focus stays inside, Escape closes it, and the page behind is inert.</p>
+              <Button slot="footer" data-sheet-close fullWidth>Show results</Button>
+            </Sheet>
+            <Sheet id="demo-sheet-bottom" title="Share this page" side="bottom">
+              <p class="text-foreground-secondary text-sm">Bottom sheets suit short actions on phones.</p>
+            </Sheet>
+          </div>
+        </div>
+        <div class="component-showcase">
+          <div class="showcase-header">
+            <span class="showcase-label">Popover</span>
+            <span class="showcase-hint">Panel anchored to its button, on the native popover attribute</span>
+          </div>
+          <div class="showcase-content">
+            <Popover label="Plan details">
+              <Fragment slot="trigger"><Icon name="info" size="sm" /> Plan details</Fragment>
+              <p class="m-0 font-semibold">Pro plan</p>
+              <p class="text-foreground-secondary mt-1 mb-0">Billed yearly. Cancel any time from your account.</p>
+            </Popover>
           </div>
         </div>
       </div>
@@ -1769,6 +1822,28 @@ const categories = [
             </div>
           </div>
         </div>
+        <div class="component-showcase">
+          <div class="showcase-header">
+            <span class="showcase-label">Carousel</span>
+            <span class="showcase-hint">Scroll-snap slides with previous / next</span>
+          </div>
+          <div class="showcase-content">
+            <Carousel label="Example slides" perView={3}>
+              {['One', 'Two', 'Three', 'Four', 'Five'].map((n) => (
+                <Card padding="lg" class="h-32"><p class="font-display text-2xl font-bold">{n}</p></Card>
+              ))}
+            </Carousel>
+          </div>
+        </div>
+        <div class="component-showcase">
+          <div class="showcase-header">
+            <span class="showcase-label">Video embed</span>
+            <span class="showcase-hint">Loads YouTube or Vimeo only on play</span>
+          </div>
+          <div class="showcase-content">
+            <VideoEmbed provider="youtube" videoId="dQw4w9WgXcQ" title="Example video" class="max-w-2xl" />
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1891,6 +1966,19 @@ const categories = [
             </div>
           </div>
         </div>
+        <div class="component-showcase">
+          <div class="showcase-header">
+            <span class="showcase-label">Spinner</span>
+            <span class="showcase-hint">Inherits the text colour, labelled for screen readers</span>
+          </div>
+          <div class="showcase-content">
+            <div class="flex items-center gap-6">
+              <Spinner size="sm" />
+              <Spinner />
+              <Spinner size="lg" class="text-primary" />
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1959,6 +2047,27 @@ const categories = [
                 ]}
               />
             </div>
+          </div>
+        </div>
+        <div class="component-showcase">
+          <div class="showcase-header">
+            <span class="showcase-label">Toggle group</span>
+            <span class="showcase-hint">Segmented control from native radio inputs</span>
+          </div>
+          <div class="showcase-content">
+            <div class="flex flex-wrap items-center gap-4">
+              <ToggleGroup name="demo-billing" label="Billing period" value="monthly" options={[{ value: 'monthly', label: 'Monthly' }, { value: 'yearly', label: 'Yearly' }]} />
+              <ToggleGroup name="demo-view" label="View" size="sm" options={[{ value: 'grid', label: 'Grid', icon: 'layout-grid', iconOnly: true }, { value: 'list', label: 'List', icon: 'list', iconOnly: true }]} />
+            </div>
+          </div>
+        </div>
+        <div class="component-showcase">
+          <div class="showcase-header">
+            <span class="showcase-label">Kbd</span>
+            <span class="showcase-hint">Keys and shortcuts</span>
+          </div>
+          <div class="showcase-content">
+            <p class="text-foreground-secondary text-sm">Press <Kbd keys={['⌘', 'K']} /> to search, or <Kbd>Esc</Kbd> to close.</p>
           </div>
         </div>
       </div>
@@ -2191,6 +2300,29 @@ const categories = [
         { icon: 'mail', label: 'Email', value: 'hello@example.com', href: 'mailto:hello@example.com' },
         { icon: 'phone', label: 'Phone', value: '+1 555 0100', href: 'tel:+15550100' },
         { icon: 'map-pin', label: 'Office', value: '12 Main St, Dallas, TX' },
+      ]}
+    />
+
+    <Timeline
+      eyebrow="Timeline"
+      title="Dated events down a line"
+      items={[
+        { date: 'February 2026', title: 'Velocity 1.0', body: 'Astro 6, design tokens and the first components.' },
+        { date: 'October 2026', title: 'Velocity 2.0', body: 'Rebuilt for Astro 7 with a strict CSP by default.' },
+        { date: 'November 2026', title: 'Velocity 2.6', body: 'Page sections and every Lucide icon.' },
+      ]}
+    />
+
+    <Team
+      eyebrow="Team"
+      title="The people behind it"
+      tone="secondary"
+      columns={4}
+      people={[
+        { name: 'Ana Ruiz', role: 'Founder', bio: 'Builds sites and the starter they run on.', links: [{ label: 'Email', href: 'mailto:ana@example.com', icon: 'mail' }] },
+        { name: 'Sam Lee', role: 'Design', links: [{ label: 'Website', href: '#sections', icon: 'globe' }] },
+        { name: 'Priya Shah', role: 'Engineering' },
+        { name: 'Jon Park', role: 'Support' },
       ]}
     />
 

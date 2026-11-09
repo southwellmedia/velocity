@@ -7,7 +7,7 @@ description: Add a new page or route to this Velocity site, with its view, local
 
 **First, read the Project notes in `AGENTS.md`.** They describe this site's own conventions and take priority over the examples here.
 
-`PageLayout` renders the site's header and footer from `src/components/site/`, so a new page matches the rest of the site. For page content, reach for `Section`, `PageHeader` and `MediaSlot` in `src/components/patterns/` and the sections in `src/components/blocks/` (`PageHero`, `FeatureGrid`, `FeatureSplit`, `Pricing`, `StatsBand`, `LogoCloud`, `ContactSection`, `CtaBand`, `Faq`, `Steps`, `Testimonials`, `Hours`) first.
+`PageLayout` renders the site's header and footer from `src/components/site/`, so a new page matches the rest of the site. For page content, reach for `Section`, `PageHeader` and `MediaSlot` in `src/components/patterns/` and the sections in `src/components/blocks/` (`PageHero`, `FeatureGrid`, `FeatureSplit`, `Pricing`, `StatsBand`, `LogoCloud`, `Team`, `Timeline`, `ContactSection`, `CtaBand`, `Faq`, `Steps`, `Testimonials`, `Hours`) first.
 
 Before you write page content, read `.agents/components.md`. It lists every component Velocity ships, with import paths, props, variants and examples, so you can compose the page from existing components instead of reading their source or writing new markup. Check that a component's import path exists in this project before using it; to add a missing one, use the `velocity-add-component` skill.
 

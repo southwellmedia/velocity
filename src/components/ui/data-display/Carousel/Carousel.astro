@@ -1,0 +1,91 @@
+---
+/**
+ * A row of slides that scrolls sideways: images, cards, quotes. Built on CSS
+ * scroll snap, so it swipes on touch screens and scrolls with a trackpad or the
+ * keyboard; the previous / next buttons page through it, and stop at the ends.
+ *
+ * Every direct child of the default slot is a slide.
+ *
+ *   <Carousel label="Customer stories" perView={3}>
+ *     <Card>…</Card><Card>…</Card><Card>…</Card><Card>…</Card>
+ *   </Carousel>
+ */
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { getLocale, useTranslations } from '@/i18n';
+import { cn } from '@/lib/cn';
+
+interface Props {
+  /** Names the carousel for screen readers */
+  label: string;
+  /** Slides visible at once on wide screens (one on phones, two from sm when 2+) */
+  perView?: 1 | 2 | 3 | 4;
+  /** Hide the previous / next buttons (swipe and scroll still work) */
+  hideControls?: boolean;
+  class?: string;
+}
+
+const { label, perView = 1, hideControls = false, class: className } = Astro.props;
+const t = useTranslations(getLocale(Astro));
+const columns = {
+  1: 'auto-cols-[100%]',
+  2: 'auto-cols-[100%] sm:auto-cols-[calc((100%-1.5rem)/2)]',
+  3: 'auto-cols-[100%] sm:auto-cols-[calc((100%-1.5rem)/2)] lg:auto-cols-[calc((100%-3rem)/3)]',
+  4: 'auto-cols-[100%] sm:auto-cols-[calc((100%-1.5rem)/2)] lg:auto-cols-[calc((100%-4.5rem)/4)]',
+};
+const button =
+  'border-border bg-background text-foreground hover:bg-secondary focus-visible:ring-ring grid size-10 place-items-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40';
+---
+
+<section class={cn('flex flex-col gap-4', className)} aria-roledescription="carousel" aria-label={label} data-carousel>
+  <div
+    class={cn(
+      'grid snap-x snap-mandatory grid-flow-col gap-6 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 motion-reduce:scroll-auto',
+      '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:snap-start',
+      columns[perView]
+    )}
+    tabindex="0"
+    data-carousel-track
+  >
+    <slot />
+  </div>
+  {
+    !hideControls && (
+      <div class="flex justify-end gap-2">
+        <button type="button" class={button} aria-label={t('a11y.previous')} data-carousel-prev>
+          <Icon name="chevron-left" size="md" />
+        </button>
+        <button type="button" class={button} aria-label={t('a11y.next')} data-carousel-next>
+          <Icon name="chevron-right" size="md" />
+        </button>
+      </div>
+    )
+  }
+</section>
+
+<script>
+  function initCarousels() {
+    document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((carousel) => {
+      if (carousel.dataset.carouselInit) return;
+      carousel.dataset.carouselInit = 'true';
+      const track = carousel.querySelector<HTMLElement>('[data-carousel-track]');
+      const prev = carousel.querySelector<HTMLButtonElement>('[data-carousel-prev]');
+      const next = carousel.querySelector<HTMLButtonElement>('[data-carousel-next]');
+      if (!track) return;
+
+      const update = () => {
+        const max = track.scrollWidth - track.clientWidth - 1;
+        if (prev) prev.disabled = track.scrollLeft <= 0;
+        if (next) next.disabled = track.scrollLeft >= max;
+      };
+      // Page by the visible width, so a step shows a whole new set of slides
+      prev?.addEventListener('click', () => track.scrollBy({ left: -track.clientWidth }));
+      next?.addEventListener('click', () => track.scrollBy({ left: track.clientWidth }));
+      track.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
+    });
+  }
+
+  initCarousels();
+  document.addEventListener('astro:after-swap', initCarousels);
+</script>

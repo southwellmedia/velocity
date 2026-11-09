@@ -1,0 +1,67 @@
+---
+/**
+ * The people behind the site: a portrait, name, role, an optional line and
+ * links (email, LinkedIn, a profile page). `photo` names a file in
+ * src/assets/photos/ (MediaSlot); without one, a designed placeholder shows.
+ */
+import MediaSlot from '@/components/patterns/MediaSlot.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { cn } from '@/lib/cn';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Person {
+  name: string;
+  role: string;
+  bio?: string;
+  /** Photo file name in src/assets/photos/, without the extension */
+  photo?: string;
+  links?: { label: string; href: string; /** A Lucide icon name */ icon: string }[];
+}
+
+interface Props {
+  people: Person[];
+  /** Portraits per row from lg up */
+  columns?: 3 | 4;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  id?: string;
+  class?: string;
+}
+
+const { people, columns = 3, eyebrow, title, lead, tone = 'default', id, class: className } = Astro.props;
+---
+
+<Band id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  <ul class={cn('grid gap-x-6 gap-y-10 sm:grid-cols-2', columns === 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3')}>
+    {
+      people.map((person) => (
+        <li class="flex min-w-0 flex-col gap-4">
+          <MediaSlot photo={person.photo} alt={person.name} label={person.name} ratio="4/5" icon="user" class="rounded-[var(--theme-radius-xl)]" />
+          <div>
+            <h3 class="font-display text-foreground m-0 text-lg font-bold">{person.name}</h3>
+            <p class="text-primary m-0 text-sm font-medium">{person.role}</p>
+            {person.bio && <p class="text-foreground-secondary mt-2 mb-0 text-sm">{person.bio}</p>}
+          </div>
+          {person.links && person.links.length > 0 && (
+            <ul class="flex gap-1">
+              {person.links.map((link) => (
+                <li>
+                  <a
+                    href={link.href}
+                    class="text-foreground-muted hover:text-foreground hover:bg-secondary focus-visible:ring-ring grid size-9 place-items-center rounded-md focus-visible:ring-2 focus-visible:outline-none"
+                    aria-label={`${link.label}: ${person.name}`}
+                  >
+                    <Icon name={link.icon} size="sm" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</Band>

@@ -21,6 +21,7 @@ This file lists every component Velocity ships. Read it before reading component
 | [Checkbox](#checkbox) | `@/components/ui/form/Checkbox/Checkbox.astro` | Native checkbox with label, optional description and error message. |
 | [Radio](#radio) | `@/components/ui/form/Radio/Radio.astro` | Single native radio input with label and description; give a group the same name. The card variant renders a selectable card. |
 | [Switch](#switch) | `@/components/ui/form/Switch/Switch.astro` | Accessible on/off toggle (a checkbox with role="switch") with label and description. |
+| [ToggleGroup](#togglegroup) | `@/components/ui/form/ToggleGroup/ToggleGroup.astro` | A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form. |
 | [Card](#card) | `@/components/ui/data-display/Card/Card.astro` | Surface container with variants and padding; becomes a block link when given href. |
 | [Badge](#badge) | `@/components/ui/data-display/Badge/Badge.astro` | Small inline label for status, tags or counts, with semantic color variants, a pill style and a pulsing dot. |
 | [Avatar](#avatar) | `@/components/ui/data-display/Avatar/Avatar.astro` | Circular user image that falls back to initials (from fallback or alt) when there is no src. |
@@ -29,22 +30,29 @@ This file lists every component Velocity ships. Read it before reading component
 | [Pagination](#pagination) | `@/components/ui/data-display/Pagination/Pagination.astro` | Page navigation (`<nav>`) with previous/next links and a window of numbered pages built from baseUrl. |
 | [Progress](#progress) | `@/components/ui/data-display/Progress/Progress.astro` | Progress bar with semantic color variants and optional percentage label; omit value for an indeterminate bar. |
 | [Skeleton](#skeleton) | `@/components/ui/data-display/Skeleton/Skeleton.astro` | Animated placeholder block, circle or text line for content that is still loading. |
+| [Carousel](#carousel) | `@/components/ui/data-display/Carousel/Carousel.astro` | A sideways-scrolling row of slides on CSS scroll snap (swipe, trackpad, keyboard) with previous / next buttons; 1-4 slides in view. |
 | [Alert](#alert) | `@/components/ui/feedback/Alert/Alert.astro` | Inline message box (info, success, warning, error) with an icon, optional title and dismiss button. |
 | [Toast](#toast) | `@/components/ui/feedback/Toast/Toast.astro` | React toast notifications: ToastProvider renders the stack and useToast() returns toast()/dismiss(). Toast.astro mounts the provider as an island around its slot. |
 | [Tooltip](#tooltip) | `@/components/ui/feedback/Tooltip/Tooltip.astro` | Text tooltip shown on hover and focus around a trigger passed in the default slot. |
+| [Spinner](#spinner) | `@/components/ui/feedback/Spinner/Spinner.astro` | A loading spinner that inherits the text colour, with a screen-reader label; stops with reduced motion. |
 | [Dialog](#dialog) | `@/components/ui/overlay/Dialog/Dialog.astro` | Accessible modal with focus trap, Escape/backdrop close, title, description and a footer slot. Open it with window.openDialog(id). |
+| [Sheet](#sheet) | `@/components/ui/overlay/Sheet/Sheet.astro` | A panel that slides in from the left, right or bottom (filters, cart, menu), on the native `<dialog>`: focus stays inside and Escape closes it. Opened by any button with data-sheet-open. |
 | [Dropdown](#dropdown) | `@/components/ui/overlay/Dropdown/Dropdown.astro` | Menu of links or actions (with icons, separators and disabled items) opened from a trigger slot, with keyboard support. |
+| [Popover](#popover) | `@/components/ui/overlay/Popover/Popover.astro` | A small panel anchored to its button (details, a few actions), on the native popover attribute: Escape and outside clicks close it with no script. |
 | [Tabs](#tabs) | `@/components/ui/overlay/Tabs/Tabs.astro` | Horizontal tabs with keyboard navigation; panels are children marked data-tab-content="`<tab id>`". |
 | [VerticalTabs](#verticaltabs) | `@/components/ui/overlay/VerticalTabs/VerticalTabs.astro` | Side-list tabs with optional descriptions and icons that turn into a dropdown or bottom sheet on mobile; panels use data-tab-content. |
 | [Accordion](#accordion) | `@/components/ui/overlay/Accordion/Accordion.astro` | Collapsible sections built on native `<details>`/`<summary>` (works without JS), with an exclusive single-open mode. |
 | [Separator](#separator) | `@/components/ui/layout/Separator/Separator.astro` | Horizontal or vertical divider line, optionally with a centered label. |
 | [Icon](#icon) | `@/components/ui/primitives/Icon/Icon.astro` | Inline SVG icon: any Lucide icon by its kebab-case name (lucide.dev/icons), drawn at build time, plus a few brand marks, sized by preset. |
 | [CodeBlock](#codeblock) | `@/components/ui/content/CodeBlock/CodeBlock.astro` | Static code display with a window header, optional filename, line numbers and a copy button. |
+| [Kbd](#kbd) | `@/components/ui/content/Kbd/Kbd.astro` | A keyboard key, or a combination such as ⌘ K from a keys array. |
 | [Logo](#logo) | `@/components/ui/marketing/Logo/Logo.astro` | The site's logo, rendered inline from the SVGs in src/assets/branding/ (logomark or full), with light/dark versions. |
 | [CTA](#cta) | `@/components/ui/marketing/CTA/CTA.astro` | Closing call-to-action band centered, with logo, heading, description and actions slots (each rendered only when filled). |
 | [NpmCopyButton](#npmcopybutton) | `@/components/ui/marketing/NpmCopyButton/NpmCopyButton.astro` | Button that shows a shell command and copies it to the clipboard, with "copied" feedback. |
 | [SocialProof](#socialproof) | `@/components/ui/marketing/SocialProof/SocialProof.astro` | Row of overlapping avatar circles (images or placeholders) next to a short trust line. |
 | [TerminalDemo](#terminaldemo) | `@/components/ui/marketing/TerminalDemo/TerminalDemo` | React island that animates a terminal replaying the create-velocity-astro CLI prompts. Takes no props. |
+| [VideoEmbed](#videoembed) | `@/components/ui/marketing/VideoEmbed/VideoEmbed.astro` | A YouTube or Vimeo video that loads only on play: until then a poster and no third-party request or cookies (youtube-nocookie, Vimeo dnt). |
+| [AnnouncementBar](#announcementbar) | `@/components/ui/marketing/AnnouncementBar/AnnouncementBar.astro` | A strip above the header for a launch or notice: message, optional link and close button; a dismissed bar stays closed per id. |
 | [ContactForm](#contactform) | `@/components/patterns/ContactForm.astro` | Complete contact form (name, email, subject, message) submitting to the `contact` Astro Action or an external endpoint, with localized labels, validation and status. |
 | [NewsletterForm](#newsletterform) | `@/components/patterns/NewsletterForm.astro` | Inline email signup form submitting to the `newsletter` Astro Action or an external endpoint, with localized status messages. |
 | [FormField](#formfield) | `@/components/patterns/FormField.astro` | Label, hint, error and required marker around a custom control passed in the input slot. |
@@ -73,6 +81,8 @@ This file lists every component Velocity ships. Read it before reading component
 | [LogoCloud](#logocloud) | `@/components/blocks/LogoCloud.astro` | A row of customer or partner logos under a short label, muted until hovered; imported images or public/ paths. |
 | [StatsBand](#statsband) | `@/components/blocks/StatsBand.astro` | A band of headline numbers, set large over their labels or as StatCards with icons and trends. |
 | [ContactSection](#contactsection) | `@/components/blocks/ContactSection.astro` | Heading and ways to reach you (icon, label, linked value) beside ContactForm on a card; extra content such as Hours in the default slot. |
+| [Timeline](#timeline) | `@/components/blocks/Timeline.astro` | Dated events down a line (history, milestones): date, title and an optional line each; in its own band or bare. |
+| [Team](#team) | `@/components/blocks/Team.astro` | People in a grid: portrait (MediaSlot or placeholder), name, role, an optional line and icon links. |
 | [Breadcrumbs](#breadcrumbs) | `@/components/seo/Breadcrumbs.astro` | Breadcrumb trail with BreadcrumbList structured data; an item without href is the current page. |
 
 ## Button
@@ -436,6 +446,59 @@ import Switch from '@/components/ui/form/Switch/Switch.astro';
 ### Use instead
 
 - Use Checkbox for agreeing to terms or picking several options in a form.
+
+## ToggleGroup
+
+A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form.
+
+- **Import:** `import ToggleGroup from '@/components/ui/form/ToggleGroup/ToggleGroup.astro';`
+- **Registry id:** `toggle-group` · **Category:** UI Components / Form
+- **Uses:** Icon
+- **Files:** `src/components/ui/form/ToggleGroup/ToggleGroup.astro`, `src/components/ui/form/ToggleGroup/index.ts`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `name` | `string` |  | yes |  |
+| `label` | `string` |  | yes | Names the group for screen readers |
+| `options` | `Option[]` |  | yes |  |
+| `value` | `string` | `options[0]?.value` |  | The option selected to start |
+| `size` | `'sm' \| 'md'` | `'md'` |  |  |
+| `fullWidth` | `boolean` | `false` |  | Stretch to the container's width |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Option {
+  value: string;
+  label: string;
+  /** A Lucide icon name */
+  icon?: string;
+  /** Show only the icon; the label becomes its accessible name */
+  iconOnly?: boolean;
+}
+```
+
+### Example
+
+```astro
+---
+import ToggleGroup from '@/components/ui/form/ToggleGroup/ToggleGroup.astro';
+---
+
+<ToggleGroup
+  name="billing"
+  label="Billing period"
+  value="monthly"
+  options={[{ value: 'monthly', label: 'Monthly' }, { value: 'yearly', label: 'Yearly' }]}
+/>
+```
+
+### Use instead
+
+- Use ToggleGroup for a short set of mutually exclusive options instead of hand-built segmented buttons; use Tabs when each option shows different content.
 
 ## Card
 
@@ -832,6 +895,46 @@ import Skeleton from '@/components/ui/data-display/Skeleton/Skeleton.astro';
 </div>
 ```
 
+## Carousel
+
+A sideways-scrolling row of slides on CSS scroll snap (swipe, trackpad, keyboard) with previous / next buttons; 1-4 slides in view.
+
+- **Import:** `import Carousel from '@/components/ui/data-display/Carousel/Carousel.astro';`
+- **Registry id:** `carousel` · **Category:** UI Components / Data Display
+- **Uses:** Icon
+- **Files:** `src/components/ui/data-display/Carousel/Carousel.astro`, `src/components/ui/data-display/Carousel/index.ts`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `label` | `string` |  | yes | Names the carousel for screen readers |
+| `perView` | `1 \| 2 \| 3 \| 4` | `1` |  | Slides visible at once on wide screens (one on phones, two from sm when 2+) |
+| `hideControls` | `boolean` | `false` |  | Hide the previous / next buttons (swipe and scroll still work) |
+| `class` | `string` |  |  |  |
+
+**Slots:** `default`
+
+### Example
+
+```astro
+---
+import Carousel from '@/components/ui/data-display/Carousel/Carousel.astro';
+import Card from '@/components/ui/data-display/Card/Card.astro';
+---
+
+<Carousel label="Customer stories" perView={3}>
+  <Card>One</Card>
+  <Card>Two</Card>
+  <Card>Three</Card>
+  <Card>Four</Card>
+</Carousel>
+```
+
+### Use instead
+
+- Use Carousel for galleries and card rows that scroll sideways instead of a hand-built slider script.
+
 ## Alert
 
 Inline message box (info, success, warning, error) with an icon, optional title and dismiss button.
@@ -961,6 +1064,36 @@ import Button from '@/components/ui/form/Button/Button.astro';
 
 - Tooltips are supplementary: icon-only triggers still need their own aria-label. Use Dropdown or Dialog for interactive content.
 
+## Spinner
+
+A loading spinner that inherits the text colour, with a screen-reader label; stops with reduced motion.
+
+- **Import:** `import Spinner from '@/components/ui/feedback/Spinner/Spinner.astro';`
+- **Registry id:** `spinner` · **Category:** UI Components / Feedback
+- **Files:** `src/components/ui/feedback/Spinner/Spinner.astro`, `src/components/ui/feedback/Spinner/index.ts`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |  |  |
+| `label` | `string` |  |  | What's loading, for screen readers |
+| `class` | `string` |  |  |  |
+
+### Example
+
+```astro
+---
+import Spinner from '@/components/ui/feedback/Spinner/Spinner.astro';
+---
+
+<Spinner size="sm" label="Loading results" />
+```
+
+### Use instead
+
+- Use Spinner for a loading state outside a button; Button has its own loading prop.
+
 ## Dialog
 
 Accessible modal with focus trap, Escape/backdrop close, title, description and a footer slot. Open it with window.openDialog(id).
@@ -1011,6 +1144,47 @@ import Button from '@/components/ui/form/Button/Button.astro';
 
 - Inline onclick is blocked by the CSP: open dialogs from a bundled `<script>` calling window.openDialog(id). Elements with data-dialog-close inside the dialog close it.
 - Use Tooltip for hints and Alert for in-page messages; reserve Dialog for tasks that need focus.
+
+## Sheet
+
+A panel that slides in from the left, right or bottom (filters, cart, menu), on the native `<dialog>`: focus stays inside and Escape closes it. Opened by any button with data-sheet-open.
+
+- **Import:** `import Sheet from '@/components/ui/overlay/Sheet/Sheet.astro';`
+- **Registry id:** `sheet` · **Category:** UI Components / Overlay
+- **Uses:** Icon
+- **Files:** `src/components/ui/overlay/Sheet/Sheet.astro`, `src/components/ui/overlay/Sheet/index.ts`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `id` | `string` |  | yes |  |
+| `title` | `string` |  | yes |  |
+| `description` | `string` |  |  |  |
+| `side` | `'left' \| 'right' \| 'bottom'` | `'right'` |  |  |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |  |  |
+| `class` | `string` |  |  |  |
+
+**Slots:** `default`, `footer`
+
+### Example
+
+```astro
+---
+import Sheet from '@/components/ui/overlay/Sheet/Sheet.astro';
+import Button from '@/components/ui/form/Button/Button.astro';
+---
+
+<Button data-sheet-open="filters">Filters</Button>
+<Sheet id="filters" title="Filters" side="right">
+  <p>Filter controls go here.</p>
+  <Button slot="footer" data-sheet-close fullWidth>Show results</Button>
+</Sheet>
+```
+
+### Use instead
+
+- Use Sheet for a side panel or bottom drawer; use Dialog for a centered modal.
 
 ## Dropdown
 
@@ -1067,6 +1241,43 @@ import Button from '@/components/ui/form/Button/Button.astro';
 ### Use instead
 
 - Use Select for picking a form value.
+
+## Popover
+
+A small panel anchored to its button (details, a few actions), on the native popover attribute: Escape and outside clicks close it with no script.
+
+- **Import:** `import Popover from '@/components/ui/overlay/Popover/Popover.astro';`
+- **Registry id:** `popover` · **Category:** UI Components / Overlay
+- **Files:** `src/components/ui/overlay/Popover/Popover.astro`, `src/components/ui/overlay/Popover/index.ts`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `label` | `string` |  | yes | Accessible name for the panel |
+| `placement` | `'bottom' \| 'top'` | `'bottom'` |  | Which side of the button the panel opens on |
+| `align` | `'start' \| 'end'` | `'start'` |  |  |
+| `triggerClass` | `string` |  |  | Classes for the trigger button |
+| `class` | `string` |  |  |  |
+
+**Slots:** `trigger`, `default`
+
+### Example
+
+```astro
+---
+import Popover from '@/components/ui/overlay/Popover/Popover.astro';
+---
+
+<Popover label="Plan details">
+  <Fragment slot="trigger">Details</Fragment>
+  <p>Billed yearly. Cancel any time.</p>
+</Popover>
+```
+
+### Use instead
+
+- Use Popover for interactive content next to a button; use Tooltip for a short read-only hint and Dropdown for a menu of actions.
 
 ## Tabs
 
@@ -1350,6 +1561,38 @@ import CodeBlock from '@/components/ui/content/CodeBlock/CodeBlock.astro';
 
 - In Markdown/MDX content, use fenced code blocks; CodeBlock is for code shown in .astro pages.
 
+## Kbd
+
+A keyboard key, or a combination such as ⌘ K from a keys array.
+
+- **Import:** `import Kbd from '@/components/ui/content/Kbd/Kbd.astro';`
+- **Registry id:** `kbd` · **Category:** UI Components / Content
+- **Files:** `src/components/ui/content/Kbd/Kbd.astro`, `src/components/ui/content/Kbd/index.ts`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `keys` | `string[]` |  |  |  |
+| `size` | `'sm' \| 'md'` | `'md'` |  |  |
+| `class` | `string` |  |  |  |
+
+**Slots:** `default`
+
+### Example
+
+```astro
+---
+import Kbd from '@/components/ui/content/Kbd/Kbd.astro';
+---
+
+Press <Kbd keys={['⌘', 'K']} /> to search, or <Kbd>Esc</Kbd> to close.
+```
+
+### Use instead
+
+- Use Kbd for keys and shortcuts in docs and UI hints instead of styled `<code>`.
+
 ## Logo
 
 The site's logo, rendered inline from the SVGs in src/assets/branding/ (logomark or full), with light/dark versions.
@@ -1515,6 +1758,78 @@ import TerminalDemo from '@/components/ui/marketing/TerminalDemo/TerminalDemo';
 ### Use instead
 
 - Use CodeBlock for static commands, or NpmCopyButton for a copyable install command.
+
+## VideoEmbed
+
+A YouTube or Vimeo video that loads only on play: until then a poster and no third-party request or cookies (youtube-nocookie, Vimeo dnt).
+
+- **Import:** `import VideoEmbed from '@/components/ui/marketing/VideoEmbed/VideoEmbed.astro';`
+- **Registry id:** `video-embed` · **Category:** UI Components / Marketing
+- **Uses:** Icon
+- **Files:** `src/components/ui/marketing/VideoEmbed/VideoEmbed.astro`, `src/components/ui/marketing/VideoEmbed/index.ts`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `provider` | `'youtube' \| 'vimeo'` |  | yes |  |
+| `videoId` | `string` |  | yes | The video's id: what follows v= on YouTube, or the number in a Vimeo URL |
+| `title` | `string` |  | yes | The video's title: the play button's label and the iframe's title |
+| `poster` | `ImageMetadata \| string` |  |  |  |
+| `ratio` | `'16/9' \| '4/3' \| '1/1' \| '9/16'` | `'16/9'` |  |  |
+| `class` | `string` |  |  |  |
+
+### Example
+
+```astro
+---
+import VideoEmbed from '@/components/ui/marketing/VideoEmbed/VideoEmbed.astro';
+---
+
+<VideoEmbed provider="youtube" videoId="dQw4w9WgXcQ" title="Product tour" />
+```
+
+### Use instead
+
+- Use VideoEmbed for any YouTube or Vimeo video instead of a raw `<iframe>`, which loads third-party scripts and cookies on page load.
+
+## AnnouncementBar
+
+A strip above the header for a launch or notice: message, optional link and close button; a dismissed bar stays closed per id.
+
+- **Import:** `import AnnouncementBar from '@/components/ui/marketing/AnnouncementBar/AnnouncementBar.astro';`
+- **Registry id:** `announcement-bar` · **Category:** UI Components / Marketing
+- **Uses:** Icon
+- **Files:** `src/components/ui/marketing/AnnouncementBar/AnnouncementBar.astro`, `src/components/ui/marketing/AnnouncementBar/index.ts`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `id` | `string` |  | yes | Identifies this announcement; dismissing it is remembered per id |
+| `href` | `string` |  |  |  |
+| `linkLabel` | `string` |  |  |  |
+| `dismissible` | `boolean` | `true` |  |  |
+| `tone` | `'brand' \| 'invert' \| 'secondary'` | `'invert'` |  |  |
+| `class` | `string` |  |  |  |
+
+**Slots:** `default`
+
+### Example
+
+```astro
+---
+import AnnouncementBar from '@/components/ui/marketing/AnnouncementBar/AnnouncementBar.astro';
+---
+
+<AnnouncementBar id="launch-2-6" href="/blog/velocity-2-6" linkLabel="Read the post" tone="brand">
+  Velocity 2.6 is out.
+</AnnouncementBar>
+```
+
+### Use instead
+
+- Use AnnouncementBar for site-wide notices instead of an Alert at the top of a page; change its id for each new announcement.
 
 ## ContactForm
 
@@ -2881,6 +3196,114 @@ import ContactSection from '@/components/blocks/ContactSection.astro';
 ### Use instead
 
 - Use ContactSection for a contact page or band instead of placing ContactForm beside hand-built details.
+
+## Timeline
+
+Dated events down a line (history, milestones): date, title and an optional line each; in its own band or bare.
+
+- **Import:** `import Timeline from '@/components/blocks/Timeline.astro';`
+- **Registry id:** `timeline` · **Category:** Sections
+- **Uses:** Band
+- **Files:** `src/components/blocks/Timeline.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `items` | `Event[]` |  | yes |  |
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `bare` | `boolean` | `false` |  | Render only the timeline, without a band |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Event {
+  date: string;
+  title: string;
+  body?: string;
+}
+```
+
+### Example
+
+```astro
+---
+import Timeline from '@/components/blocks/Timeline.astro';
+---
+
+<Timeline
+  title="Our story"
+  items={[
+    { date: '2021', title: 'Founded in Dallas', body: 'Two people and a client list.' },
+    { date: '2024', title: 'Velocity 1.0' },
+    { date: '2026', title: 'Velocity 2.6', body: 'Page sections and every Lucide icon.' },
+  ]}
+/>
+```
+
+### Use instead
+
+- Use Timeline for dated events in order; use Steps for a numbered process.
+
+## Team
+
+People in a grid: portrait (MediaSlot or placeholder), name, role, an optional line and icon links.
+
+- **Import:** `import Team from '@/components/blocks/Team.astro';`
+- **Registry id:** `team` · **Category:** Sections
+- **Uses:** Band, MediaSlot, Icon
+- **Files:** `src/components/blocks/Team.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `people` | `Person[]` |  | yes |  |
+| `columns` | `3 \| 4` | `3` |  | Portraits per row from lg up |
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Person {
+  name: string;
+  role: string;
+  bio?: string;
+  /** Photo file name in src/assets/photos/, without the extension */
+  photo?: string;
+  links?: { label: string; href: string; /** A Lucide icon name */ icon: string }[];
+}
+```
+
+### Example
+
+```astro
+---
+import Team from '@/components/blocks/Team.astro';
+---
+
+<Team
+  title="Meet the team"
+  people={[
+    { name: 'Ana Ruiz', role: 'Founder', photo: 'ana', links: [{ label: 'Email', href: 'mailto:ana@example.com', icon: 'mail' }] },
+    { name: 'Sam Lee', role: 'Designer' },
+  ]}
+/>
+```
+
+### Use instead
+
+- Use Team for staff, providers or speakers instead of hand-built profile cards.
 
 ## Breadcrumbs
 

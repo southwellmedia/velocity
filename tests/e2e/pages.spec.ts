@@ -185,3 +185,42 @@ test.describe('social previews', () => {
     });
   }
 });
+
+// The showcase's primitives added in 2.6.2, scanned on their own (the older demos
+// on the page have known issues tracked separately), plus Sheet and Popover open.
+const NEW_PRIMITIVES = [
+  '[data-carousel]',
+  '[data-video-embed]',
+  '[data-announcement]',
+  '[data-popover-trigger]',
+  'fieldset:has(input[name="demo-billing"])',
+  'kbd',
+  '[role="status"]',
+  '[data-sheet-open]',
+];
+const seriousOnly = (violations: { id: string; impact?: string | null }[]) =>
+  violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id);
+
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`showcase primitives have no serious accessibility violations in ${colorScheme} mode`, async ({ page }) => {
+    test.skip(!hasRoute('components'), 'no component showcase in this project');
+    await page.emulateMedia({ reducedMotion: 'reduce', colorScheme });
+    await page.goto('/components');
+    let builder = new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']);
+    for (const selector of NEW_PRIMITIVES) builder = builder.include(selector);
+    expect(seriousOnly((await builder.analyze()).violations)).toEqual([]);
+  });
+}
+
+test('sheet and popover open, pass axe and close with Escape', async ({ page }) => {
+  test.skip(!hasRoute('components'), 'no component showcase in this project');
+  await page.goto('/components');
+  await page.locator('[data-sheet-open="demo-sheet-right"]').click();
+  await expect(page.locator('#demo-sheet-right')).toBeVisible();
+  expect(seriousOnly((await new AxeBuilder({ page }).include('#demo-sheet-right').analyze()).violations)).toEqual([]);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#demo-sheet-right')).toBeHidden();
+  await page.locator('[data-popover-trigger]').first().click();
+  await expect(page.locator('[data-popover]').first()).toBeVisible();
+  expect(seriousOnly((await new AxeBuilder({ page }).include('[data-popover]').analyze()).violations)).toEqual([]);
+});

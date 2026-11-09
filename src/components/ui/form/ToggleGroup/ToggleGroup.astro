@@ -1,0 +1,65 @@
+---
+/**
+ * A segmented control: one choice from a few options, such as Monthly / Yearly
+ * or Grid / List. Built from native radio inputs, so it works without
+ * JavaScript, submits with a form and is keyboard accessible (arrow keys).
+ * Listen for `change` on the inputs to react to a choice.
+ *
+ *   <ToggleGroup name="billing" label="Billing period" value="monthly"
+ *     options={[{ value: 'monthly', label: 'Monthly' }, { value: 'yearly', label: 'Yearly' }]} />
+ */
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { cn } from '@/lib/cn';
+
+interface Option {
+  value: string;
+  label: string;
+  /** A Lucide icon name */
+  icon?: string;
+  /** Show only the icon; the label becomes its accessible name */
+  iconOnly?: boolean;
+}
+
+interface Props {
+  name: string;
+  /** Names the group for screen readers */
+  label: string;
+  options: Option[];
+  /** The option selected to start */
+  value?: string;
+  size?: 'sm' | 'md';
+  /** Stretch to the container's width */
+  fullWidth?: boolean;
+  class?: string;
+}
+
+const { name, label, options, value = options[0]?.value, size = 'md', fullWidth = false, class: className } = Astro.props;
+const item = cn(
+  'text-foreground-secondary inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-[calc(var(--theme-radius-md)-2px)] font-medium transition-colors',
+  'hover:text-foreground peer-checked:bg-background peer-checked:text-foreground peer-checked:shadow-sm',
+  'peer-focus-visible:ring-ring peer-focus-visible:ring-2',
+  size === 'sm' ? 'h-7 px-2.5 text-xs' : 'h-9 px-3.5 text-sm',
+  fullWidth && 'w-full'
+);
+---
+
+<fieldset
+  class={cn(
+    'bg-secondary inline-flex gap-1 rounded-[var(--theme-radius-md)] p-1',
+    fullWidth && 'flex w-full',
+    className
+  )}
+>
+  <legend class="sr-only">{label}</legend>
+  {
+    options.map((option) => (
+      <label class={cn('relative', fullWidth && 'flex-1')}>
+        <input type="radio" name={name} value={option.value} checked={option.value === value} class="peer sr-only" />
+        <span class={item}>
+          {option.icon && <Icon name={option.icon} size="sm" />}
+          {option.iconOnly ? <span class="sr-only">{option.label}</span> : option.label}
+        </span>
+      </label>
+    ))
+  }
+</fieldset>
