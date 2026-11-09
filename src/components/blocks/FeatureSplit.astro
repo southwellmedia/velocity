@@ -1,0 +1,80 @@
+---
+/**
+ * One feature told beside a picture: eyebrow, title, lead, an optional list of
+ * points and buttons, with an image on the other side. `reverse` puts the
+ * picture first; stack several with alternating `reverse` for a feature tour.
+ *
+ * The picture is a MediaSlot (`photo` names a file in src/assets/photos/, or it
+ * shows a designed placeholder), or your own markup in the `media` slot.
+ * Buttons go in the default slot.
+ */
+import MediaSlot from '@/components/patterns/MediaSlot.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { cn } from '@/lib/cn';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Props {
+  title: string;
+  eyebrow?: string;
+  lead?: string;
+  points?: string[];
+  /** Photo file name in src/assets/photos/, without the extension */
+  photo?: string;
+  /** The photo's alt text, or what the placeholder should show */
+  alt?: string;
+  ratio?: '16/10' | '4/3' | '4/5';
+  /** Picture first (on the left from lg up) */
+  reverse?: boolean;
+  tone?: BandTone;
+  id?: string;
+  class?: string;
+}
+
+const {
+  title,
+  eyebrow,
+  lead,
+  points = [],
+  photo,
+  alt = '',
+  ratio = '4/3',
+  reverse = false,
+  tone = 'default',
+  id,
+  class: className,
+} = Astro.props;
+const hasMedia = Astro.slots.has('media');
+---
+
+<Band id={id} tone={tone} class={className}>
+  <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+    <div class={cn('min-w-0', reverse && 'lg:order-2')}>
+      {eyebrow && <p class="text-primary mb-3 text-xs font-bold tracking-[0.12em] uppercase">{eyebrow}</p>}
+      <h2 class="font-display text-foreground text-4xl leading-[1.05] tracking-tight text-balance">{title}</h2>
+      {lead && <p class="text-foreground-secondary mt-4 text-lg">{lead}</p>}
+      {points.length > 0 && (
+        <ul class="mt-6 flex flex-col gap-3">
+          {points.map((point) => (
+            <li class="text-foreground-secondary flex gap-3">
+              <Icon name="check" size="sm" class="text-primary mt-1" />
+              <span>{point}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {Astro.slots.has('default') && (
+        <div class="mt-8 flex flex-wrap gap-3">
+          <slot />
+        </div>
+      )}
+    </div>
+    <div class={cn('min-w-0', reverse && 'lg:order-1')}>
+      {hasMedia ? (
+        <slot name="media" />
+      ) : (
+        <MediaSlot photo={photo} alt={alt} label={alt} ratio={ratio} class="rounded-[var(--theme-radius-xl)]" />
+      )}
+    </div>
+  </div>
+</Band>

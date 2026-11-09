@@ -24,7 +24,7 @@ export default [
     },
   },
   {
-    ignores: ['.velocity-backup/', 'dist/', 'node_modules/', '.astro/', '.vercel/', '.netlify/', 'public/pagefind/', 'test-results/', 'playwright-report/'],
+    ignores: ['.velocity-backup/', 'dist/', 'node_modules/', '.astro/', '.vercel/', '.netlify/', 'public/pagefind/', 'test-results/', 'playwright-report/', '.claude/worktrees/'],
   },
   {
     rules: {

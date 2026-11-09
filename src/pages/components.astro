@@ -53,6 +53,17 @@ import Faq from '@/components/blocks/Faq.astro';
 import Hours from '@/components/blocks/Hours.astro';
 import Steps from '@/components/blocks/Steps.astro';
 import Testimonials from '@/components/blocks/Testimonials.astro';
+import FeatureGrid from '@/components/blocks/FeatureGrid.astro';
+import FeatureSplit from '@/components/blocks/FeatureSplit.astro';
+import StatsBand from '@/components/blocks/StatsBand.astro';
+import Pricing from '@/components/blocks/Pricing.astro';
+import LogoCloud from '@/components/blocks/LogoCloud.astro';
+import ContactSection from '@/components/blocks/ContactSection.astro';
+
+// LogoCloud demo: wordmarks drawn as SVG, so the demo ships no logo files
+const wordmark = (name: string) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${name.length * 15 + 8}' height='40'><text x='4' y='28' font-family='Arial, sans-serif' font-size='24' font-weight='700' fill='#71717a'>${name}</text></svg>`)}`;
+const demoLogos = ['Northline', 'Oakhaven', 'Plinth', 'Velocity Health'].map((name) => ({ name, src: wordmark(name) }));
 
 // Component categories for navigation
 const categories = [
@@ -2121,6 +2132,67 @@ const categories = [
         note="Closed on public holidays."
       />
     </Band>
+
+    <FeatureGrid
+      eyebrow="FeatureGrid"
+      title="Everything a site needs"
+      lead="Icon, title and a line each, in 2, 3 or 4 columns."
+      items={[
+        { icon: 'zap', title: 'Fast by default', body: 'Pages are static HTML. JavaScript loads only where a component needs it.' },
+        { icon: 'globe', title: 'Every language', body: 'Translated URLs, hreflang and a localized sitemap.' },
+        { icon: 'shield-check', title: 'Strict CSP', body: 'A hash-based script policy on every page, tested in CI.' },
+        { icon: 'palette', title: 'One theme file', body: 'Semantic tokens feed every component, in light and dark.' },
+        { icon: 'bot', title: 'Agent-ready', body: 'Rules, skills and a check that catches agent mistakes.' },
+        { icon: 'accessibility', title: 'Accessible', body: 'Every page passes axe WCAG 2 A/AA in CI.' },
+      ]}
+    />
+
+    <FeatureSplit
+      eyebrow="FeatureSplit"
+      title="One feature beside a picture"
+      lead="Points and buttons on one side, a photo or a designed placeholder on the other."
+      points={['Alternate sides with reverse', 'MediaSlot or your own media', 'Buttons in the default slot']}
+      alt="Product screenshot"
+      tone="secondary"
+    >
+      <Button href="#sections">See the sections</Button>
+    </FeatureSplit>
+
+    <StatsBand
+      eyebrow="StatsBand"
+      title="Headline numbers"
+      stats={[
+        { value: '60', label: 'Components and sections' },
+        { value: '0 KB', label: 'JavaScript by default' },
+        { value: '3', label: 'Languages out of the box' },
+        { value: '2,000+', label: 'Lucide icons by name' },
+      ]}
+    />
+
+    <Pricing
+      eyebrow="Pricing"
+      title="Plans side by side"
+      tone="secondary"
+      plans={[
+        { name: 'Starter', price: '$0', period: '/ month', description: 'For a first site.', features: ['1 site', 'Community support'], cta: { label: 'Start free', href: '#sections' } },
+        { name: 'Pro', price: '$29', period: '/ month', description: 'For studios.', features: ['10 sites', 'Email support', 'Premium templates'], cta: { label: 'Go Pro', href: '#sections' }, highlighted: true, badge: 'Most popular' },
+        { name: 'Team', price: "Let's talk", description: 'For larger teams.', features: ['Unlimited sites', 'Priority support'], cta: { label: 'Contact us', href: '#sections' } },
+      ]}
+      note="Example plans. Prices are display text."
+    />
+
+    <LogoCloud label="LogoCloud: trusted by teams at" logos={demoLogos} />
+
+    <ContactSection
+      eyebrow="ContactSection"
+      title="Talk to a person"
+      lead="Ways to reach you beside Velocity's ContactForm."
+      details={[
+        { icon: 'mail', label: 'Email', value: 'hello@example.com', href: 'mailto:hello@example.com' },
+        { icon: 'phone', label: 'Phone', value: '+1 555 0100', href: 'tel:+15550100' },
+        { icon: 'map-pin', label: 'Office', value: '12 Main St, Dallas, TX' },
+      ]}
+    />
 
     <CtaBand title="Ready to build?" lead="Every section on this page ships with Velocity." tone="brand">
       <Button size="lg" href="#hero">Browse components</Button>

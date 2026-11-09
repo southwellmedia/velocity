@@ -67,6 +67,13 @@ This file lists every component Velocity ships. Read it before reading component
 | [Steps](#steps) | `@/components/blocks/Steps.astro` | Numbered how-it-works steps in columns or a list, in its own band or bare inside another layout. |
 | [Testimonials](#testimonials) | `@/components/blocks/Testimonials.astro` | Customer quotes in a grid of cards with name, role, optional avatar and star rating. |
 | [Hours](#hours) | `@/components/blocks/Hours.astro` | Opening hours table (days as row headers, times in tabular figures) with an optional note and per-row data attributes for a "today" highlight; in its own band or bare inside another layout. |
+| [FeatureGrid](#featuregrid) | `@/components/blocks/FeatureGrid.astro` | Features in a 2, 3 or 4 column grid: icon, title and a line or two each, open or on cards; in its own band or bare. |
+| [FeatureSplit](#featuresplit) | `@/components/blocks/FeatureSplit.astro` | One feature beside a picture: eyebrow, title, lead, checked points and buttons, with a MediaSlot or your own media; reverse alternates sides. |
+| [Pricing](#pricing) | `@/components/blocks/Pricing.astro` | Plans side by side: name, price, description, included features and a button, with one plan highlighted and an optional badge. |
+| [LogoCloud](#logocloud) | `@/components/blocks/LogoCloud.astro` | A row of customer or partner logos under a short label, muted until hovered; imported images or public/ paths. |
+| [StatsBand](#statsband) | `@/components/blocks/StatsBand.astro` | A band of headline numbers, set large over their labels or as StatCards with icons and trends. |
+| [ContactSection](#contactsection) | `@/components/blocks/ContactSection.astro` | Heading and ways to reach you (icon, label, linked value) beside ContactForm on a card; extra content such as Hours in the default slot. |
+| [Breadcrumbs](#breadcrumbs) | `@/components/seo/Breadcrumbs.astro` | Breadcrumb trail with BreadcrumbList structured data; an item without href is the current page. |
 
 ## Button
 
@@ -1417,6 +1424,7 @@ import Button from '@/components/ui/form/Button/Button.astro';
 ### Use instead
 
 - Use Section for ordinary content bands; CTA is the closing conversion block.
+- For a closing band built from tokens and Buttons (brand, invert or tinted panel), prefer the CtaBand section; CTA is the centered, slot-based variant.
 
 ## NpmCopyButton
 
@@ -2323,6 +2331,7 @@ import Button from '@/components/ui/form/Button/Button.astro';
 ### Use instead
 
 - Use CtaBand to close a page with an action instead of a hand-built dark box; put Buttons in the default slot.
+- CTA (ui/marketing) is the older centered variant with logo and slots; use CtaBand for new pages.
 
 ## Faq
 
@@ -2537,3 +2546,376 @@ import Hours from '@/components/blocks/Hours.astro';
 ### Use instead
 
 - Use Hours for opening times instead of a hand-built table or list.
+
+## FeatureGrid
+
+Features in a 2, 3 or 4 column grid: icon, title and a line or two each, open or on cards; in its own band or bare.
+
+- **Import:** `import FeatureGrid from '@/components/blocks/FeatureGrid.astro';`
+- **Registry id:** `feature-grid` · **Category:** Sections
+- **Uses:** Band, Card, Icon
+- **Files:** `src/components/blocks/FeatureGrid.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `items` | `Feature[]` |  | yes |  |
+| `columns` | `2 \| 3 \| 4` | `3` |  |  |
+| `variant` | `'plain' \| 'card'` | `'plain'` |  |  |
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `bare` | `boolean` | `false` |  | Render only the grid, without a band |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Feature {
+  title: string;
+  body?: string;
+  /** A Lucide icon name */
+  icon?: string;
+  /** Makes the title a link */
+  href?: string;
+}
+```
+
+### Example
+
+```astro
+---
+import FeatureGrid from '@/components/blocks/FeatureGrid.astro';
+---
+
+<FeatureGrid
+  eyebrow="Why Velocity"
+  title="Everything a site needs"
+  items={[
+    { icon: 'zap', title: 'Fast by default', body: 'Static HTML, no client router.' },
+    { icon: 'globe', title: 'Every language', body: 'Translated URLs and hreflang.' },
+    { icon: 'shield-check', title: 'Strict CSP', body: 'Hash-based script policy.' },
+  ]}
+/>
+```
+
+### Use instead
+
+- Use FeatureGrid for a set of features or services instead of hand-built icon cards.
+
+## FeatureSplit
+
+One feature beside a picture: eyebrow, title, lead, checked points and buttons, with a MediaSlot or your own media; reverse alternates sides.
+
+- **Import:** `import FeatureSplit from '@/components/blocks/FeatureSplit.astro';`
+- **Registry id:** `feature-split` · **Category:** Sections
+- **Uses:** Band, MediaSlot, Icon
+- **Files:** `src/components/blocks/FeatureSplit.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `title` | `string` |  | yes |  |
+| `eyebrow` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `points` | `string[]` | `[]` |  |  |
+| `photo` | `string` |  |  | Photo file name in src/assets/photos/, without the extension |
+| `alt` | `string` | `''` |  | The photo's alt text, or what the placeholder should show |
+| `ratio` | `'16/10' \| '4/3' \| '4/5'` | `'4/3'` |  |  |
+| `reverse` | `boolean` | `false` |  | Picture first (on the left from lg up) |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+**Slots:** `default`, `media`
+
+### Example
+
+```astro
+---
+import FeatureSplit from '@/components/blocks/FeatureSplit.astro';
+import Button from '@/components/ui/form/Button/Button.astro';
+---
+
+<FeatureSplit
+  eyebrow="Themes"
+  title="Change the whole look in one file"
+  lead="Semantic tokens feed every component."
+  points={['Light and dark', 'OKLCH colours', 'One brand hue']}
+  photo="theme-preview"
+  alt="The theme editor"
+>
+  <Button href="/docs/themes">Read the guide</Button>
+</FeatureSplit>
+```
+
+### Use instead
+
+- Use FeatureSplit for a text-and-image row instead of a hand-built two-column grid; alternate reverse for a feature tour.
+
+## Pricing
+
+Plans side by side: name, price, description, included features and a button, with one plan highlighted and an optional badge.
+
+- **Import:** `import Pricing from '@/components/blocks/Pricing.astro';`
+- **Registry id:** `pricing` · **Category:** Sections
+- **Uses:** Band, Badge, Card, Button, Icon
+- **Files:** `src/components/blocks/Pricing.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `plans` | `Plan[]` |  | yes |  |
+| `note` | `string` |  |  | A line under the plans, e.g. taxes or a trial |
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Plan {
+  name: string;
+  price: string;
+  /** After the price, e.g. "/ month" */
+  period?: string;
+  description?: string;
+  features?: string[];
+  cta: { label: string; href: string };
+  highlighted?: boolean;
+  badge?: string;
+}
+```
+
+### Example
+
+```astro
+---
+import Pricing from '@/components/blocks/Pricing.astro';
+---
+
+<Pricing
+  title="Simple pricing"
+  plans={[
+    { name: 'Starter', price: '$0', period: '/ month', features: ['1 site', 'Community support'], cta: { label: 'Start free', href: '/signup' } },
+    { name: 'Pro', price: '$29', period: '/ month', features: ['10 sites', 'Email support'], cta: { label: 'Go Pro', href: '/signup?plan=pro' }, highlighted: true, badge: 'Most popular' },
+  ]}
+  note="Prices exclude tax."
+/>
+```
+
+### Use instead
+
+- Use Pricing for plan cards instead of hand-built price cards. Prices are display text ("$29", "Free").
+
+## LogoCloud
+
+A row of customer or partner logos under a short label, muted until hovered; imported images or public/ paths.
+
+- **Import:** `import LogoCloud from '@/components/blocks/LogoCloud.astro';`
+- **Registry id:** `logo-cloud` · **Category:** Sections
+- **Uses:** Band
+- **Files:** `src/components/blocks/LogoCloud.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `logos` | `Logo[]` |  | yes |  |
+| `label` | `string` |  |  | A short line above the logos, e.g. "Trusted by teams at" |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `color` | `boolean` | `false` |  | Show logos in full colour instead of muted grey |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Logo {
+  name: string;
+  src: ImageMetadata | string;
+  href?: string;
+}
+```
+
+### Example
+
+```astro
+---
+import LogoCloud from '@/components/blocks/LogoCloud.astro';
+import acme from '@/assets/logos/acme.svg';
+---
+
+<LogoCloud
+  label="Trusted by teams at"
+  logos={[
+    { name: 'Acme', src: acme },
+    { name: 'Globex', src: '/logos/globex.svg', href: 'https://example.com' },
+  ]}
+/>
+```
+
+### Use instead
+
+- Use LogoCloud for "trusted by" logos instead of a hand-built image row.
+
+## StatsBand
+
+A band of headline numbers, set large over their labels or as StatCards with icons and trends.
+
+- **Import:** `import StatsBand from '@/components/blocks/StatsBand.astro';`
+- **Registry id:** `stats-band` · **Category:** Sections
+- **Uses:** Band, StatCard
+- **Files:** `src/components/blocks/StatsBand.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `stats` | `Stat[]` |  | yes |  |
+| `variant` | `'plain' \| 'cards'` | `'plain'` |  |  |
+| `eyebrow` | `string` |  |  |  |
+| `title` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Stat {
+  value: string;
+  label: string;
+  /** A Lucide icon name (cards only) */
+  icon?: string;
+  trend?: 'up' | 'down' | 'neutral';
+  trendText?: string;
+}
+```
+
+### Example
+
+```astro
+---
+import StatsBand from '@/components/blocks/StatsBand.astro';
+---
+
+<StatsBand
+  tone="secondary"
+  stats={[
+    { value: '100', label: 'Lighthouse performance' },
+    { value: '0 KB', label: 'JavaScript by default' },
+    { value: '3', label: 'Languages out of the box' },
+  ]}
+/>
+```
+
+### Use instead
+
+- Use StatsBand for a row of headline figures; use StatCard alone for a single metric in a dashboard.
+
+## ContactSection
+
+Heading and ways to reach you (icon, label, linked value) beside ContactForm on a card; extra content such as Hours in the default slot.
+
+- **Import:** `import ContactSection from '@/components/blocks/ContactSection.astro';`
+- **Registry id:** `contact-section` · **Category:** Sections
+- **Uses:** Band, ContactForm, Card, Icon
+- **Files:** `src/components/blocks/ContactSection.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `title` | `string` |  | yes |  |
+| `eyebrow` | `string` |  |  |  |
+| `lead` | `string` |  |  |  |
+| `details` | `Detail[]` | `[]` |  |  |
+| `form` | `ComponentProps<typeof ContactForm>` | `{}` |  | Passed to ContactForm, e.g. a successMessage or an external action |
+| `tone` | `BandTone` | `'default'` |  |  |
+| `id` | `string` |  |  |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface Detail {
+  /** A Lucide icon name, e.g. mail, phone, map-pin */
+  icon: string;
+  label: string;
+  value: string;
+  href?: string;
+}
+```
+
+**Slots:** `default`
+
+### Example
+
+```astro
+---
+import ContactSection from '@/components/blocks/ContactSection.astro';
+---
+
+<ContactSection
+  eyebrow="Contact"
+  title="Talk to a person"
+  lead="We answer within a day."
+  details={[
+    { icon: 'mail', label: 'Email', value: 'hello@example.com', href: 'mailto:hello@example.com' },
+    { icon: 'phone', label: 'Phone', value: '+1 555 0100', href: 'tel:+15550100' },
+    { icon: 'map-pin', label: 'Office', value: '12 Main St, Dallas' },
+  ]}
+/>
+```
+
+### Use instead
+
+- Use ContactSection for a contact page or band instead of placing ContactForm beside hand-built details.
+
+## Breadcrumbs
+
+Breadcrumb trail with BreadcrumbList structured data; an item without href is the current page.
+
+- **Import:** `import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';`
+- **Registry id:** `breadcrumbs` · **Category:** SEO
+- **Files:** `src/components/seo/Breadcrumbs.astro`
+
+### Props
+
+| Prop | Type | Default | Required | Notes |
+|------|------|---------|----------|-------|
+| `items` | `BreadcrumbItem[]` |  | yes |  |
+| `class` | `string` |  |  |  |
+
+Types:
+
+```ts
+interface BreadcrumbItem {
+  label: string;
+  href?: string;
+}
+```
+
+### Example
+
+```astro
+---
+import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
+---
+
+<Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Blog', href: '/blog' }, { label: 'Hello world' }]} />
+```
+
+### Use instead
+
+- Use Breadcrumbs for any page trail, e.g. in PageHero's breadcrumbs slot, instead of a hand-built list and hand-written BreadcrumbList data.

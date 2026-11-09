@@ -20,7 +20,7 @@
 ## What's Included
 
 - **Built for AI coding agents** — project rules and skills for Claude Code, Codex, Cursor and other tools, in every project
-- **53 components** — 33 UI primitives in 8 categories, 10 composed patterns, 7 page sections (PageHero, CTA band, FAQ, steps, testimonials, hours and the band they sit in), a hero and layout pieces; all accessible, typed, and dark-mode ready. Icons: all 2,000+ Lucide icons by name
+- **60 components** — 33 UI primitives in 8 categories, 10 composed patterns, 13 page sections (PageHero, features, pricing, stats, logos, contact, CTA band, FAQ, steps, testimonials, hours and the band they sit in), breadcrumbs, a hero and layout pieces; all accessible, typed, and dark-mode ready. Icons: all 2,000+ Lucide icons by name
 - **Design token system** with OKLCH colors, fluid typography, and two built-in themes
 - **SEO toolkit** — meta tags, JSON-LD, sitemap, robots.txt, and auto-generated OG images
 - **Content collections** — type-safe blog, pages, authors, and FAQs with Zod validation
@@ -104,7 +104,7 @@ src/
   components/
     ui/           # 33 UI components (form, data-display, feedback, overlay, etc.)
     patterns/     # 10 composed patterns (ContactForm, SearchInput, StatCard, etc.)
-    blocks/       # 7 page sections (PageHero, CtaBand, Faq, Steps, Testimonials, Hours, Band)
+    blocks/       # 13 page sections (PageHero, FeatureGrid, FeatureSplit, Pricing, StatsBand, LogoCloud, ContactSection, CtaBand, Faq, Steps, Testimonials, Hours, Band)
     layout/       # Header, Footer, ThemeToggle, Analytics
     blog/         # ArticleHero, BlogCard, ShareButtons, RelatedPosts
     landing/      # Credibility, TechStack, FeatureTabs, and more

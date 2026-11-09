@@ -1,0 +1,75 @@
+---
+/**
+ * A contact section: heading and ways to reach you on one side, Velocity's
+ * ContactForm on the other. Each detail is an icon, a label and a value, linked
+ * when it has an href (mailto:, tel:, a map). Put extra content, such as an
+ * Hours table, in the default slot under the details.
+ */
+import ContactForm from '@/components/patterns/ContactForm.astro';
+import Card from '@/components/ui/data-display/Card/Card.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+import type { ComponentProps } from 'astro/types';
+
+interface Detail {
+  /** A Lucide icon name, e.g. mail, phone, map-pin */
+  icon: string;
+  label: string;
+  value: string;
+  href?: string;
+}
+
+interface Props {
+  title: string;
+  eyebrow?: string;
+  lead?: string;
+  details?: Detail[];
+  /** Passed to ContactForm, e.g. a successMessage or an external action */
+  form?: ComponentProps<typeof ContactForm>;
+  tone?: BandTone;
+  id?: string;
+  class?: string;
+}
+
+const { title, eyebrow, lead, details = [], form = {}, tone = 'default', id, class: className } = Astro.props;
+---
+
+<Band id={id} tone={tone} class={className}>
+  <div class="grid gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
+    <div class="min-w-0">
+      {eyebrow && <p class="text-primary mb-3 text-xs font-bold tracking-[0.12em] uppercase">{eyebrow}</p>}
+      <h2 class="font-display text-foreground text-4xl leading-[1.05] tracking-tight text-balance">{title}</h2>
+      {lead && <p class="text-foreground-secondary mt-4 text-lg">{lead}</p>}
+      {details.length > 0 && (
+        <ul class="mt-8 flex flex-col gap-5">
+          {details.map((detail) => (
+            <li class="flex gap-4">
+              <span class="bg-primary/10 text-primary grid size-10 shrink-0 place-items-center rounded-[var(--theme-radius-lg)]">
+                <Icon name={detail.icon} size="md" />
+              </span>
+              <div class="min-w-0">
+                <p class="text-foreground-muted m-0 text-sm">{detail.label}</p>
+                {detail.href ? (
+                  <a href={detail.href} class="text-foreground font-medium break-words underline-offset-4 hover:underline">
+                    {detail.value}
+                  </a>
+                ) : (
+                  <p class="text-foreground m-0 font-medium break-words">{detail.value}</p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+      {Astro.slots.has('default') && (
+        <div class="mt-8">
+          <slot />
+        </div>
+      )}
+    </div>
+    <Card padding="lg" class="min-w-0">
+      <ContactForm {...form} />
+    </Card>
+  </div>
+</Band>

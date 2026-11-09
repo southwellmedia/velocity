@@ -50,7 +50,11 @@
     },
     "sections": {
       "name": "Sections",
-      "description": "Full-width page sections - page hero, FAQ, steps, testimonials, call to action, hours"
+      "description": "Full-width page sections - page hero, features, pricing, FAQ, steps, stats, testimonials, logos, contact, call to action, hours"
+    },
+    "seo": {
+      "name": "SEO",
+      "description": "Structured data and page metadata components"
     },
     "hero": {
       "name": "Hero",
@@ -713,7 +717,8 @@
       },
       "premium": false,
       "useInstead": [
-        "Use Section for ordinary content bands; CTA is the closing conversion block."
+        "Use Section for ordinary content bands; CTA is the closing conversion block.",
+        "For a closing band built from tokens and Buttons (brand, invert or tinted panel), prefer the CtaBand section; CTA is the centered, slot-based variant."
       ],
       "example": "---\nimport CTA from '@/components/ui/marketing/CTA/CTA.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<CTA variant=\"invert\" size=\"md\">\n  <h2 slot=\"heading\">Ready to launch?</h2>\n  <p slot=\"description\">Start from a site that is fast, accessible and translated.</p>\n  <Button slot=\"actions\" size=\"lg\" href=\"/contact\">Talk to us</Button>\n</CTA>"
     },
@@ -1156,7 +1161,8 @@
       },
       "premium": false,
       "useInstead": [
-        "Use CtaBand to close a page with an action instead of a hand-built dark box; put Buttons in the default slot."
+        "Use CtaBand to close a page with an action instead of a hand-built dark box; put Buttons in the default slot.",
+        "CTA (ui/marketing) is the older centered variant with logo and slots; use CtaBand for new pages."
       ],
       "example": "---\nimport CtaBand from '@/components/blocks/CtaBand.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<CtaBand title=\"Ready to start?\" lead=\"Set up takes five minutes.\" tone=\"brand\">\n  <Button size=\"lg\" href=\"/contact\">Get in touch</Button>\n</CtaBand>"
     },
@@ -1246,6 +1252,163 @@
         "Use Hours for opening times instead of a hand-built table or list."
       ],
       "example": "---\nimport Hours from '@/components/blocks/Hours.astro';\n---\n\n<Hours\n  bare\n  rows={[\n    { days: 'Mon–Fri', time: '8:00–18:00' },\n    { days: 'Sat', time: '9:00–13:00' },\n  ]}\n  note=\"Closed on public holidays.\"\n/>"
+    },
+    "feature-grid": {
+      "name": "FeatureGrid",
+      "description": "Features in a 2, 3 or 4 column grid: icon, title and a line or two each, open or on cards; in its own band or bare.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/FeatureGrid.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "card",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use FeatureGrid for a set of features or services instead of hand-built icon cards."
+      ],
+      "example": "---\nimport FeatureGrid from '@/components/blocks/FeatureGrid.astro';\n---\n\n<FeatureGrid\n  eyebrow=\"Why Velocity\"\n  title=\"Everything a site needs\"\n  items={[\n    { icon: 'zap', title: 'Fast by default', body: 'Static HTML, no client router.' },\n    { icon: 'globe', title: 'Every language', body: 'Translated URLs and hreflang.' },\n    { icon: 'shield-check', title: 'Strict CSP', body: 'Hash-based script policy.' },\n  ]}\n/>"
+    },
+    "feature-split": {
+      "name": "FeatureSplit",
+      "description": "One feature beside a picture: eyebrow, title, lead, checked points and buttons, with a MediaSlot or your own media; reverse alternates sides.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/FeatureSplit.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "media-slot",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use FeatureSplit for a text-and-image row instead of a hand-built two-column grid; alternate reverse for a feature tour."
+      ],
+      "example": "---\nimport FeatureSplit from '@/components/blocks/FeatureSplit.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<FeatureSplit\n  eyebrow=\"Themes\"\n  title=\"Change the whole look in one file\"\n  lead=\"Semantic tokens feed every component.\"\n  points={['Light and dark', 'OKLCH colours', 'One brand hue']}\n  photo=\"theme-preview\"\n  alt=\"The theme editor\"\n>\n  <Button href=\"/docs/themes\">Read the guide</Button>\n</FeatureSplit>"
+    },
+    "pricing": {
+      "name": "Pricing",
+      "description": "Plans side by side: name, price, description, included features and a button, with one plan highlighted and an optional badge.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/Pricing.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "badge",
+          "card",
+          "button",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Pricing for plan cards instead of hand-built price cards. Prices are display text (\"$29\", \"Free\")."
+      ],
+      "example": "---\nimport Pricing from '@/components/blocks/Pricing.astro';\n---\n\n<Pricing\n  title=\"Simple pricing\"\n  plans={[\n    { name: 'Starter', price: '$0', period: '/ month', features: ['1 site', 'Community support'], cta: { label: 'Start free', href: '/signup' } },\n    { name: 'Pro', price: '$29', period: '/ month', features: ['10 sites', 'Email support'], cta: { label: 'Go Pro', href: '/signup?plan=pro' }, highlighted: true, badge: 'Most popular' },\n  ]}\n  note=\"Prices exclude tax.\"\n/>"
+    },
+    "logo-cloud": {
+      "name": "LogoCloud",
+      "description": "A row of customer or partner logos under a short label, muted until hovered; imported images or public/ paths.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/LogoCloud.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use LogoCloud for \"trusted by\" logos instead of a hand-built image row."
+      ],
+      "example": "---\nimport LogoCloud from '@/components/blocks/LogoCloud.astro';\nimport acme from '@/assets/logos/acme.svg';\n---\n\n<LogoCloud\n  label=\"Trusted by teams at\"\n  logos={[\n    { name: 'Acme', src: acme },\n    { name: 'Globex', src: '/logos/globex.svg', href: 'https://example.com' },\n  ]}\n/>"
+    },
+    "stats-band": {
+      "name": "StatsBand",
+      "description": "A band of headline numbers, set large over their labels or as StatCards with icons and trends.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/StatsBand.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "stat-card"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use StatsBand for a row of headline figures; use StatCard alone for a single metric in a dashboard."
+      ],
+      "example": "---\nimport StatsBand from '@/components/blocks/StatsBand.astro';\n---\n\n<StatsBand\n  tone=\"secondary\"\n  stats={[\n    { value: '100', label: 'Lighthouse performance' },\n    { value: '0 KB', label: 'JavaScript by default' },\n    { value: '3', label: 'Languages out of the box' },\n  ]}\n/>"
+    },
+    "contact-section": {
+      "name": "ContactSection",
+      "description": "Heading and ways to reach you (icon, label, linked value) beside ContactForm on a card; extra content such as Hours in the default slot.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/ContactSection.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "contact-form",
+          "card",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use ContactSection for a contact page or band instead of placing ContactForm beside hand-built details."
+      ],
+      "example": "---\nimport ContactSection from '@/components/blocks/ContactSection.astro';\n---\n\n<ContactSection\n  eyebrow=\"Contact\"\n  title=\"Talk to a person\"\n  lead=\"We answer within a day.\"\n  details={[\n    { icon: 'mail', label: 'Email', value: 'hello@example.com', href: 'mailto:hello@example.com' },\n    { icon: 'phone', label: 'Phone', value: '+1 555 0100', href: 'tel:+15550100' },\n    { icon: 'map-pin', label: 'Office', value: '12 Main St, Dallas' },\n  ]}\n/>"
+    },
+    "breadcrumbs": {
+      "name": "Breadcrumbs",
+      "description": "Breadcrumb trail with BreadcrumbList structured data; an item without href is the current page.",
+      "category": "seo",
+      "files": [
+        "src/components/seo/Breadcrumbs.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": []
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Breadcrumbs for any page trail, e.g. in PageHero's breadcrumbs slot, instead of a hand-built list and hand-written BreadcrumbList data."
+      ],
+      "example": "---\nimport Breadcrumbs from '@/components/seo/Breadcrumbs.astro';\n---\n\n<Breadcrumbs items={[{ label: 'Home', href: '/' }, { label: 'Blog', href: '/blog' }, { label: 'Hello world' }]} />"
     }
   }
 }
