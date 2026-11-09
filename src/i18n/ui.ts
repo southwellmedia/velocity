@@ -16,6 +16,12 @@ const en = {
     placeholder: 'Image placeholder: {name}',
   },
 
+  sections: {
+    rating: 'Rated {rating} out of 5',
+    day: 'Day',
+    hours: 'Hours',
+  },
+
   a11y: {
     skipToContent: 'Skip to content',
     mainNav: 'Main navigation',
@@ -126,6 +132,12 @@ const es: DeepPartial<UIStrings> = {
     placeholder: 'Espacio para imagen: {name}',
   },
 
+  sections: {
+    rating: 'Valoración: {rating} de 5',
+    day: 'Día',
+    hours: 'Horario',
+  },
+
   a11y: {
     skipToContent: 'Saltar al contenido',
     mainNav: 'Navegación principal',
@@ -230,6 +242,12 @@ const fr: DeepPartial<UIStrings> = {
   media: {
     photo: 'Photo',
     placeholder: 'Emplacement pour image : {name}',
+  },
+
+  sections: {
+    rating: 'Note : {rating} sur 5',
+    day: 'Jour',
+    hours: 'Horaires',
   },
 
   a11y: {

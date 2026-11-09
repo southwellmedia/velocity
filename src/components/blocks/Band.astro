@@ -1,0 +1,83 @@
+---
+/**
+ * A page band: background tone, vertical rhythm, container width and an optional
+ * eyebrow / title / lead heading. Every section in this folder renders one, and
+ * you can use it directly for a custom section.
+ *
+ *   tone   default | secondary (tinted) | invert (dark) | brand (brand fill)
+ *   width  default (72rem) | wide (90rem) | narrow (48rem)
+ *   pad    md (default) | sm | none
+ *
+ * Slots: default (content), action (beside the heading), background (a layer
+ * behind the content, such as a photo or texture; positioned to fill the band).
+ */
+import type { HTMLAttributes } from 'astro/types';
+import { cn } from '@/lib/cn';
+import { bandInnerVariants, bandVariants, type BandPad, type BandTone, type BandWidth } from './band.variants';
+
+interface Props extends Omit<HTMLAttributes<'section'>, 'title'> {
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  width?: BandWidth;
+  pad?: BandPad;
+  /** Center the heading block */
+  centered?: boolean;
+  /** Extra classes for the inner container */
+  innerClass?: string;
+  /** Replace the eyebrow and title classes, e.g. with a template's own display type */
+  eyebrowClass?: string;
+  titleClass?: string;
+}
+
+const {
+  eyebrow,
+  title,
+  lead,
+  tone = 'default',
+  width = 'default',
+  pad = 'md',
+  centered = false,
+  innerClass,
+  eyebrowClass = 'text-primary text-xs font-bold tracking-[0.12em] uppercase',
+  titleClass = 'font-display text-foreground text-4xl leading-[1.05] tracking-tight text-balance',
+  class: className,
+  ...attrs
+} = Astro.props;
+// Render the background slot first: a conditional <Fragment slot="background"> still
+// counts as a slot, and an empty layer must not clip sticky content with overflow-hidden.
+const background = Astro.slots.has('background') ? (await Astro.slots.render('background')).trim() : '';
+const hasBackground = background.length > 0;
+---
+
+<section
+  class={cn(bandVariants({ tone, pad }), hasBackground && 'relative isolate overflow-hidden', className)}
+  {...attrs}
+>
+  {hasBackground && (
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <Fragment set:html={background} />
+    </div>
+  )}
+  <div class={cn(bandInnerVariants({ width }), innerClass)}>
+    {title && (
+      <div
+        class={cn(
+          'mb-10 flex flex-wrap items-end gap-6 md:mb-12',
+          centered ? 'justify-center text-center' : 'justify-between'
+        )}
+      >
+        <div class={cn('max-w-2xl', centered && 'mx-auto')}>
+          {eyebrow && (
+            <p class={cn(eyebrowClass, 'mb-3')}>{eyebrow}</p>
+          )}
+          <h2 class={titleClass}>{title}</h2>
+          {lead && <p class="text-foreground-secondary mt-4 text-lg">{lead}</p>}
+        </div>
+        <slot name="action" />
+      </div>
+    )}
+    <slot />
+  </div>
+</section>

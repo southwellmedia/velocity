@@ -18,10 +18,10 @@ interface Props {
 const { items, class: className } = Astro.props;
 const t = useTranslations(getLocale(Astro));
 
-// Build schema items with full URLs
+// Build schema items with full URLs. An item without href is the current page.
 const schemaItems = items.map((item) => ({
   name: item.label,
-  url: item.href ? new URL(item.href, siteConfig.url).toString() : siteConfig.url,
+  url: new URL(item.href ?? Astro.url.pathname, siteConfig.url).toString(),
 }));
 
 const schema = createBreadcrumbSchema(schemaItems);

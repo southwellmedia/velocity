@@ -1,0 +1,93 @@
+---
+/**
+ * Opening hours as a small table: each row's days are a row header, times are
+ * right-aligned in tabular figures. Renders in its own band, or `bare` inside
+ * another layout. The hours are static; for a live "open now" status or a
+ * highlighted "today" row, add a script that reads each row's `data` attributes.
+ */
+import { getLocale, useTranslations } from '@/i18n';
+import { cn } from '@/lib/cn';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Row {
+  days: string;
+  time: string;
+  /** data-* attributes for the row, e.g. { from: '1', to: '5' } becomes data-from / data-to */
+  data?: Record<string, string | number>;
+}
+
+interface Props {
+  rows: Row[];
+  note?: string;
+  /** Screen-reader caption for the table; defaults to "Hours" */
+  caption?: string;
+  /** Show the Day / Hours column headers (they're always there for screen readers) */
+  header?: boolean;
+  /** Column header text; defaults to the built-in "Day" and "Hours" */
+  dayLabel?: string;
+  timeLabel?: string;
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  /** Render only the table and note, without a band */
+  bare?: boolean;
+  id?: string;
+  class?: string;
+}
+
+const {
+  rows,
+  note,
+  caption,
+  header = true,
+  dayLabel,
+  timeLabel,
+  eyebrow,
+  title,
+  lead,
+  tone = 'default',
+  bare = false,
+  id,
+  class: className,
+} = Astro.props;
+const t = useTranslations(getLocale(Astro));
+const dataAttrs = (data: Row['data']) =>
+  Object.fromEntries(Object.entries(data ?? {}).map(([key, value]) => [`data-${key}`, String(value)]));
+---
+
+{
+  bare ? (
+    <div class={cn('max-w-md', className)}>
+      <table class="w-full text-sm">
+        <caption class="sr-only">{caption ?? t('sections.hours')}</caption>
+        <thead class={cn(!header && 'sr-only')}>
+          <tr class="border-border text-foreground-muted border-b text-xs">
+            <th scope="col" class="py-2 pr-4 text-left font-medium">
+              {dayLabel ?? t('sections.day')}
+            </th>
+            <th scope="col" class="py-2 text-right font-medium">
+              {timeLabel ?? t('sections.hours')}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr class="border-border border-b last:border-b-0" {...dataAttrs(row.data)}>
+              <th scope="row" class="text-foreground py-2 pr-4 text-left font-semibold">
+                {row.days}
+              </th>
+              <td class="text-foreground-secondary py-2 text-right tabular-nums">{row.time}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {note && <p class="text-foreground-muted mt-4 text-sm">{note}</p>}
+    </div>
+  ) : (
+    <Band id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+      <Astro.self rows={rows} note={note} caption={caption} header={header} dayLabel={dayLabel} timeLabel={timeLabel} bare />
+    </Band>
+  )
+}

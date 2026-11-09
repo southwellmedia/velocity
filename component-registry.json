@@ -48,6 +48,10 @@
       "name": "Patterns",
       "description": "Reusable form and UI patterns"
     },
+    "sections": {
+      "name": "Sections",
+      "description": "Full-width page sections - page hero, FAQ, steps, testimonials, call to action, hours"
+    },
     "hero": {
       "name": "Hero",
       "description": "Flexible hero section component"
@@ -69,7 +73,7 @@
   "components": {
     "button": {
       "name": "Button",
-      "description": "Button or button-styled link with variants, sizes, loading state and optional leading/trailing icons.",
+      "description": "Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -90,9 +94,10 @@
       "useInstead": [
         "Use Button with href for links styled as buttons, not a styled <a>; external URLs get target=\"_blank\" and rel automatically.",
         "Use icon (with size) for square icon-only buttons, and give them an aria-label.",
-        "Use the link variant for inline text actions, not a plain <button> with custom classes."
+        "Use the link variant for inline text actions, not a plain <button> with custom classes.",
+        "Use variant=\"brand\" for the main action in the brand colour (its text uses --brand-ink, so it passes contrast) instead of custom bg-brand classes; restyle tones in a wrapper, not by editing Button."
       ],
-      "example": "---\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Button variant=\"primary\" size=\"lg\" trailingIcon=\"arrow-right\" href=\"/contact\">Get in touch</Button>\n<Button variant=\"outline\" type=\"submit\" loading>Saving</Button>"
+      "example": "---\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Button variant=\"brand\" size=\"lg\" trailingIcon=\"arrow-right\" href=\"/contact\">Get in touch</Button>\n<Button variant=\"outline\" type=\"submit\" loading>Saving</Button>"
     },
     "input": {
       "name": "Input",
@@ -624,13 +629,14 @@
     },
     "icon": {
       "name": "Icon",
-      "description": "Inline SVG icon from a built-in set of Lucide paths (plus a few brand icons), sized by preset.",
+      "description": "Inline SVG icon: any Lucide icon by its kebab-case name (lucide.dev/icons), drawn at build time, plus a few brand marks, sized by preset.",
       "category": "ui",
       "subcategory": "primitives",
       "files": [
         "src/components/ui/primitives/Icon/Icon.astro",
         "src/components/ui/primitives/Icon/index.ts",
-        "src/components/ui/primitives/Icon/Icon.tsx"
+        "src/components/ui/primitives/Icon/Icon.tsx",
+        "src/components/ui/primitives/Icon/brand-icons.ts"
       ],
       "dependencies": {
         "utilities": [
@@ -641,9 +647,10 @@
       "premium": false,
       "useInstead": [
         "Use the leadingIcon/trailingIcon props of Button and Input instead of placing Icon inside them by hand.",
-        "Only the names under Icon names exist; add a path to the icons map in Icon.astro for new ones, rather than importing an icon library."
+        "Use any Lucide icon by name (https://lucide.dev/icons). Do not hand-draw SVGs, copy icon paths into a wrapper, or add another icon set.",
+        "In a React island that needs the icon in its server HTML, import it from lucide-react by name (import { MapPin } from \"lucide-react\")."
       ],
-      "example": "---\nimport Icon from '@/components/ui/primitives/Icon/Icon.astro';\n---\n\n<Icon name=\"check-circle\" size=\"sm\" class=\"text-success\" />"
+      "example": "---\nimport Icon from '@/components/ui/primitives/Icon/Icon.astro';\n---\n\n<Icon name=\"calendar-check\" size=\"sm\" class=\"text-primary\" />"
     },
     "code-block": {
       "name": "CodeBlock",
@@ -1032,7 +1039,7 @@
     },
     "section": {
       "name": "Section",
-      "description": "Page section with standard spacing and width, an optional eyebrow/title/lead heading block, action slot and tinted tone.",
+      "description": "Page section with standard spacing and width, an optional eyebrow/title/lead heading block, action slot, and tone (default, secondary, invert, brand), width and pad. A thin wrapper over blocks/Band.",
       "category": "patterns",
       "files": [
         "src/components/patterns/Section.astro"
@@ -1041,7 +1048,9 @@
         "utilities": [
           "cn"
         ],
-        "components": []
+        "components": [
+          "band"
+        ]
       },
       "premium": false,
       "useInstead": [
@@ -1062,7 +1071,7 @@
       },
       "premium": false,
       "useInstead": [
-        "Use Hero for landing pages. Do not add another <h1> to a page that uses PageHeader."
+        "Use Hero for landing pages and blocks/PageHero when the opening band needs breadcrumbs, buttons or an image. Do not add another <h1> to a page that uses PageHeader."
       ],
       "example": "---\nimport PageHeader from '@/components/patterns/PageHeader.astro';\n---\n\n<PageHeader eyebrow=\"Company\" title=\"About us\" lead=\"We build fast, accessible websites.\" />"
     },
@@ -1086,6 +1095,157 @@
         "Use MediaSlot for page photos instead of a raw <img>; drop the file into src/assets/photos/ and it appears."
       ],
       "example": "---\nimport MediaSlot from '@/components/patterns/MediaSlot.astro';\n---\n\n<MediaSlot photo=\"team\" alt=\"Our team outside the office\" label=\"Team photo\" ratio=\"4/3\" />"
+    },
+    "band": {
+      "name": "Band",
+      "description": "Page band with tone (default, secondary, invert, brand), width (default, wide, narrow), padding, an optional eyebrow/title/lead heading and a background slot for a photo or texture layer. Every section renders one.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/Band.astro",
+        "src/components/blocks/band.variants.ts"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": []
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Band (or Section) for a custom content band instead of hand-rolled <section> padding, container and background classes.",
+        "Use tone=\"invert\" or tone=\"brand\" for contrast bands; text and buttons inside recolour automatically."
+      ],
+      "example": "---\nimport Band from '@/components/blocks/Band.astro';\n---\n\n<Band eyebrow=\"Why us\" title=\"Built for speed\" tone=\"invert\" width=\"wide\">\n  <div class=\"grid gap-6 md:grid-cols-3\"><!-- cards --></div>\n</Band>"
+    },
+    "page-hero": {
+      "name": "PageHero",
+      "description": "Opening band for inner pages: the page's only <h1>, eyebrow, lead, tone, size, and slots for breadcrumbs, content after the title and a wide-screen aside.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/PageHero.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use PageHero for inner pages that need breadcrumbs, buttons, a search form or an image; PageHeader is the plain version. Don't add another <h1>.",
+        "Put seo/Breadcrumbs in the breadcrumbs slot instead of building your own trail."
+      ],
+      "example": "---\nimport PageHero from '@/components/blocks/PageHero.astro';\nimport Breadcrumbs from '@/components/seo/Breadcrumbs.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<PageHero eyebrow=\"Services\" title=\"Family medicine\" lead=\"Care for every age, same-week appointments.\">\n  <Breadcrumbs slot=\"breadcrumbs\" items={[{ label: 'Home', href: '/' }, { label: 'Services' }]} />\n  <Button variant=\"brand\" size=\"lg\" href=\"/book\">Book a visit</Button>\n</PageHero>"
+    },
+    "cta-band": {
+      "name": "CtaBand",
+      "description": "Closing call-to-action panel with a heading, lead and your buttons, on a brand, invert or secondary tone.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/CtaBand.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use CtaBand to close a page with an action instead of a hand-built dark box; put Buttons in the default slot."
+      ],
+      "example": "---\nimport CtaBand from '@/components/blocks/CtaBand.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<CtaBand title=\"Ready to start?\" lead=\"Set up takes five minutes.\" tone=\"brand\">\n  <Button size=\"lg\" href=\"/contact\">Get in touch</Button>\n</CtaBand>"
+    },
+    "faq": {
+      "name": "Faq",
+      "description": "Questions and answers as an accordion, stacked in a narrow band or split with the heading beside the answers, with FAQPage JSON-LD.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/Faq.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "accordion"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Faq for question-and-answer content instead of Accordion plus hand-written FAQ structured data."
+      ],
+      "example": "---\nimport Faq from '@/components/blocks/Faq.astro';\n---\n\n<Faq\n  eyebrow=\"FAQ\"\n  title=\"Common questions\"\n  items={[\n    { question: 'Do you take walk-ins?', answer: 'Yes, every weekday morning.' },\n    { question: 'Is parking free?', answer: 'Yes, behind the building.' },\n  ]}\n/>"
+    },
+    "steps": {
+      "name": "Steps",
+      "description": "Numbered how-it-works steps in columns or a list, in its own band or bare inside another layout.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/Steps.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Steps for any numbered process (how it works, your first visit) instead of a hand-numbered list."
+      ],
+      "example": "---\nimport Steps from '@/components/blocks/Steps.astro';\n---\n\n<Steps\n  title=\"How it works\"\n  items={[\n    { title: 'Book online', body: 'Pick a time that suits you.' },\n    { title: 'Visit us', body: 'Arrive ten minutes early.' },\n    { title: 'Follow up', body: 'Results in your inbox.' },\n  ]}\n/>"
+    },
+    "testimonials": {
+      "name": "Testimonials",
+      "description": "Customer quotes in a grid of cards with name, role, optional avatar and star rating.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/Testimonials.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band",
+          "card",
+          "icon"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Testimonials for quotes and reviews instead of hand-built quote cards. Only publish real, permitted testimonials."
+      ],
+      "example": "---\nimport Testimonials from '@/components/blocks/Testimonials.astro';\n---\n\n<Testimonials\n  title=\"What customers say\"\n  items={[\n    { quote: 'Fast, friendly and on time.', name: 'Ana Ruiz', role: 'Patient since 2021', rating: 5 },\n    { quote: 'The best decision we made this year.', name: 'Sam Lee', role: 'Owner, Lee & Co' },\n  ]}\n/>"
+    },
+    "hours": {
+      "name": "Hours",
+      "description": "Opening hours table (days as row headers, times in tabular figures) with an optional note and per-row data attributes for a \"today\" highlight; in its own band or bare inside another layout.",
+      "category": "sections",
+      "files": [
+        "src/components/blocks/Hours.astro"
+      ],
+      "dependencies": {
+        "utilities": [
+          "cn"
+        ],
+        "components": [
+          "band"
+        ]
+      },
+      "premium": false,
+      "useInstead": [
+        "Use Hours for opening times instead of a hand-built table or list."
+      ],
+      "example": "---\nimport Hours from '@/components/blocks/Hours.astro';\n---\n\n<Hours\n  bare\n  rows={[\n    { days: 'Mon–Fri', time: '8:00–18:00' },\n    { days: 'Sat', time: '9:00–13:00' },\n  ]}\n  note=\"Closed on public holidays.\"\n/>"
     }
   }
 }

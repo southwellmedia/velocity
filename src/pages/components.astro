@@ -46,6 +46,13 @@ import SearchInput from '@/components/patterns/SearchInput.astro';
 import PasswordInput from '@/components/patterns/PasswordInput.astro';
 import StatCard from '@/components/patterns/StatCard.astro';
 import EmptyState from '@/components/patterns/EmptyState.astro';
+// Sections
+import Band from '@/components/blocks/Band.astro';
+import CtaBand from '@/components/blocks/CtaBand.astro';
+import Faq from '@/components/blocks/Faq.astro';
+import Hours from '@/components/blocks/Hours.astro';
+import Steps from '@/components/blocks/Steps.astro';
+import Testimonials from '@/components/blocks/Testimonials.astro';
 
 // Component categories for navigation
 const categories = [
@@ -60,6 +67,7 @@ const categories = [
   { id: 'loading', label: 'Loading', icon: 'loader' },
   { id: 'toggles', label: 'Toggles', icon: 'toggle-left' },
   { id: 'patterns', label: 'Patterns', icon: 'layers' },
+  { id: 'sections', label: 'Sections', icon: 'layout' },
 ];
 ---
 
@@ -779,10 +787,11 @@ const categories = [
         <div class="component-showcase">
           <div class="showcase-header">
             <span class="showcase-label">Variants</span>
-            <span class="showcase-hint">6 styles for different contexts</span>
+            <span class="showcase-hint">7 styles for different contexts</span>
           </div>
           <div class="showcase-content">
             <div class="flex flex-wrap items-center gap-3">
+              <Button variant="brand">Brand</Button>
               <Button variant="primary">Primary</Button>
               <Button variant="secondary">Secondary</Button>
               <Button variant="outline">Outline</Button>
@@ -2038,6 +2047,84 @@ const categories = [
       </div>
     </section>
 
+  </div>
+
+  <!-- Sections: full-width page bands, shown at full width -->
+  <div id="sections" class="scroll-mt-32">
+    <div class="mx-auto max-w-6xl px-6 pb-12">
+      <div class="flex items-start gap-5">
+        <div class="flex items-center justify-center w-12 h-12 rounded-xl bg-brand-500/10 text-brand-500 shrink-0">
+          <Icon name="layout" size="lg" />
+        </div>
+        <div>
+          <h2 class="font-display text-2xl font-bold text-foreground">Sections</h2>
+          <p class="text-foreground-muted mt-1">Full-width page sections built from the components above. Copy comes in as props, and every one takes a tone: default, secondary, invert or brand.</p>
+        </div>
+      </div>
+    </div>
+
+    <Steps
+      eyebrow="Steps"
+      title="How it works"
+      lead="A numbered process in columns or a list."
+      tone="secondary"
+      items={[
+        { title: 'Create the project', body: 'One command scaffolds a site with your choice of components.' },
+        { title: 'Make it yours', body: 'Set your brand colour, fonts and copy. Sections pick them up.' },
+        { title: 'Ship it', body: 'Deploy to Vercel, Netlify or Cloudflare with zero config.' },
+      ]}
+    />
+
+    <Testimonials
+      eyebrow="Testimonials"
+      title="What people say"
+      items={[
+        { quote: 'We launched a client site in two days, and it scored 100 on every Lighthouse metric.', name: 'Ana Ruiz', role: 'Studio lead', rating: 5 },
+        { quote: 'The sections saved us from rebuilding the same FAQ and CTA on every project.', name: 'Sam Lee', role: 'Freelance developer', rating: 5 },
+        { quote: 'Translations, dark mode and accessibility were already done. We just wrote copy.', name: 'Priya Shah', role: 'Product designer' },
+      ]}
+    />
+
+    <Band eyebrow="Band" title="An inverted band" lead="Text, borders and buttons recolour themselves inside invert and brand bands." tone="invert">
+      <div class="flex flex-wrap gap-3">
+        <Button>Primary</Button>
+        <Button variant="outline">Outline</Button>
+      </div>
+    </Band>
+
+    <Band eyebrow="Band" title="A brand band" lead="Filled with the brand colour, with dark ink text that passes contrast." tone="brand">
+      <div class="flex flex-wrap gap-3">
+        <Button>Primary</Button>
+        <Button variant="outline">Outline</Button>
+      </div>
+    </Band>
+
+    <Faq
+      eyebrow="FAQ"
+      title="Common questions"
+      schema={false}
+      items={[
+        { question: 'Do sections work without JavaScript?', answer: 'Yes. They render to HTML at build time, and the accordion uses native details elements.' },
+        { question: 'Can I change how a section looks?', answer: 'Pass a tone, or wrap the section in your own component and add classes. Upgrades replace the section files, so do not edit them directly.' },
+        { question: 'Are they translated?', answer: 'All copy comes in as props, so pass strings from your translations. Built-in labels are in English, Spanish and French.' },
+      ]}
+    />
+
+    <Band eyebrow="Hours" title="Opening hours" tone="secondary">
+      <Hours
+        bare
+        rows={[
+          { days: 'Monday–Friday', time: '8:00–18:00' },
+          { days: 'Saturday', time: '9:00–13:00' },
+          { days: 'Sunday', time: 'Closed' },
+        ]}
+        note="Closed on public holidays."
+      />
+    </Band>
+
+    <CtaBand title="Ready to build?" lead="Every section on this page ships with Velocity." tone="brand">
+      <Button size="lg" href="#hero">Browse components</Button>
+    </CtaBand>
   </div>
 
   <!-- CTA Section -->

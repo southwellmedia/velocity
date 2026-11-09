@@ -1,0 +1,80 @@
+---
+/**
+ * The opening band of an inner page. Holds the page's only <h1>, with an optional
+ * eyebrow and lead, a `breadcrumbs` slot above the title, the default slot after
+ * it (chips, a search form, buttons) and an `aside` slot (a photo or MediaSlot)
+ * beside it on wide screens.
+ */
+import { cn } from '@/lib/cn';
+import { bandInnerVariants, bandVariants, type BandTone, type BandWidth } from './band.variants';
+
+interface Props {
+  title: string;
+  eyebrow?: string;
+  lead?: string;
+  tone?: BandTone;
+  width?: BandWidth;
+  /** lg for pages that open with a statement (About, a landing page) */
+  size?: 'md' | 'lg';
+  class?: string;
+}
+
+const {
+  title,
+  eyebrow,
+  lead,
+  tone = 'secondary',
+  width = 'default',
+  size = 'md',
+  class: className,
+} = Astro.props;
+const hasAside = Astro.slots.has('aside');
+const hasBreadcrumbs = Astro.slots.has('breadcrumbs');
+const hasContent = Astro.slots.has('default');
+---
+
+<div
+  class={cn(
+    bandVariants({ tone, pad: 'none' }),
+    (tone === 'default' || tone === 'secondary') && 'border-border border-b',
+    size === 'lg' ? 'py-20 md:py-28' : 'py-14 md:py-20',
+    className
+  )}
+>
+  <div
+    class={cn(
+      bandInnerVariants({ width }),
+      hasAside && 'grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]'
+    )}
+  >
+    <div>
+      {hasBreadcrumbs && (
+        <div class="mb-6">
+          <slot name="breadcrumbs" />
+        </div>
+      )}
+      {eyebrow && (
+        <p class="text-primary mb-3 text-xs font-bold tracking-[0.12em] uppercase">{eyebrow}</p>
+      )}
+      <h1
+        class={cn(
+          'font-display text-foreground max-w-3xl leading-[1.02] tracking-tight text-balance',
+          size === 'lg' ? 'text-5xl md:text-6xl' : 'text-5xl'
+        )}
+      >
+        {title}
+      </h1>
+      {lead && <p class="text-foreground-secondary mt-5 max-w-2xl text-lg">{lead}</p>}
+      {hasContent && (
+        <div class="mt-8">
+          <slot />
+        </div>
+      )}
+    </div>
+    {hasAside && (
+      <div class="hidden lg:block">
+        <slot name="aside" />
+      </div>
+    )}
+  </div>
+</div>

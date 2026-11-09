@@ -1,6 +1,6 @@
 {
   "name": "velocity",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "description": "A production-ready starter built on Astro 7 and Tailwind CSS v4",
   "type": "module",
   "author": "Southwell Media",
@@ -62,6 +62,7 @@
     "astro": "7.4.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "lucide": "^1.70.0",
     "lucide-react": "^1.67.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",

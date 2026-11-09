@@ -39,6 +39,14 @@
   --brand-800: oklch(37.2% 0.13 var(--brand-hue));
   --brand-900: oklch(26.5% 0.09 var(--brand-hue));
 
+  /* Brand fills: Button variant="brand" and brand bands (.brand-section).
+     Dark ink passes AA on --brand-500 for every hue. For a deep brand fill with
+     light text, set --brand-fill: var(--brand-600) and --brand-ink: white in your
+     theme, and a darker --brand-fill-hover. */
+  --brand-fill: var(--brand-500);
+  --brand-fill-hover: var(--brand-400);
+  --brand-ink: var(--gray-950);
+
   /* Accent - Blue for links/focus */
   --blue-500: oklch(59.5% 0.19 260);
   --blue-600: oklch(53.2% 0.19 260);

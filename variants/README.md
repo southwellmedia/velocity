@@ -33,7 +33,7 @@ change that breaks a variant fails the PR that caused it.
     }
   ],
   "components": {
-    "optionalDirs": ["src/components/ui", "src/components/patterns", "src/components/hero"],
+    "optionalDirs": ["src/components/ui", "src/components/patterns", "src/components/blocks", "src/components/hero"],
     "alwaysInclude": ["search-input", "newsletter-form", "contact-form"]
   },
   "cleanup": ["variants", "scripts/scaffold-matrix.mjs"]

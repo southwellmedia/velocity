@@ -1,5 +1,5 @@
 {
-  "version": "2.5.1",
+  "version": "2.6.0",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -40,7 +40,8 @@
       ".agents/components.md",
       ".agents/skills/",
       ".claude/skills/",
-      "scripts/check-agent.mjs"
+      "scripts/check-agent.mjs",
+      "src/components/blocks/"
     ],
     "protected": [
       "astro.config.mjs",
@@ -123,6 +124,7 @@
     ],
     "add": {
       "class-variance-authority": "^0.7.1",
+      "lucide": "^1.70.0",
       "@astrojs/node": "11.1.9",
       "@astrojs/vercel": "11.0.18",
       "@astrojs/netlify": "8.2.11",
@@ -498,6 +500,12 @@
       "pattern": "scripts/design\\.mjs",
       "searchPaths": ["package.json"],
       "remove": ["scripts/design.mjs", ".agents/design", ".agents/design.md", ".agents/recipes.md"]
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.6.0",
+      "title": "New page sections in src/components/blocks/",
+      "description": "Velocity now ships page sections you can compose pages from: PageHero, CtaBand, Faq, Steps, Testimonials and Hours, plus the Band they sit in, in src/components/blocks/ (Velocity-owned, replaced on upgrade). Icon now draws any Lucide icon by name (the lucide package, added by this upgrade); the names you already use keep working. Sections you wrote yourself in src/components/sections/ are yours and are not touched. Button gained variant=\"brand\". New theme tokens --brand-fill, --brand-fill-hover and --brand-ink control brand-coloured buttons and bands; if your brand colour is dark, set --brand-ink to white in your theme."
     }
   ],
   "scaffold": {
@@ -557,6 +565,7 @@
       "optionalDirs": [
         "src/components/ui",
         "src/components/patterns",
+        "src/components/blocks",
         "src/components/hero"
       ],
       "alwaysInclude": [

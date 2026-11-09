@@ -23,7 +23,9 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 ## Where things live
 
 - `src/components/ui/` — design-system primitives (one folder per component, with `*.variants.ts` using CVA). Catalogued in `component-registry.json`; keep the registry in sync when adding, renaming, or changing a component's file dependencies. Each entry has a hand-written `description`, `example` and optional `useInstead`, which `pnpm generate:components` turns into `variants/agents/.agents/components.md` for user projects. A stale file fails `pnpm test`.
+- **Icons** are Lucide (the `lucide` package, drawn at build time): `<Icon name="…" />` takes any name from https://lucide.dev/icons. Don't hand-draw SVGs, copy icon paths into a wrapper, or add another icon set. In a React island, import the icon from `lucide-react` by name.
 - `src/components/patterns/` — compositions of primitives (ContactForm, NewsletterForm, SearchInput…).
+- `src/components/blocks/` — page sections (PageHero, CtaBand, Faq, Steps, Testimonials, Hours) and the `Band` wrapper they render. Velocity-owned (`files.safe`); copy comes in as props. Not `src/components/sections/`: 2.5.0 gave that folder to users.
 - `src/components/site/` — `SiteHeader` and `SiteFooter`, owned by the project. Every layout renders them. Don't render `Header` or `Footer` from a layout directly.
 - `src/views/` — page content. `src/pages/*.astro` are thin wrappers that render a view with a locale; `src/pages/[lang]/` holds the localized wrappers.
 - `src/i18n/` — locales (`locales.mjs`), built-in UI strings (`ui.ts`, Velocity-owned), site copy (`translations/<locale>.ts`, user-owned), helpers (`useTranslations`, `getLocale`, `localizeRoute`, `localizePath`).
@@ -38,7 +40,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 ## Rules
 
 - **No hardcoded user-facing strings in core components.** Use `const t = useTranslations(getLocale(Astro))`. New UI strings go in `src/i18n/ui.ts` (en, es, fr); page copy goes in `src/i18n/translations/en.ts`. Internal links go through `localizeRoute`/`localizePath`.
-- **Registry discipline.** Any file added under `src/components/{ui,patterns,hero}` must belong to an entry in `component-registry.json`, which must list every component it imports. Run `pnpm check:registry`.
+- **Registry discipline.** Any file added under `src/components/{ui,patterns,blocks,hero}` must belong to an entry in `component-registry.json`, which must list every component it imports. Run `pnpm check:registry`.
 - **Scaffold variants** (`variants/`, `velocity-manifest.json → scaffold`) are what the CLI builds projects from. Read `variants/README.md` before touching them, and run `pnpm test:scaffold` after changing views, config or i18n.
 - **Agent-ready check.** `scripts/check-agent.mjs` ships to projects (`files.safe`). Every rule needs a failing fixture in `tests/unit/check-agent.test.ts`, and every finding must name the file, the `velocity.md` rule and the fix.
 - **Agent files.** `variants/agents/` holds the `AGENTS.md`, rules and skills that user projects receive. When a rule here changes, update `variants/agents/.agents/velocity.md` too. User projects differ from this repo: `src/i18n/ui.ts` is replaced on upgrade, and registry and scaffold tooling is removed. Keep skills identical in `.agents/skills/` and `.claude/skills/`.

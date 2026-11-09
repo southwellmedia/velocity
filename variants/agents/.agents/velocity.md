@@ -29,7 +29,9 @@ A lockfile prevents duplicate dev servers. Use `astro dev --ignore-lock` only if
 - `src/styles/theme.css`: picks the active theme. Themes load last, so they can override any token. `--brand-hue` recolours the brand scale.
 - `src/views/`: page content. `src/pages/*.astro` are thin wrappers that render a view with a locale, and `src/pages/[lang]/` holds the localized wrappers. The 404 page's content is `src/views/NotFoundView.astro`, so customize it there, not in `src/pages/404.astro`.
 - `src/components/ui/`: design-system primitives, one folder per component with a `*.variants.ts` file using CVA. Read `.agents/components.md` before using or building a component: it lists every component Velocity ships with its purpose, props, variants, an example and what to use instead.
+- **Icons** are Lucide: `<Icon name="…" />` takes any name from https://lucide.dev/icons. Don't hand-draw SVGs, copy icon paths into a wrapper, or add another icon set. In a React island, import the icon from `lucide-react` by name.
 - `src/components/patterns/`: compositions of primitives, such as `SearchInput`.
+- `src/components/blocks/`: page sections (`PageHero`, `CtaBand`, `Faq`, `Steps`, `Testimonials`, `Hours`) and the `Band` they sit in. Compose pages from these before writing your own section markup; pass copy in as props and restyle with `tone` or a wrapper, not by editing them.
 - `src/config/nav.config.ts`: routes (with translated slugs), nav items, and header and footer defaults.
 - `src/config/site.config.ts`: site name, URL and metadata, and `defaultTheme` ('system', 'light' or 'dark') for visitors who haven't used the theme toggle.
 - `src/i18n/`: enabled locales (`locales.mjs`), your site copy (`translations/<locale>.ts`), and helpers (`useTranslations`, `getLocale`, `localizeRoute`, `localizePath`).
@@ -48,7 +50,7 @@ If `.agents/site.md` exists, read it before changing pages, copy or styles: it r
 `create-velocity-astro upgrade` follows `velocity-manifest.json → files`. Check it before making a change you want to keep.
 
 - **Yours, never overwritten:** `src/components/site/`, `src/styles/theme.css`, `src/config/collections.ts`, `src/views/`, `src/pages/`, `src/content/`, `src/assets/`, `src/config/nav.config.ts`, `src/config/site.config.ts`, `src/components/patterns/`, `src/i18n/translations/`, `src/i18n/locales.mjs`, `src/actions/`, `tests/`, `astro.config.mjs`.
-- **Velocity's, overwritten on upgrade:** `src/components/ui/`, `src/components/layout/`, `src/layouts/`, `src/lib/`, `src/styles/tokens/`, `src/styles/themes/`, `src/styles/global.css`, `src/i18n/ui.ts`, `src/content.config.ts`, `integrations/`. Edited files are saved to `.velocity-backup/` first, but the edits must then be reapplied by hand.
+- **Velocity's, overwritten on upgrade:** `src/components/ui/`, `src/components/blocks/`, `src/components/layout/`, `src/layouts/`, `src/lib/`, `src/styles/tokens/`, `src/styles/themes/`, `src/styles/global.css`, `src/i18n/ui.ts`, `src/content.config.ts`, `integrations/`. Edited files are saved to `.velocity-backup/` first, but the edits must then be reapplied by hand.
 
 `npm run check:agent` warns when a Velocity-owned file differs from `.velocity/baseline.json`, which records those files as scaffolded or last upgraded.
 

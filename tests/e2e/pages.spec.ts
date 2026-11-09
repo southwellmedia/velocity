@@ -46,6 +46,23 @@ for (const path of PAGES) {
   });
 }
 
+// Sections recolour text and buttons inside invert and brand bands, so check
+// contrast in both colour schemes. Only the sections block is scanned: the rest
+// of the showcase is demo chrome.
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`sections have no serious accessibility violations in ${colorScheme} mode`, async ({ page }) => {
+    test.skip(!hasRoute('components'), 'no component showcase in this project');
+    await page.emulateMedia({ reducedMotion: 'reduce', colorScheme });
+    await page.goto('/components');
+    const { violations } = await new AxeBuilder({ page })
+      .include('#sections')
+      .withTags(['wcag2a', 'wcag2aa'])
+      .analyze();
+    const serious = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+    expect(serious.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
+  });
+}
+
 test('accordion chevron rotates when an item opens', async ({ page }) => {
   test.skip(!hasRoute('components'), 'no component showcase in this project');
   await page.goto('/components');

@@ -1,0 +1,75 @@
+---
+/**
+ * Quotes from customers in a grid of cards, with an optional star rating.
+ * Only publish real testimonials you have permission to use.
+ */
+import Card from '@/components/ui/data-display/Card/Card.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { getLocale, useTranslations } from '@/i18n';
+import { cn } from '@/lib/cn';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Testimonial {
+  quote: string;
+  name: string;
+  role?: string;
+  /** Image URL for a small round portrait */
+  avatar?: string;
+  rating?: 1 | 2 | 3 | 4 | 5;
+}
+
+interface Props {
+  items: Testimonial[];
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  /** Cards per row from lg up */
+  columns?: 2 | 3;
+  id?: string;
+  class?: string;
+}
+
+const { items, eyebrow, title, lead, tone = 'default', columns = 3, id, class: className } = Astro.props;
+const t = useTranslations(getLocale(Astro));
+---
+
+<Band id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} class={className}>
+  <ul class={cn('grid gap-6 md:grid-cols-2', columns === 3 && 'lg:grid-cols-3')}>
+    {
+      items.map(({ quote, name, role, avatar, rating }) => (
+        <li>
+          <Card padding="lg" class="h-full">
+            <figure class="flex h-full flex-col gap-5">
+              {rating && (
+                <span role="img" aria-label={t('sections.rating', { rating })} class="text-primary flex gap-0.5">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <Icon name="star" size="sm" class={i < rating ? 'fill-current' : 'opacity-30'} />
+                  ))}
+                </span>
+              )}
+              <blockquote class="text-foreground text-lg leading-snug">“{quote}”</blockquote>
+              <figcaption class="mt-auto flex items-center gap-3">
+                {avatar && (
+                  <img
+                    src={avatar}
+                    alt=""
+                    width="40"
+                    height="40"
+                    loading="lazy"
+                    class="h-10 w-10 rounded-full object-cover"
+                  />
+                )}
+                <span class="text-sm">
+                  <span class="text-foreground block font-semibold">{name}</span>
+                  {role && <span class="text-foreground-muted block">{role}</span>}
+                </span>
+              </figcaption>
+            </figure>
+          </Card>
+        </li>
+      ))
+    }
+  </ul>
+</Band>

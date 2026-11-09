@@ -1,0 +1,113 @@
+---
+/**
+ * Questions and answers as an accordion, with FAQPage structured data so search
+ * engines can show them. Pass `schema={false}` when the page already emits FAQ
+ * data, or when the answers aren't the page's own.
+ *
+ *   layout  stacked: heading above a narrow column (default)
+ *           split: heading on the left, answers on the right from lg up
+ *   bare    only the accordion and its data, to sit inside another layout
+ */
+import Accordion from '@/components/ui/overlay/Accordion/Accordion.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
+import { createFAQSchema } from '@/lib/schema';
+import Band from './Band.astro';
+import type { BandTone } from './band.variants';
+
+interface Props {
+  items: { question: string; answer: string }[];
+  eyebrow?: string;
+  title?: string;
+  lead?: string;
+  tone?: BandTone;
+  layout?: 'stacked' | 'split';
+  /** Accordion style and text size */
+  variant?: 'default' | 'card';
+  size?: 'sm' | 'md' | 'lg';
+  /** Only one answer open at a time */
+  exclusive?: boolean;
+  /** Open the first answer */
+  openFirst?: boolean;
+  /** Emit FAQPage JSON-LD */
+  schema?: boolean;
+  /** Render only the accordion and its data, without a band */
+  bare?: boolean;
+  /** Classes for the accordion, e.g. a template's accordion styling */
+  accordionClass?: string;
+  id?: string;
+  class?: string;
+}
+
+const {
+  items,
+  eyebrow,
+  title,
+  lead,
+  tone = 'default',
+  layout = 'stacked',
+  variant = 'default',
+  size = 'md',
+  exclusive = false,
+  openFirst = true,
+  schema = true,
+  bare = false,
+  accordionClass,
+  id,
+  class: className,
+} = Astro.props;
+const accordionItems = items.map(({ question, answer }, index) => ({
+  title: question,
+  content: answer,
+  defaultOpen: openFirst && index === 0,
+}));
+---
+
+{
+  bare ? (
+    items.length > 0 && (
+      <Fragment>
+        <Accordion items={accordionItems} variant={variant} size={size} exclusive={exclusive} class={accordionClass} />
+        {schema && <JsonLd schema={createFAQSchema(items)} />}
+      </Fragment>
+    )
+  ) : layout === 'split' ? (
+    <Band id={id} tone={tone} class={className}>
+      <div class="grid gap-10 lg:grid-cols-[2fr_3fr] lg:gap-16">
+        <div>
+          {eyebrow && (
+            <p class="text-primary mb-3 text-xs font-bold tracking-[0.12em] uppercase">{eyebrow}</p>
+          )}
+          {title && (
+            <h2 class="font-display text-foreground text-4xl leading-[1.05] tracking-tight text-balance">
+              {title}
+            </h2>
+          )}
+          {lead && <p class="text-foreground-secondary mt-4 text-lg">{lead}</p>}
+        </div>
+        <Astro.self
+          items={items}
+          variant={variant}
+          size={size}
+          exclusive={exclusive}
+          openFirst={openFirst}
+          schema={schema}
+          accordionClass={accordionClass}
+          bare
+        />
+      </div>
+    </Band>
+  ) : (
+    <Band id={id} eyebrow={eyebrow} title={title} lead={lead} tone={tone} width="narrow" class={className}>
+      <Astro.self
+        items={items}
+        variant={variant}
+        size={size}
+        exclusive={exclusive}
+        openFirst={openFirst}
+        schema={schema}
+        accordionClass={accordionClass}
+        bare
+      />
+    </Band>
+  )
+}
