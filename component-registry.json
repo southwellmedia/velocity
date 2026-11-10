@@ -197,7 +197,7 @@
     },
     "radio": {
       "name": "Radio",
-      "description": "Single native radio input with label and description; give a group the same name. The card variant renders a selectable card.",
+      "description": "Single native radio input with label and description; give a group the same name. The card variant renders a selectable card, with a media slot for a photo or icon and a default slot for extra content.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -213,7 +213,7 @@
         "components": []
       },
       "premium": false,
-      "example": "---\nimport Radio from '@/components/ui/form/Radio/Radio.astro';\n---\n\n<fieldset class=\"space-y-3\">\n  <legend class=\"text-sm font-medium\">Billing</legend>\n  <Radio name=\"billing\" value=\"monthly\" label=\"Monthly\" checked />\n  <Radio name=\"billing\" value=\"yearly\" label=\"Yearly\" description=\"Two months free\" variant=\"card\" />\n</fieldset>"
+      "example": "---\nimport Radio from '@/components/ui/form/Radio/Radio.astro';\nimport Icon from '@/components/ui/primitives/Icon/Icon.astro';\n---\n\n<fieldset class=\"space-y-3\">\n  <legend class=\"text-sm font-medium\">Billing</legend>\n  <Radio name=\"billing\" value=\"monthly\" label=\"Monthly\" checked />\n  <Radio name=\"billing\" value=\"yearly\" label=\"Yearly\" description=\"Two months free\" variant=\"card\">\n    <Icon slot=\"media\" name=\"calendar\" />\n  </Radio>\n</fieldset>"
     },
     "switch": {
       "name": "Switch",

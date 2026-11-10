@@ -19,7 +19,7 @@ This file lists every component Velocity ships. Read it before reading component
 | [Textarea](#textarea) | `@/components/ui/form/Textarea/Textarea.astro` | Multi-line text field with built-in label, hint and error message. |
 | [Select](#select) | `@/components/ui/form/Select/Select.astro` | Native `<select>` built from an options array, with label, placeholder, hint and error. |
 | [Checkbox](#checkbox) | `@/components/ui/form/Checkbox/Checkbox.astro` | Native checkbox with label, optional description and error message. |
-| [Radio](#radio) | `@/components/ui/form/Radio/Radio.astro` | Single native radio input with label and description; give a group the same name. The card variant renders a selectable card. |
+| [Radio](#radio) | `@/components/ui/form/Radio/Radio.astro` | Single native radio input with label and description; give a group the same name. The card variant renders a selectable card, with a media slot for a photo or icon and a default slot for extra content. |
 | [Switch](#switch) | `@/components/ui/form/Switch/Switch.astro` | Accessible on/off toggle (a checkbox with role="switch") with label and description. |
 | [ToggleGroup](#togglegroup) | `@/components/ui/form/ToggleGroup/ToggleGroup.astro` | A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form. |
 | [Card](#card) | `@/components/ui/data-display/Card/Card.astro` | Surface container with variants and padding; becomes a block link when given href. |
@@ -342,7 +342,7 @@ import Checkbox from '@/components/ui/form/Checkbox/Checkbox.astro';
 
 ## Radio
 
-Single native radio input with label and description; give a group the same name. The card variant renders a selectable card.
+Single native radio input with label and description; give a group the same name. The card variant renders a selectable card, with a media slot for a photo or icon and a default slot for extra content.
 
 - **Import:** `import Radio from '@/components/ui/form/Radio/Radio.astro';`
 - **React island:** `import { Radio } from '@/components/ui/form/Radio/Radio';`
@@ -359,6 +359,8 @@ Single native radio input with label and description; give a group the same name
 | `variant` | `'default' \| 'card'` | `'default'` |  |  |
 
 Also accepts: `HTMLAttributes<'input'>`.
+
+**Slots:** `media`, `default`
 
 ### Variants
 
@@ -383,12 +385,15 @@ CVA definitions from `radio.variants.ts`.
 ```astro
 ---
 import Radio from '@/components/ui/form/Radio/Radio.astro';
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
 ---
 
 <fieldset class="space-y-3">
   <legend class="text-sm font-medium">Billing</legend>
   <Radio name="billing" value="monthly" label="Monthly" checked />
-  <Radio name="billing" value="yearly" label="Yearly" description="Two months free" variant="card" />
+  <Radio name="billing" value="yearly" label="Yearly" description="Two months free" variant="card">
+    <Icon slot="media" name="calendar" />
+  </Radio>
 </fieldset>
 ```
 

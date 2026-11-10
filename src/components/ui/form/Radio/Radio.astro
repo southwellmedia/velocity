@@ -1,4 +1,18 @@
 ---
+/**
+ * Radio
+ *
+ * A native radio input with a label and description. `variant="card"` makes the
+ * whole card the target, and takes two slots so a choice can show more than text:
+ *
+ *   media    a photo or icon between the mark and the text
+ *   default  anything else, under the description
+ *
+ *   <Radio variant="card" name="plan" value="pro" label="Pro" description="For teams">
+ *     <Icon slot="media" name="rocket" />
+ *     <Badge>Most popular</Badge>
+ *   </Radio>
+ */
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { generateId } from '@/lib/utils';
@@ -14,6 +28,8 @@ const { label, description, error, variant = 'default', class: className, id, di
 
 const radioId = id || generateId('radio');
 const isCard = variant === 'card';
+const hasMedia = Astro.slots.has('media');
+const hasExtra = Astro.slots.has('default');
 ---
 
 {isCard ? (
@@ -73,8 +89,15 @@ const isCard = variant === 'card';
         </svg>
       </div>
 
+      <!-- A photo or icon -->
+      {hasMedia && (
+        <div class="shrink-0" data-radio-media>
+          <slot name="media" />
+        </div>
+      )}
+
       <!-- Content -->
-      {(label || description) && (
+      {(label || description || hasExtra) && (
         <div class="flex-1 grid gap-0.5">
           {label && (
             <span class="text-sm font-semibold text-foreground">
@@ -89,6 +112,7 @@ const isCard = variant === 'card';
               {description}
             </span>
           )}
+          <slot />
         </div>
       )}
     </label>
