@@ -1,5 +1,5 @@
 {
-  "version": "2.6.3",
+  "version": "2.6.4",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -524,6 +524,12 @@
       "toVersion": "2.6.3",
       "title": "Your collections keep their types; Radio cards take a photo or icon",
       "description": "Fixes a bug in 2.6.1 and 2.6.2: entries from your own collections (siteCollections in src/config/collections.ts) had data typed as unknown, so typed code that read them failed astro check. They keep their schema's types again. Radio's card variant gains a media slot (a photo or icon between the mark and the text) and a default slot (extra content under the description); BlogCard accepts class. Nothing in your project changes and nothing needs doing."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.6.4",
+      "title": "Components take more of your own styling and content",
+      "description": "Button gains unstyled: it drops its own colour, size, radius and hover so class decides the whole look, while link handling, the focus ring and the disabled state stay. Checkbox takes a label with links or emphasis in its default slot. Switch passes other attributes to its input, so a switch without a visible label can take aria-label. Table gains a caption for screen readers, row headers (rowHeader on a column) and icon cells ({ icon, label }). ToggleGroup options can be disabled or carry their own attributes, and inputAttrs go to every input. Nothing in your project changes and nothing needs doing."
     }
   ],
   "scaffold": {
