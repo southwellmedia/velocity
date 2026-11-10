@@ -976,8 +976,13 @@ const categories = [
           <div class="showcase-content">
             <div class="grid gap-4 sm:grid-cols-3">
               <Radio variant="card" name="plan-cards" value="free" label="Free" description="Basic features for personal projects" checked />
-              <Radio variant="card" name="plan-cards" value="pro" label="Pro" description="Advanced tools for professionals" />
-              <Radio variant="card" name="plan-cards" value="team" label="Team" description="Collaboration features for teams" />
+              <Radio variant="card" name="plan-cards" value="pro" label="Pro" description="Advanced tools for professionals">
+                <Icon slot="media" name="rocket" size="md" />
+              </Radio>
+              <Radio variant="card" name="plan-cards" value="team" label="Team" description="Collaboration features for teams">
+                <Icon slot="media" name="users" size="md" />
+                <Badge variant="brand" size="sm" class="mt-1.5 w-fit">Most popular</Badge>
+              </Radio>
             </div>
           </div>
         </div>

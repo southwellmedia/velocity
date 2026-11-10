@@ -1,5 +1,5 @@
 {
-  "version": "2.6.2",
+  "version": "2.6.3",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -518,6 +518,12 @@
       "toVersion": "2.6.2",
       "title": "More page sections and components",
       "description": "src/components/blocks/ gains FeatureGrid, FeatureSplit, Pricing, StatsBand, LogoCloud, Team, Timeline and ContactSection; src/components/ui/ gains Sheet, Popover, Carousel, ToggleGroup, Kbd, Spinner, VideoEmbed (loads YouTube or Vimeo only on play) and AnnouncementBar; and Breadcrumbs (src/components/seo/) is now listed in .agents/components.md. ESLint now ignores .claude/worktrees/, so an agent worktree inside the project no longer breaks npm run lint. Nothing in your project changes and nothing needs doing."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.6.3",
+      "title": "Your collections keep their types; Radio cards take a photo or icon",
+      "description": "Fixes a bug in 2.6.1 and 2.6.2: entries from your own collections (siteCollections in src/config/collections.ts) had data typed as unknown, so typed code that read them failed astro check. They keep their schema's types again. Radio's card variant gains a media slot (a photo or icon between the mark and the text) and a default slot (extra content under the description); BlogCard accepts class. Nothing in your project changes and nothing needs doing."
     }
   ],
   "scaffold": {

@@ -15,6 +15,8 @@ interface Props {
   image?: ImageMetadata;
   /** Minutes to read — pass getReadingTime(post.body). Falls back to a rough estimate. */
   readingTime?: number;
+  /** Extra classes for the card, to restyle it from your own stylesheet */
+  class?: string;
 }
 
 const {
@@ -27,6 +29,7 @@ const {
   author,
   image,
   readingTime: readingTimeProp,
+  class: className,
 } = Astro.props;
 
 const locale = getLocale(Astro);
@@ -42,6 +45,7 @@ const readingTime = readingTimeProp ?? Math.max(1, Math.ceil((description.split(
     featured
       ? 'border-brand-500/30 ring-1 ring-brand-500/20 shadow-lg'
       : 'border-border hover:-translate-y-0.5 hover:shadow-md hover:border-border-strong',
+    className,
   ]}
 >
   {featured && (

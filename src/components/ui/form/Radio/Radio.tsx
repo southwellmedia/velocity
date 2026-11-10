@@ -1,4 +1,4 @@
-import { type InputHTMLAttributes, type Ref, useId } from 'react';
+import { type InputHTMLAttributes, type ReactNode, type Ref, useId } from 'react';
 import { cn } from '@/lib/cn';
 
 interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' | 'ref'> {
@@ -8,9 +8,13 @@ interface RadioProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type' 
   error?: string;
   /** Use card-style selection UI */
   variant?: 'default' | 'card';
+  /** Card variant: a photo or icon between the mark and the text */
+  media?: ReactNode;
+  /** Card variant: anything else, under the description */
+  children?: ReactNode;
 }
 
-export function Radio({ ref, label, description, error, variant = 'default', className, id, ...props }: RadioProps) {
+export function Radio({ ref, label, description, error, variant = 'default', media, children, className, id, ...props }: RadioProps) {
   const generatedId = useId();
   const radioId = id || generatedId;
 
@@ -72,8 +76,15 @@ export function Radio({ ref, label, description, error, variant = 'default', cla
             </svg>
           </div>
 
+          {/* A photo or icon */}
+          {media && (
+            <div className="shrink-0" data-radio-media>
+              {media}
+            </div>
+          )}
+
           {/* Content */}
-          {(label || description) && (
+          {(label || description || children) && (
             <div className="flex-1 grid gap-0.5">
               {label && (
                 <span className="text-sm font-semibold text-foreground">
@@ -88,6 +99,7 @@ export function Radio({ ref, label, description, error, variant = 'default', cla
                   {description}
                 </span>
               )}
+              {children}
             </div>
           )}
         </label>
