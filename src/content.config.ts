@@ -12,10 +12,12 @@ const locale = z.enum(locales).default(defaultLocale);
 type BlogFields = typeof site extends { blogFields: (context: SchemaContext) => infer Shape extends z.ZodRawShape }
   ? Shape
   : Record<never, never>;
-const { siteCollections = {}, blogFields } = site as {
-  siteCollections?: Record<string, ReturnType<typeof defineCollection>>;
-  blogFields?: (context: SchemaContext) => BlogFields;
-};
+// The project's collections keep their own types: widening them to a generic
+// record would turn every entry's `data` into `unknown`.
+type SiteCollections = typeof site extends { siteCollections: infer Collections } ? Collections : Record<never, never>;
+const optional = site as { siteCollections?: unknown; blogFields?: (context: SchemaContext) => BlogFields };
+const siteCollections = (optional.siteCollections ?? {}) as SiteCollections;
+const blogFields = optional.blogFields;
 
 // Blog collection with Content Layer API
 const blog = defineCollection({
