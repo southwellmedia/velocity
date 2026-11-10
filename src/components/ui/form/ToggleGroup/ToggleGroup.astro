@@ -18,6 +18,10 @@ interface Option {
   icon?: string;
   /** Show only the icon; the label becomes its accessible name */
   iconOnly?: boolean;
+  /** Show the option but don't let it be chosen */
+  disabled?: boolean;
+  /** Extra attributes for this option's input, such as data-* */
+  attrs?: Record<string, string | number | boolean | undefined>;
 }
 
 interface Props {
@@ -30,14 +34,17 @@ interface Props {
   size?: 'sm' | 'md';
   /** Stretch to the container's width */
   fullWidth?: boolean;
+  /** Extra attributes for every input, such as form or required */
+  inputAttrs?: Record<string, string | number | boolean | undefined>;
   class?: string;
 }
 
-const { name, label, options, value = options[0]?.value, size = 'md', fullWidth = false, class: className } = Astro.props;
+const { name, label, options, value = options[0]?.value, size = 'md', fullWidth = false, inputAttrs, class: className } = Astro.props;
 const item = cn(
   'text-foreground-secondary inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-[calc(var(--theme-radius-md)-2px)] font-medium transition-colors',
   'hover:text-foreground peer-checked:bg-background peer-checked:text-foreground peer-checked:shadow-sm',
   'peer-focus-visible:ring-ring peer-focus-visible:ring-2',
+  'peer-disabled:cursor-not-allowed peer-disabled:opacity-50',
   size === 'sm' ? 'h-7 px-2.5 text-xs' : 'h-9 px-3.5 text-sm',
   fullWidth && 'w-full'
 );
@@ -54,7 +61,7 @@ const item = cn(
   {
     options.map((option) => (
       <label class={cn('relative', fullWidth && 'flex-1')}>
-        <input type="radio" name={name} value={option.value} checked={option.value === value} class="peer sr-only" />
+        <input type="radio" name={name} value={option.value} checked={option.value === value} disabled={option.disabled} class="peer sr-only" {...inputAttrs} {...option.attrs} />
         <span class={item}>
           {option.icon && <Icon name={option.icon} size="sm" />}
           {option.iconOnly ? <span class="sr-only">{option.label}</span> : option.label}

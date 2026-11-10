@@ -77,7 +77,7 @@
   "components": {
     "button": {
       "name": "Button",
-      "description": "Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons.",
+      "description": "Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons. With unstyled it drops its own look and takes yours from class.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -99,7 +99,8 @@
         "Use Button with href for links styled as buttons, not a styled <a>; external URLs get target=\"_blank\" and rel automatically.",
         "Use icon (with size) for square icon-only buttons, and give them an aria-label.",
         "Use the link variant for inline text actions, not a plain <button> with custom classes.",
-        "Use variant=\"brand\" for the main action in the brand colour (its text uses --brand-ink, so it passes contrast) instead of custom bg-brand classes; restyle tones in a wrapper, not by editing Button."
+        "Use variant=\"brand\" for the main action in the brand colour (its text uses --brand-ink, so it passes contrast) instead of custom bg-brand classes; restyle tones in a wrapper, not by editing Button.",
+        "Use unstyled for a button with its own look (an icon tile, a chip, a swatch) and style it with class, instead of a raw <button>: it keeps Button's link handling, focus ring and disabled state."
       ],
       "example": "---\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Button variant=\"brand\" size=\"lg\" trailingIcon=\"arrow-right\" href=\"/contact\">Get in touch</Button>\n<Button variant=\"outline\" type=\"submit\" loading>Saving</Button>"
     },
@@ -174,7 +175,7 @@
     },
     "checkbox": {
       "name": "Checkbox",
-      "description": "Native checkbox with label, optional description and error message.",
+      "description": "Native checkbox with label, optional description and error message. A label with links or emphasis goes in the default slot.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -193,7 +194,7 @@
       "useInstead": [
         "Use Switch for settings that take effect immediately (on/off), Checkbox for form choices and consent."
       ],
-      "example": "---\nimport Checkbox from '@/components/ui/form/Checkbox/Checkbox.astro';\n---\n\n<Checkbox name=\"terms\" label=\"I agree to the terms\" description=\"You can unsubscribe at any time.\" required />"
+      "example": "---\nimport Checkbox from '@/components/ui/form/Checkbox/Checkbox.astro';\n---\n\n<Checkbox name=\"updates\" label=\"Send me product updates\" description=\"You can unsubscribe at any time.\" />\n\n<Checkbox name=\"terms\" required>\n  I agree to the <a href=\"/terms\" class=\"underline\">terms</a>\n</Checkbox>"
     },
     "radio": {
       "name": "Radio",
@@ -217,7 +218,7 @@
     },
     "switch": {
       "name": "Switch",
-      "description": "Accessible on/off toggle (a checkbox with role=\"switch\") with label and description.",
+      "description": "Accessible on/off toggle (a checkbox with role=\"switch\") with label and description. Other attributes go to the input, so a switch without a visible label can take aria-label.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -240,7 +241,7 @@
     },
     "toggle-group": {
       "name": "ToggleGroup",
-      "description": "A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form.",
+      "description": "A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form. An option can be disabled or carry its own attributes; inputAttrs go to every input.",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -357,7 +358,7 @@
     },
     "table": {
       "name": "Table",
-      "description": "Responsive data table rendered from columns and rows arrays, with hover, striped and compact options.",
+      "description": "Responsive data table rendered from columns and rows arrays, with hover, striped and compact options, a caption for screen readers, row headers and icon cells.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -369,13 +370,15 @@
         "utilities": [
           "cn"
         ],
-        "components": []
+        "components": [
+          "icon"
+        ]
       },
       "premium": false,
       "useInstead": [
-        "Cells render as plain text; for rich cell content write a <table> with the same semantic classes."
+        "A cell is text, or { icon, label } for an icon read as its label (a check for \"Included\"), or { text, class }. For anything richer write a <table> with the same semantic classes."
       ],
-      "example": "---\nimport Table from '@/components/ui/data-display/Table/Table.astro';\n---\n\n<Table\n  striped\n  columns={[\n    { key: 'plan', label: 'Plan' },\n    { key: 'price', label: 'Price', align: 'right' },\n  ]}\n  rows={[\n    { plan: 'Starter', price: '$0' },\n    { plan: 'Pro', price: '$29' },\n  ]}\n/>"
+      "example": "---\nimport Table from '@/components/ui/data-display/Table/Table.astro';\n---\n\n<Table\n  caption=\"What each plan includes\"\n  columns={[\n    { key: 'feature', label: 'Feature', rowHeader: true },\n    { key: 'starter', label: 'Starter', align: 'center' },\n    { key: 'pro', label: 'Pro', align: 'center' },\n  ]}\n  rows={[\n    { feature: 'Projects', starter: '3', pro: 'Unlimited' },\n    { feature: 'Priority support', starter: { text: '–', label: 'Not included' }, pro: { icon: 'check', label: 'Included' } },\n  ]}\n/>"
     },
     "pagination": {
       "name": "Pagination",

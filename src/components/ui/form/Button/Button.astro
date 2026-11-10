@@ -3,11 +3,17 @@ import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { isExternalUrl } from '@/lib/utils';
 import Icon from '@/components/ui/primitives/Icon/Icon.astro';
-import { buttonVariants } from './button.variants';
+import { buttonUnstyled, buttonVariants } from './button.variants';
 
 interface Props extends HTMLAttributes<'button'> {
   variant?: 'brand' | 'primary' | 'secondary' | 'outline' | 'ghost' | 'link' | 'destructive';
   size?: 'sm' | 'md' | 'lg';
+  /**
+   * Drop Button's own look (colour, size, radius, weight, hover) and style it
+   * entirely with `class`. It stays a Button: link handling, loading, icons,
+   * the focus ring and the disabled state all still apply.
+   */
+  unstyled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
   href?: string;
@@ -22,6 +28,7 @@ interface Props extends HTMLAttributes<'button'> {
 const {
   variant = 'primary',
   size = 'md',
+  unstyled = false,
   loading = false,
   fullWidth = false,
   href,
@@ -44,7 +51,7 @@ const isDisabled = disabled || loading;
 const isDisabledLink = href && isDisabled;
 
 const classes = cn(
-  buttonVariants({ variant, size, fullWidth, icon }),
+  unstyled ? cn(buttonUnstyled, fullWidth && 'w-full') : buttonVariants({ variant, size, fullWidth, icon }),
   isDisabledLink && 'pointer-events-none',
   className
 );

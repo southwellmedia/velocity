@@ -12,6 +12,8 @@ interface Props extends HTMLAttributes<'input'> {
 const { label, description, error, class: className, id, disabled, ...attrs } = Astro.props;
 
 const checkboxId = id || generateId('checkbox');
+// A label with links or emphasis goes in the default slot
+const hasSlot = Astro.slots.has('default');
 ---
 
 <div class={cn('group', className)}>
@@ -69,11 +71,16 @@ const checkboxId = id || generateId('checkbox');
 
     <!-- Label and description -->
     {
-      (label || description) && (
+      (label || description || hasSlot) && (
         <div class="grid gap-0.5 leading-tight">
           {label && (
             <span class="text-sm font-medium text-foreground">
               {label}
+            </span>
+          )}
+          {hasSlot && (
+            <span class="text-sm font-medium text-foreground" data-checkbox-label>
+              <slot />
             </span>
           )}
           {description && (
