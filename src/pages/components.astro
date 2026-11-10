@@ -819,6 +819,7 @@ const categories = [
               <Button variant="ghost">Ghost</Button>
               <Button variant="link">Link</Button>
               <Button variant="destructive">Destructive</Button>
+              <Button unstyled class="border-brand-500 text-brand-600 dark:text-brand-400 hover:bg-brand-500/10 h-10 rounded-full border border-dashed px-5 text-sm font-semibold transition-colors">Unstyled, your classes</Button>
             </div>
           </div>
         </div>
@@ -950,6 +951,7 @@ const categories = [
               <Checkbox label="Send me product updates" checked />
               <Checkbox label="Enable notifications" description="Receive alerts for important updates" />
               <Checkbox label="Disabled checkbox" disabled />
+              <Checkbox name="demo-terms">I agree to the <a href="#inputs" class="underline underline-offset-4">terms of service</a></Checkbox>
             </div>
           </div>
 
@@ -1012,6 +1014,7 @@ const categories = [
               <Switch size="lg" label="Large switch" checked />
               <Switch label="Disabled off" disabled />
               <Switch label="Disabled on" disabled checked />
+              <Switch aria-label="Dark mode (named with aria-label)" />
             </div>
           </div>
         </div>
@@ -1764,6 +1767,29 @@ const categories = [
 
         <div class="component-showcase">
           <div class="showcase-header">
+            <span class="showcase-label">Table with row headers and icon cells</span>
+            <span class="showcase-hint">A caption for screen readers; an icon is read as its label</span>
+          </div>
+          <div class="showcase-content">
+            <Table
+              caption="What each plan includes"
+              hoverable={false}
+              columns={[
+                { key: 'feature', label: 'Feature', rowHeader: true },
+                { key: 'starter', label: 'Starter', align: 'center' },
+                { key: 'pro', label: 'Pro', align: 'center' },
+              ]}
+              rows={[
+                { feature: 'Projects', starter: '3', pro: 'Unlimited' },
+                { feature: 'Custom domain', starter: { icon: 'check', label: 'Included' }, pro: { icon: 'check', label: 'Included' } },
+                { feature: 'Priority support', starter: { text: '–', label: 'Not included', class: 'text-foreground-subtle' }, pro: { icon: 'check', label: 'Included' } },
+              ]}
+            />
+          </div>
+        </div>
+
+        <div class="component-showcase">
+          <div class="showcase-header">
             <span class="showcase-label">Striped & Compact Table</span>
             <span class="showcase-hint">Alternating rows with reduced padding</span>
           </div>
@@ -2063,6 +2089,7 @@ const categories = [
             <div class="flex flex-wrap items-center gap-4">
               <ToggleGroup name="demo-billing" label="Billing period" value="monthly" options={[{ value: 'monthly', label: 'Monthly' }, { value: 'yearly', label: 'Yearly' }]} />
               <ToggleGroup name="demo-view" label="View" size="sm" options={[{ value: 'grid', label: 'Grid', icon: 'layout-grid', iconOnly: true }, { value: 'list', label: 'List', icon: 'list', iconOnly: true }]} />
+              <ToggleGroup name="demo-size" label="Size" value="m" options={[{ value: 's', label: 'S' }, { value: 'm', label: 'M' }, { value: 'l', label: 'L', disabled: true }]} />
             </div>
           </div>
         </div>

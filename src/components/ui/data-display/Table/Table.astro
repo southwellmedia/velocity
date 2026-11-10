@@ -5,17 +5,35 @@
  */
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
+import Icon from '../../primitives/Icon/Icon.astro';
 
 interface Column {
   key: string;
   label: string;
   align?: 'left' | 'center' | 'right';
   class?: string;
+  /** This column names each row (rendered as <th scope="row">) */
+  rowHeader?: boolean;
+}
+
+/**
+ * A cell that is more than text: an icon, with `label` read to screen readers
+ * in its place (a check for "Included"), or text with its own class.
+ */
+interface Cell {
+  icon?: string;
+  text?: string;
+  /** Read instead of the icon or text */
+  label?: string;
+  class?: string;
 }
 
 interface Props extends HTMLAttributes<'div'> {
   columns: Column[];
+  /** Each value is text, a number or a Cell */
   rows: Record<string, unknown>[];
+  /** Names the table for screen readers */
+  caption?: string;
   /** Enable row hover highlighting */
   hoverable?: boolean;
   /** Enable row striping */
@@ -30,6 +48,7 @@ const {
   hoverable = true,
   striped = false,
   compact = false,
+  caption,
   class: className,
   ...attrs
 } = Astro.props;
@@ -41,14 +60,17 @@ const alignClasses = {
 };
 
 const cellPadding = compact ? 'px-3 py-2' : 'px-4 py-3';
+const isCell = (value: unknown): value is Cell => typeof value === 'object' && value !== null;
 ---
 
 <div class={cn('w-full overflow-auto rounded-lg border border-border', className)} {...attrs}>
   <table class="w-full text-sm">
+    {caption && <caption class="sr-only">{caption}</caption>}
     <thead>
       <tr class="border-b border-border bg-secondary/50">
         {columns.map((col) => (
           <th
+            scope="col"
             class={cn(
               cellPadding,
               'font-medium text-foreground-muted',
@@ -71,18 +93,34 @@ const cellPadding = compact ? 'px-3 py-2' : 'px-4 py-3';
             striped && i % 2 === 1 && 'bg-secondary/20'
           )}
         >
-          {columns.map((col) => (
-            <td
-              class={cn(
-                cellPadding,
-                'text-foreground',
-                alignClasses[col.align || 'left'],
-                col.class
-              )}
-            >
-              {String(row[col.key] ?? '')}
-            </td>
-          ))}
+          {columns.map((col) => {
+            const value = row[col.key];
+            const cell = isCell(value) ? value : undefined;
+            const Tag = col.rowHeader ? 'th' : 'td';
+            return (
+              <Tag
+                scope={col.rowHeader ? 'row' : undefined}
+                class={cn(
+                  cellPadding,
+                  'text-foreground',
+                  col.rowHeader && 'font-medium',
+                  alignClasses[col.align || 'left'],
+                  col.class,
+                  cell?.class
+                )}
+              >
+                {cell ? (
+                  <Fragment>
+                    {cell.icon && <Icon name={cell.icon} size="sm" class="inline" />}
+                    {cell.text && <span aria-hidden={cell.label ? 'true' : undefined}>{cell.text}</span>}
+                    {cell.label && <span class="sr-only">{cell.label}</span>}
+                  </Fragment>
+                ) : (
+                  String(value ?? '')
+                )}
+              </Tag>
+            );
+          })}
         </tr>
       ))}
     </tbody>

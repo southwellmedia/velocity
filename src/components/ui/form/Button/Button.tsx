@@ -1,12 +1,14 @@
 import { type ButtonHTMLAttributes, type AnchorHTMLAttributes, type Ref } from 'react';
 import { cn } from '@/lib/cn';
 import { isExternalUrl } from '@/lib/utils';
-import { buttonVariants, type ButtonVariants } from './button.variants';
+import { buttonUnstyled, buttonVariants, type ButtonVariants } from './button.variants';
 
 interface BaseProps {
   ref?: Ref<HTMLButtonElement | HTMLAnchorElement>;
   variant?: ButtonVariants['variant'];
   size?: ButtonVariants['size'];
+  /** Drop Button's own look and style it entirely with `className` */
+  unstyled?: boolean;
   loading?: boolean;
   fullWidth?: boolean;
   icon?: boolean;
@@ -47,6 +49,7 @@ export function Button(props: ButtonProps) {
     ref,
     variant = 'primary',
     size = 'md',
+    unstyled = false,
     loading = false,
     fullWidth = false,
     icon = false,
@@ -56,7 +59,10 @@ export function Button(props: ButtonProps) {
     ...rest
   } = props;
 
-  const classes = cn(buttonVariants({ variant, size, fullWidth, icon }), className);
+  const classes = cn(
+    unstyled ? cn(buttonUnstyled, fullWidth && 'w-full') : buttonVariants({ variant, size, fullWidth, icon }),
+    className
+  );
 
   if ('href' in props && props.href) {
     const isExternal = isExternalUrl(props.href);

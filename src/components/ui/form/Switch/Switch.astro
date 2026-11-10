@@ -4,10 +4,13 @@
  * A toggle switch for binary on/off states.
  * Uses a hidden checkbox for accessibility.
  */
+import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { generateId } from '@/lib/utils';
 
-interface Props {
+// Other attributes (aria-label for a switch without a visible label, data-*,
+// form, required) go to the input.
+interface Props extends Omit<HTMLAttributes<'input'>, 'size' | 'type' | 'role'> {
   label?: string;
   description?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -29,6 +32,7 @@ const {
   value,
   class: className,
   id,
+  ...attrs
 } = Astro.props;
 
 const switchId = id || generateId('switch');
@@ -66,6 +70,7 @@ const thumbSizes = {
       role="switch"
       aria-checked={checked ? 'true' : 'false'}
       aria-describedby={description ? `${switchId}-description` : undefined}
+      {...attrs}
     />
     <!-- Track -->
     <div

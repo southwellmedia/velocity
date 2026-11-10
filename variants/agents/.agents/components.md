@@ -14,19 +14,19 @@ This file lists every component Velocity ships. Read it before reading component
 
 | Component | Import | Description |
 |-----------|--------|-------------|
-| [Button](#button) | `@/components/ui/form/Button/Button.astro` | Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons. |
+| [Button](#button) | `@/components/ui/form/Button/Button.astro` | Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons. With unstyled it drops its own look and takes yours from class. |
 | [Input](#input) | `@/components/ui/form/Input/Input.astro` | Text input with built-in label, hint, error message and optional leading/trailing icons. |
 | [Textarea](#textarea) | `@/components/ui/form/Textarea/Textarea.astro` | Multi-line text field with built-in label, hint and error message. |
 | [Select](#select) | `@/components/ui/form/Select/Select.astro` | Native `<select>` built from an options array, with label, placeholder, hint and error. |
-| [Checkbox](#checkbox) | `@/components/ui/form/Checkbox/Checkbox.astro` | Native checkbox with label, optional description and error message. |
+| [Checkbox](#checkbox) | `@/components/ui/form/Checkbox/Checkbox.astro` | Native checkbox with label, optional description and error message. A label with links or emphasis goes in the default slot. |
 | [Radio](#radio) | `@/components/ui/form/Radio/Radio.astro` | Single native radio input with label and description; give a group the same name. The card variant renders a selectable card, with a media slot for a photo or icon and a default slot for extra content. |
-| [Switch](#switch) | `@/components/ui/form/Switch/Switch.astro` | Accessible on/off toggle (a checkbox with role="switch") with label and description. |
-| [ToggleGroup](#togglegroup) | `@/components/ui/form/ToggleGroup/ToggleGroup.astro` | A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form. |
+| [Switch](#switch) | `@/components/ui/form/Switch/Switch.astro` | Accessible on/off toggle (a checkbox with role="switch") with label and description. Other attributes go to the input, so a switch without a visible label can take aria-label. |
+| [ToggleGroup](#togglegroup) | `@/components/ui/form/ToggleGroup/ToggleGroup.astro` | A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form. An option can be disabled or carry its own attributes; inputAttrs go to every input. |
 | [Card](#card) | `@/components/ui/data-display/Card/Card.astro` | Surface container with variants and padding; becomes a block link when given href. |
 | [Badge](#badge) | `@/components/ui/data-display/Badge/Badge.astro` | Small inline label for status, tags or counts, with semantic color variants, a pill style and a pulsing dot. |
 | [Avatar](#avatar) | `@/components/ui/data-display/Avatar/Avatar.astro` | Circular user image that falls back to initials (from fallback or alt) when there is no src. |
 | [AvatarGroup](#avatargroup) | `@/components/ui/data-display/AvatarGroup/AvatarGroup.astro` | Overlapping stack of Avatars that collapses extras into a "+N" count. |
-| [Table](#table) | `@/components/ui/data-display/Table/Table.astro` | Responsive data table rendered from columns and rows arrays, with hover, striped and compact options. |
+| [Table](#table) | `@/components/ui/data-display/Table/Table.astro` | Responsive data table rendered from columns and rows arrays, with hover, striped and compact options, a caption for screen readers, row headers and icon cells. |
 | [Pagination](#pagination) | `@/components/ui/data-display/Pagination/Pagination.astro` | Page navigation (`<nav>`) with previous/next links and a window of numbered pages built from baseUrl. |
 | [Progress](#progress) | `@/components/ui/data-display/Progress/Progress.astro` | Progress bar with semantic color variants and optional percentage label; omit value for an indeterminate bar. |
 | [Skeleton](#skeleton) | `@/components/ui/data-display/Skeleton/Skeleton.astro` | Animated placeholder block, circle or text line for content that is still loading. |
@@ -87,7 +87,7 @@ This file lists every component Velocity ships. Read it before reading component
 
 ## Button
 
-Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons.
+Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons. With unstyled it drops its own look and takes yours from class.
 
 - **Import:** `import Button from '@/components/ui/form/Button/Button.astro';`
 - **React island:** `import { Button } from '@/components/ui/form/Button/Button';`
@@ -101,6 +101,7 @@ Button or button-styled link with variants (brand, primary, secondary, outline, 
 |------|------|---------|----------|-------|
 | `variant` | `'brand' \| 'primary' \| 'secondary' \| 'outline' \| 'ghost' \| 'link' \| 'destructive'` | `'primary'` |  |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |  |  |
+| `unstyled` | `boolean` | `false` |  | Drop Button's own look (colour, size, radius, weight, hover) and style it entirely with `class`. It stays a Button: link handling, loading, icons, the focus ring and the disabled state all still apply. |
 | `loading` | `boolean` | `false` |  |  |
 | `fullWidth` | `boolean` | `false` |  |  |
 | `href` | `string` |  |  |  |
@@ -143,6 +144,7 @@ import Button from '@/components/ui/form/Button/Button.astro';
 - Use icon (with size) for square icon-only buttons, and give them an aria-label.
 - Use the link variant for inline text actions, not a plain `<button>` with custom classes.
 - Use variant="brand" for the main action in the brand colour (its text uses --brand-ink, so it passes contrast) instead of custom bg-brand classes; restyle tones in a wrapper, not by editing Button.
+- Use unstyled for a button with its own look (an icon tile, a chip, a swatch) and style it with class, instead of a raw `<button>`: it keeps Button's link handling, focus ring and disabled state.
 
 ## Input
 
@@ -299,7 +301,7 @@ import Select from '@/components/ui/form/Select/Select.astro';
 
 ## Checkbox
 
-Native checkbox with label, optional description and error message.
+Native checkbox with label, optional description and error message. A label with links or emphasis goes in the default slot.
 
 - **Import:** `import Checkbox from '@/components/ui/form/Checkbox/Checkbox.astro';`
 - **React island:** `import { Checkbox } from '@/components/ui/form/Checkbox/Checkbox';`
@@ -315,6 +317,8 @@ Native checkbox with label, optional description and error message.
 | `error` | `string` |  |  |  |
 
 Also accepts: `HTMLAttributes<'input'>`.
+
+**Slots:** `default`
 
 ### Variants
 
@@ -333,7 +337,11 @@ CVA definitions from `checkbox.variants.ts`.
 import Checkbox from '@/components/ui/form/Checkbox/Checkbox.astro';
 ---
 
-<Checkbox name="terms" label="I agree to the terms" description="You can unsubscribe at any time." required />
+<Checkbox name="updates" label="Send me product updates" description="You can unsubscribe at any time." />
+
+<Checkbox name="terms" required>
+  I agree to the <a href="/terms" class="underline">terms</a>
+</Checkbox>
 ```
 
 ### Use instead
@@ -399,7 +407,7 @@ import Icon from '@/components/ui/primitives/Icon/Icon.astro';
 
 ## Switch
 
-Accessible on/off toggle (a checkbox with role="switch") with label and description.
+Accessible on/off toggle (a checkbox with role="switch") with label and description. Other attributes go to the input, so a switch without a visible label can take aria-label.
 
 - **Import:** `import Switch from '@/components/ui/form/Switch/Switch.astro';`
 - **React island:** `import { Switch } from '@/components/ui/form/Switch/Switch';`
@@ -419,6 +427,8 @@ Accessible on/off toggle (a checkbox with role="switch") with label and descript
 | `value` | `string` |  |  |  |
 | `class` | `string` |  |  |  |
 | `id` | `string` |  |  |  |
+
+Also accepts: `Omit<HTMLAttributes<'input'>, 'size' \| 'type' \| 'role'>`.
 
 ### Variants
 
@@ -454,7 +464,7 @@ import Switch from '@/components/ui/form/Switch/Switch.astro';
 
 ## ToggleGroup
 
-A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form.
+A segmented control (one choice from a few, e.g. Monthly / Yearly) built from native radio inputs: works without JavaScript and submits with a form. An option can be disabled or carry its own attributes; inputAttrs go to every input.
 
 - **Import:** `import ToggleGroup from '@/components/ui/form/ToggleGroup/ToggleGroup.astro';`
 - **Registry id:** `toggle-group` · **Category:** UI Components / Form
@@ -471,6 +481,7 @@ A segmented control (one choice from a few, e.g. Monthly / Yearly) built from na
 | `value` | `string` | `options[0]?.value` |  | The option selected to start |
 | `size` | `'sm' \| 'md'` | `'md'` |  |  |
 | `fullWidth` | `boolean` | `false` |  | Stretch to the container's width |
+| `inputAttrs` | `Record<string, string \| number \| boolean \| undefined>` |  |  | Extra attributes for every input, such as form or required |
 | `class` | `string` |  |  |  |
 
 Types:
@@ -483,6 +494,10 @@ interface Option {
   icon?: string;
   /** Show only the icon; the label becomes its accessible name */
   iconOnly?: boolean;
+  /** Show the option but don't let it be chosen */
+  disabled?: boolean;
+  /** Extra attributes for this option's input, such as data-* */
+  attrs?: Record<string, string | number | boolean | undefined>;
 }
 ```
 
@@ -705,11 +720,12 @@ import AvatarGroup from '@/components/ui/data-display/AvatarGroup/AvatarGroup.as
 
 ## Table
 
-Responsive data table rendered from columns and rows arrays, with hover, striped and compact options.
+Responsive data table rendered from columns and rows arrays, with hover, striped and compact options, a caption for screen readers, row headers and icon cells.
 
 - **Import:** `import Table from '@/components/ui/data-display/Table/Table.astro';`
 - **React island:** `import { Table } from '@/components/ui/data-display/Table/Table';`
 - **Registry id:** `table` · **Category:** UI Components / Data Display
+- **Uses:** Icon
 - **Files:** `src/components/ui/data-display/Table/Table.astro`, `src/components/ui/data-display/Table/index.ts`, `src/components/ui/data-display/Table/Table.tsx`
 
 ### Props
@@ -717,7 +733,8 @@ Responsive data table rendered from columns and rows arrays, with hover, striped
 | Prop | Type | Default | Required | Notes |
 |------|------|---------|----------|-------|
 | `columns` | `Column[]` |  | yes |  |
-| `rows` | `Record<string, unknown>[]` |  | yes |  |
+| `rows` | `Record<string, unknown>[]` |  | yes | Each value is text, a number or a Cell |
+| `caption` | `string` |  |  | Names the table for screen readers |
 | `hoverable` | `boolean` | `true` |  | Enable row hover highlighting |
 | `striped` | `boolean` | `false` |  | Enable row striping |
 | `compact` | `boolean` | `false` |  | Make table compact |
@@ -732,6 +749,8 @@ interface Column {
   label: string;
   align?: 'left' | 'center' | 'right';
   class?: string;
+  /** This column names each row (rendered as <th scope="row">) */
+  rowHeader?: boolean;
 }
 ```
 
@@ -743,21 +762,22 @@ import Table from '@/components/ui/data-display/Table/Table.astro';
 ---
 
 <Table
-  striped
+  caption="What each plan includes"
   columns={[
-    { key: 'plan', label: 'Plan' },
-    { key: 'price', label: 'Price', align: 'right' },
+    { key: 'feature', label: 'Feature', rowHeader: true },
+    { key: 'starter', label: 'Starter', align: 'center' },
+    { key: 'pro', label: 'Pro', align: 'center' },
   ]}
   rows={[
-    { plan: 'Starter', price: '$0' },
-    { plan: 'Pro', price: '$29' },
+    { feature: 'Projects', starter: '3', pro: 'Unlimited' },
+    { feature: 'Priority support', starter: { text: '–', label: 'Not included' }, pro: { icon: 'check', label: 'Included' } },
   ]}
 />
 ```
 
 ### Use instead
 
-- Cells render as plain text; for rich cell content write a `<table>` with the same semantic classes.
+- A cell is text, or { icon, label } for an icon read as its label (a check for "Included"), or { text, class }. For anything richer write a `<table>` with the same semantic classes.
 
 ## Pagination
 

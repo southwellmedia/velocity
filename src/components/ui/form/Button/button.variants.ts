@@ -50,4 +50,15 @@ export const buttonVariants = cva(
   }
 );
 
+/**
+ * What a button keeps when it brings its own look (`unstyled`): the layout, the
+ * focus ring and the disabled state. No colour, size, radius, weight or hover.
+ */
+export const buttonUnstyled = [
+  'inline-flex items-center justify-center',
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+  'disabled:pointer-events-none disabled:opacity-50',
+  '[&_svg]:pointer-events-none [&_svg]:shrink-0',
+].join(' ');
+
 export type ButtonVariants = VariantProps<typeof buttonVariants>;
