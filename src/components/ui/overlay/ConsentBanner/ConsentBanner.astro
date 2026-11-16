@@ -5,6 +5,11 @@
  * Cookie consent UI with Google Consent Mode v2 integration.
  * Shows a banner with Accept/Decline + Customize settings panel using Dialog.
  * Only renders when PUBLIC_CONSENT_ENABLED is true.
+ *
+ * In `opt_out` mode the banner is skipped and the floating button (the opt-out
+ * control) shows straight away, except for visitors whose time zone is in
+ * Europe: they get the banner, since Analytics.astro starts them denied.
+ * Call `window.openConsentSettings()` to open the panel from your own link.
  */
 import { PUBLIC_CONSENT_ENABLED, PUBLIC_PRIVACY_POLICY_URL } from 'astro:env/client';
 import consentConfig from '@/config/consent.config';
@@ -295,13 +300,42 @@ const configJson = JSON.stringify(consentConfig);
           if (btn) btn.classList.remove('consent-reopener--visible');
         }
 
+        // ── opt_out mode ──
+        // Analytics.astro denies opt-in regions by IP. The browser can't see the
+        // IP, so the banner uses the time zone to find the same visitors.
+        function inOptInRegion() {
+          try {
+            const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+            return tz.indexOf('Europe/') === 0 || tz === 'Atlantic/Reykjavik' || tz === 'Atlantic/Canary' ||
+              tz === 'Atlantic/Madeira' || tz === 'Atlantic/Azores' || tz === 'Atlantic/Faroe';
+          } catch { return false; }
+        }
+
+        /** Whether an undecided visitor should see the banner */
+        function needsBanner() {
+          return MODE !== 'opt_out' || inOptInRegion();
+        }
+
+        /** The toggles' state before the visitor has chosen */
+        function undecidedCategories(): Record<string, boolean> {
+          const state = w.__consentState;
+          if (state && state.decided) return state.categories;
+          if (MODE === 'opt_out' && inOptInRegion()) return buildAllDenied();
+          const cats: Record<string, boolean> = {};
+          Object.keys(config.categories).forEach(function(key: string) {
+            cats[key] = config.categories[key].required || config.categories[key].defaultEnabled;
+          });
+          return cats;
+        }
+
         // ── Settings panel (via Dialog API) ──
         function openSettings() {
           const stored = getStored();
+          const current = stored ? stored.categories : undecidedCategories();
           Object.keys(config.categories).forEach(function(key: string) {
             const cb = document.getElementById('consent-' + key) as HTMLInputElement | null;
             if (cb && !config.categories[key].required) {
-              cb.checked = stored ? !!stored.categories[key] : config.categories[key].defaultEnabled;
+              cb.checked = !!current[key];
               cb.setAttribute('aria-checked', cb.checked ? 'true' : 'false');
             }
           });
@@ -363,7 +397,7 @@ const configJson = JSON.stringify(consentConfig);
           }
 
           const state = w.__consentState;
-          if (state && state.decided) {
+          if ((state && state.decided) || !needsBanner()) {
             showReopener();
             return;
           }
@@ -386,7 +420,7 @@ const configJson = JSON.stringify(consentConfig);
               if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 if (dialogEl.classList.contains('hidden')) {
                   const state = w.__consentState;
-                  if (!state || !state.decided) {
+                  if ((!state || !state.decided) && needsBanner()) {
                     showBanner();
                   } else {
                     showReopener();

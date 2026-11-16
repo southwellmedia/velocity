@@ -1,0 +1,20 @@
+---
+/**
+ * Sends a GA event for clicks on any [data-track] element. Rendered by
+ * Analytics.astro only when GA4 or GTM is configured. See src/lib/analytics.ts.
+ */
+---
+
+<script>
+  import { trackClick } from '@/lib/analytics';
+
+  // One listener on the document covers every page and survives view
+  // transitions, so it only needs binding once.
+  const w = window as unknown as { __velocityClickTracking?: boolean };
+  if (!w.__velocityClickTracking) {
+    w.__velocityClickTracking = true;
+    // Capture phase, so a handler that stops propagation can't hide the click
+    document.addEventListener('click', trackClick, { capture: true });
+    document.addEventListener('auxclick', trackClick, { capture: true });
+  }
+</script>
