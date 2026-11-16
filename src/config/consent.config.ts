@@ -4,8 +4,12 @@ const consentConfig: ConsentConfig = {
   /** Bump to force re-consent when categories change */
   version: 1,
 
-  /** 'consent_mode_v2' = scripts load with denied defaults, cookieless pings
-   *  'strict' = scripts fully blocked until consent granted */
+  /** 'consent_mode_v2' = opt-in; scripts load with denied defaults, cookieless pings
+   *  'strict' = opt-in; scripts fully blocked until consent granted
+   *  'opt_out' = categories start as `defaultEnabled` says, with an opt-out button
+   *  instead of a banner. Set `defaultEnabled: true` on the categories to track
+   *  by default. Visitors in `optInRegions` (default: EEA, UK, Switzerland) still
+   *  start denied and see the banner. Check what your visitors' laws require. */
   mode: 'consent_mode_v2',
 
   /** localStorage key for stored preferences */

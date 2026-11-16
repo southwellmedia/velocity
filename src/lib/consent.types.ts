@@ -11,8 +11,27 @@ export type DefaultConsentCategory = 'necessary' | 'analytics' | 'marketing' | '
 /** Consent category key — any string so users can add custom categories */
 export type ConsentCategory = string;
 
-/** Consent enforcement mode */
-export type ConsentModeType = 'consent_mode_v2' | 'strict';
+/**
+ * Consent enforcement mode
+ * - consent_mode_v2: opt-in. Scripts load with denied defaults (cookieless pings)
+ *   until the visitor accepts.
+ * - strict: opt-in. Scripts don't load at all until the visitor accepts.
+ * - opt_out: categories start as `defaultEnabled` says and no banner is shown;
+ *   a floating button lets visitors opt out. Visitors in `optInRegions` start
+ *   denied and still get the banner, and a Global Privacy Control signal opts
+ *   the visitor out.
+ */
+export type ConsentModeType = 'consent_mode_v2' | 'strict' | 'opt_out';
+
+/**
+ * Where opt-in consent is required in `opt_out` mode: the EEA, the UK and
+ * Switzerland (ISO 3166-1 alpha-2). Google applies these by the visitor's IP.
+ */
+export const DEFAULT_OPT_IN_REGIONS = [
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE',
+  'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE',
+  'IS', 'LI', 'NO', 'GB', 'CH',
+];
 
 /** Google Consent Mode v2 signal types */
 export type GCMType =
@@ -69,6 +88,11 @@ export interface ConsentConfig {
   version: number;
   /** Enforcement mode */
   mode: ConsentModeType;
+  /**
+   * `opt_out` mode only: regions (ISO 3166-1 alpha-2, or ISO 3166-2 such as
+   * 'US-CA') that still get opt-in consent. Defaults to DEFAULT_OPT_IN_REGIONS.
+   */
+  optInRegions?: string[];
   /** localStorage key for storing preferences */
   storageKey: string;
   /** Category definitions */

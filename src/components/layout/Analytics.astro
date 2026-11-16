@@ -8,6 +8,12 @@
  * When PUBLIC_CONSENT_ENABLED is true, integrates with Google Consent Mode v2:
  * - consent_mode_v2: Scripts load normally but with denied defaults (cookieless pings)
  * - strict: Scripts only load after explicit user consent
+ * - opt_out: Scripts load with `defaultEnabled` defaults; visitors in
+ *   `optInRegions` start denied, and Global Privacy Control opts out
+ *
+ * Click tracking: any element with `data-track="event_name"` sends that event
+ * when clicked, with its `data-track-*` attributes as parameters (see
+ * src/lib/analytics.ts). Call `track()` from that module for anything else.
  *
  * Environment variables:
  * - PUBLIC_GA_MEASUREMENT_ID: Google Analytics 4 Measurement ID (e.g., G-XXXXXXXXXX)
@@ -39,6 +45,8 @@
  */
 import { PUBLIC_GA_MEASUREMENT_ID, PUBLIC_GTM_ID, PUBLIC_CONSENT_ENABLED } from 'astro:env/client';
 import consentConfig from '@/config/consent.config';
+import { DEFAULT_OPT_IN_REGIONS } from '@/lib/consent.types';
+import ClickTracking from './analytics/ClickTracking.astro';
 import InlineScript from '@/components/seo/InlineScript.astro';
 import loadGtm from './analytics/load-gtm.js?raw';
 import loadGa from './analytics/load-ga.js?raw';
@@ -58,6 +66,14 @@ const gcmDefaults: Record<string, string> = {};
 for (const [, cat] of Object.entries(consentConfig.categories)) {
   for (const gcmType of cat.gcmTypes) {
     gcmDefaults[gcmType] = cat.defaultEnabled ? 'granted' : 'denied';
+  }
+}
+
+// What opt-in regions start with in opt_out mode: only required categories granted
+const gcmDenied: Record<string, string> = {};
+for (const [, cat] of Object.entries(consentConfig.categories)) {
+  for (const gcmType of cat.gcmTypes) {
+    gcmDenied[gcmType] = cat.required ? 'granted' : 'denied';
   }
 }
 
@@ -99,7 +115,8 @@ if (hasAnalytics && Astro.csp) {
     Astro.csp.insertScriptResource(host);
   }
 }
-const isV2 = consentEnabled && consentMode === 'consent_mode_v2';
+// opt_out loads scripts the same way as consent_mode_v2; only the defaults differ
+const isV2 = consentEnabled && (consentMode === 'consent_mode_v2' || consentMode === 'opt_out');
 const isStrict = consentEnabled && consentMode === 'strict';
 
 // JSON data for all analytics scripts (single data element avoids duplication)
@@ -112,6 +129,9 @@ const analyticsDataJson = JSON.stringify({
   categoryDefaults,
   categoryGcmMap,
   analyticsCategoryKey,
+  mode: consentEnabled ? consentMode : null,
+  optInRegions: consentConfig.optInRegions ?? DEFAULT_OPT_IN_REGIONS,
+  gcmDenied,
 });
 ---
 
@@ -119,6 +139,9 @@ const analyticsDataJson = JSON.stringify({
 {hasAnalytics && (
   <script is:inline type="application/json" id="analytics-data" set:html={analyticsDataJson} />
 )}
+
+{/* Sends a GA event for clicks on [data-track] elements */}
+{hasAnalytics && <ClickTracking />}
 
 {/* ── No consent: load GTM directly ── */}
 {noConsent && hasGtm && (

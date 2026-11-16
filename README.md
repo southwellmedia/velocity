@@ -173,6 +173,18 @@ Until one of these is set up, submissions are discarded and the server logs a wa
 
 ---
 
+## Analytics
+
+Set `PUBLIC_GA_MEASUREMENT_ID` (GA4) or `PUBLIC_GTM_ID` (Tag Manager) and every page loads it. `PUBLIC_CONSENT_ENABLED=true` adds the consent banner, wired to Google Consent Mode v2. Pick the mode in `src/config/consent.config.ts`:
+
+- `consent_mode_v2` (opt-in): Google loads with tracking denied and sends cookieless pings until the visitor accepts.
+- `strict` (opt-in): nothing loads until the visitor accepts.
+- `opt_out`: categories start as `defaultEnabled` says, with an opt-out button instead of a banner. Visitors in `optInRegions` (default: the EEA, the UK and Switzerland) start denied and see the banner, and a Global Privacy Control signal opts the visitor out. Check what your visitors' laws require before you use it.
+
+**Events:** add `data-track="event_name"` to a link or button and a click sends that event, with each `data-track-*` attribute as a parameter (`data-track-link-location="hero"` becomes `link_location: 'hero'`). `item_id`, `item_name` and `price` go into an `items` array, so ecommerce events such as `begin_checkout` reach GA4's ecommerce reports. From code, call `track()` from `src/lib/analytics.ts`. Register custom parameters in GA4 (Admin → Custom definitions) to see them in reports.
+
+---
+
 ## Deployment
 
 Every page is prerendered. A server adapter is still included because Astro Actions (the contact and newsletter forms) run on demand. `integrations/deploy-target.mjs` picks it for you:
