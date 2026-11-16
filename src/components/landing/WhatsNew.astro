@@ -1,0 +1,86 @@
+---
+/**
+ * WhatsNew: the 2.x changes, each shown working on the demo page.
+ * Every card is tagged New or Changed (since 1.x).
+ */
+import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import { getLocale, useTranslations } from '@/i18n';
+
+interface Props {
+  /** Agent skill names to list on the agents card */
+  skills?: string[];
+}
+
+const { skills = [] } = Astro.props;
+const t = useTranslations(getLocale(Astro));
+
+const brandSteps = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900'] as const;
+const swatch: Record<(typeof brandSteps)[number], string> = {
+  '50': 'bg-brand-50',
+  '100': 'bg-brand-100',
+  '200': 'bg-brand-200',
+  '300': 'bg-brand-300',
+  '400': 'bg-brand-400',
+  '500': 'bg-brand-500',
+  '600': 'bg-brand-600',
+  '700': 'bg-brand-700',
+  '800': 'bg-brand-800',
+  '900': 'bg-brand-900',
+};
+
+const card = 'bg-card border-card-border flex flex-col gap-3 rounded-[10px] border p-7';
+const title = 'font-display text-foreground text-[22px] leading-tight font-bold tracking-[-0.02em]';
+const code = 'bg-background border-border text-foreground-muted rounded border px-2.5 py-1.5 font-mono text-xs';
+---
+
+<section id="features" aria-labelledby="new-heading" class="bg-background border-border border-t">
+  <div class="mx-auto flex max-w-6xl flex-col gap-12 px-6 py-[var(--space-section)]">
+    <div class="flex max-w-2xl flex-col gap-4">
+      <p class="text-foreground-muted text-xs font-semibold tracking-[0.1em] uppercase">{t('home.whatsNew.eyebrow')}</p>
+      <h2 id="new-heading" class="font-display text-foreground text-4xl leading-tight font-bold tracking-[-0.02em] text-balance md:text-5xl">
+        {t('home.whatsNew.heading')}
+      </h2>
+      <p class="text-foreground-muted text-lg">{t('home.whatsNew.intro')}</p>
+    </div>
+
+    <div class="grid gap-4 md:grid-cols-2">
+      <article class={card}>
+        <Badge class="self-start">{t('home.whatsNew.changed')}</Badge>
+        <h3 class={title}>{t('home.whatsNew.astro.title')}</h3>
+        <p class="text-foreground-secondary">{t('home.whatsNew.astro.text')}</p>
+        <code class={`${code} mt-auto self-start`}>astro build</code>
+      </article>
+
+      <article class={card}>
+        <Badge class="self-start">{t('home.whatsNew.new')}</Badge>
+        <h3 class={title}>{t('home.whatsNew.agents.title')}</h3>
+        <p class="text-foreground-secondary">{t('home.whatsNew.agents.text')}</p>
+        {skills.length > 0 && (
+          <ul class="mt-auto flex flex-wrap gap-1.5 font-mono text-xs">
+            {skills.map((skill) => (
+              <li class="border-border-strong text-foreground-secondary rounded-md border px-2 py-0.5">{skill}</li>
+            ))}
+          </ul>
+        )}
+      </article>
+
+      <article class={card}>
+        <Badge class="self-start">{t('home.whatsNew.new')}</Badge>
+        <h3 class={title}>{t('home.whatsNew.hue.title')}</h3>
+        <p class="text-foreground-secondary">
+          {t('home.whatsNew.hue.textBefore')} <code class="bg-secondary text-foreground-secondary rounded px-1.5 py-0.5 font-mono text-[0.875em]">--brand-hue</code>{t('home.whatsNew.hue.textAfter')}
+        </p>
+        <div class="mt-auto grid grid-cols-10 gap-1" aria-hidden="true">
+          {brandSteps.map((step) => <span class={`${swatch[step]} h-5 rounded`}></span>)}
+        </div>
+      </article>
+
+      <article class={card}>
+        <Badge class="self-start">{t('home.whatsNew.new')}</Badge>
+        <h3 class={title}>{t('home.whatsNew.blocks.title')}</h3>
+        <p class="text-foreground-secondary">{t('home.whatsNew.blocks.text')}</p>
+        <code class={`${code} mt-auto self-start`}>src/components/blocks/</code>
+      </article>
+    </div>
+  </div>
+</section>

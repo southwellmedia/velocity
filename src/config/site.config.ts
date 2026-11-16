@@ -56,7 +56,7 @@ const siteConfig: SiteConfig = {
   name: 'Velocity',
   description: 'A modern website built with Astro and Tailwind CSS',
   url: SITE_URL || 'https://example.com',
-  author: 'Southwell Media',
+  author: 'Velocity',
   // Demo contact info - replace with your actual business details
   email: 'hello@example.com',
   phone: '+1 (555) 123-4567',
@@ -67,9 +67,8 @@ const siteConfig: SiteConfig = {
     zip: '75001',
     country: 'US',
   },
-  socialLinks: [
-    'https://github.com/southwellmedia',
-  ],
+  // Your profiles (GitHub, LinkedIn, …): used for schema.org sameAs and the contact page
+  socialLinks: [],
   // Twitter metadata - update with your actual handles or remove
   // twitter: {
   //   site: '@yourhandle',

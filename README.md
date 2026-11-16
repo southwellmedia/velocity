@@ -36,6 +36,14 @@
 
 ---
 
+## Live demo
+
+[demo.deployvelocity.com](https://demo.deployvelocity.com) is this repository deployed as it is, the same project you get from `npm create velocity-astro@latest -- --demo`. Its home page shows build figures for that deploy: versions, component count, JavaScript on the page and build time.
+
+The demo's name, author, address and contact details are placeholders. Replace them in the files under [Configuration](#configuration), or create a project without `--demo` to start from a minimal home page instead.
+
+---
+
 ## Quick Start
 
 ```bash
@@ -95,7 +103,7 @@ The `AGENTS.md` in this repo is for contributors to Velocity itself.
 ## Project Structure
 
 ```
-integrations/     # deploy-target (adapter detection), pagefind (search index)
+integrations/     # deploy-target (adapter detection), pagefind (search index), build-receipt (demo figures)
 tests/
   unit/           # Vitest
   e2e/            # Playwright + axe
@@ -107,8 +115,11 @@ src/
     blocks/       # 15 page sections (PageHero, FeatureGrid, FeatureSplit, Pricing, StatsBand, LogoCloud, Team, Timeline, ContactSection, CtaBand, Faq, Steps, Testimonials, Hours, Band)
     layout/       # Header, Footer, ThemeToggle, Analytics
     blog/         # ArticleHero, BlogCard, ShareButtons, RelatedPosts
-    landing/      # Credibility, TechStack, FeatureTabs, and more
+    landing/      # The demo home page: BuildReceipt, WhatsNew, SpecimenWall, GetStarted
     seo/          # SEO, JsonLd, Breadcrumbs
+    site/         # SiteHeader, SiteFooter (yours to edit)
+  views/          # Page content; src/pages/*.astro render a view per locale
+  i18n/           # Locales, UI strings and your site copy (translations/en.ts)
   content/        # Blog posts, authors, FAQs
   config/         # Site and navigation config
   styles/         # Global CSS and design tokens
@@ -119,7 +130,15 @@ src/
 
 ## Configuration
 
-**Site config**: `src/config/site.config.ts` — name, description, URL, social links
+**Site config**: `src/config/site.config.ts` — name, description, URL, contact details, social links
+
+**Navigation**: `src/config/nav.config.ts` — routes, header links and buttons, footer links
+
+**Copy**: `src/i18n/translations/en.ts` — every line of page text, one file per language
+
+**Pages**: `src/views/` — what each page shows; add one with the `velocity-add-page` agent skill or copy an existing view
+
+**Brand**: `src/assets/branding/` for the logo, and `--brand-hue` in `src/styles/themes/default.css` to recolor the brand scale
 
 **Design tokens**: `src/styles/tokens/` — colors, typography, spacing
 

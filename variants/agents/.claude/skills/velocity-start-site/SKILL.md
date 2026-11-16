@@ -24,7 +24,7 @@ Read the files; don't ask. Check in this order and take the first match.
 | Brief exists | `.agents/site.md` exists and its `Status:` isn't `seeded by CLI` | Resume. Compare the brief with the site, then continue the Sitemap or apply what the user asked, and update the brief |
 | Brief seeded | `.agents/site.md` says `Status: seeded by CLI` | As Minimal. The interview skips what the brief already answers |
 | Demo | `src/pages/components.astro` exists, or `src/views/HomeView.astro` imports from `@/components/landing/` | Plan, remove the demo (step 3), build |
-| Minimal | `src/views/HomeView.astro` contains `Home page (starter)` | Plan, build. Its translation files still hold the demo's `landing`, `about` and `contact` copy; delete those namespaces in step 5 |
+| Minimal | `src/views/HomeView.astro` contains `Home page (starter)` | Plan, build. Its translation files still hold the demo's `home`, `about` and `contact` copy (and `landing` in projects created before 2.6.5); delete those namespaces in step 5 |
 | Customized | none of the above | Re-target inside the existing design: keep `src/styles/theme.css` and the existing components unless the user asks for a new look. Ask before removing any page |
 
 ## 1. Interview
@@ -64,12 +64,11 @@ Show the user the sitemap, one line per page. Wait for a go-ahead. In a headless
 - `src/content/blog/en/velocity-2-1-ai-agents.mdx`
 - `src/content/faqs/general-en.json`
 - `src/content/authors/team.json`
-- `public/avatars`
 <!-- demo-paths:end -->
 
 If the brief keeps About or Contact, leave that page's three files (view, page, `[lang]` wrapper) and rewrite the view in step 4. Then:
 - in `src/config/nav.config.ts`, delete the `components` route and the routes of removed pages, their `navItems`, and the demo's header `cta`, `actions` (the GitHub link) and `extraNav` (`/#features`); replace the footer's Velocity GitHub and License links;
-- in every `src/i18n/translations/<locale>.ts`, delete the `landing`, `home` and removed pages' namespaces (`about`, `contact`) and their `meta` entries; step 5 writes new copy;
+- in every `src/i18n/translations/<locale>.ts`, delete the `home` namespace (and `landing`, if present) and removed pages' namespaces (`about`, `contact`) and their `meta` entries; step 5 writes new copy;
 - leave `src/components/ui/` alone: unused primitives cost nothing.
 
 **Every state:**

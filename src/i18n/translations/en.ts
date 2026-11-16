@@ -15,9 +15,9 @@ const en = {
 
   meta: {
     home: {
-      title: 'The Complete Astro Starter',
+      title: 'Astro 7 starter demo',
       description:
-        'Design tokens, accessible components, SEO, and i18n configured from the first commit. Velocity ships what other starters leave as homework.',
+        'The Velocity starter as you get it: components, design tokens, forms, search and i18n, with the build figures for this page.',
     },
     about: {
       title: 'About Us',
@@ -31,120 +31,100 @@ const en = {
 
   home: {
     hero: {
-      badge: 'v2.0 is live — now on Astro 7',
-      title: 'Your next site',
-      titleHighlight: 'starts here.',
-      description:
-        'Design tokens, accessible components, SEO, and i18n configured from the first commit. Velocity ships what other starters leave as homework.',
-      docs: 'View Docs',
-      github: 'View on GitHub',
-      socialProof: 'Shipped to production weekly.',
-    },
-  },
-
-  landing: {
-    techStack: {
-      astro: 'Rust compiler, Vite 8, Actions, route caching, zero-JS by default',
-      tailwind: 'Lightning CSS engine, @theme API, OKLCH colors',
-      typescript: 'Strict mode, path aliases, full type inference',
-      react: 'Server components, actions, use() hook support',
-    },
-    features: {
-      heading: 'Everything you need.',
-      headingHighlight: "Nothing you don't.",
-      intro:
-        'We stripped away the bloat and kept the primitives that actually speed up development for agencies and freelancers.',
-      copy: 'Copy',
+      badge: 'Velocity v{version} · built {date}',
+      badgeNoVersion: 'Built {date}',
+      title: 'This page is Velocity,',
+      titleHighlight: 'measured',
+      titleEnd: '.',
+      leadBefore: 'Every figure below is counted or measured when this page builds. Create a project with',
+      leadAfter: 'and this becomes your home page, with your own numbers.',
+      whatsNew: 'What 2.x changed',
       copied: 'Copied',
+    },
+    receipt: {
+      title: 'Build receipt',
+      commit: 'commit {sha}',
+      components: 'Components',
+      agentSkills: 'Agent skills',
+      locales: 'Locales',
+      jsKb: 'JS on this page',
+      pages: 'Pages built',
+      buildTime: 'Build time',
+      installed: 'installed',
+      counted: 'counted',
+      measured: 'measured',
+      config: 'config',
+      note: "Versions come from the installed packages and counts from the project's files while this page renders. JavaScript (gzipped), pages and build time are measured once the build finishes and written into the page. A figure that can't be measured is left out.",
+    },
+    whatsNew: {
+      eyebrow: "What's new in 2.x",
+      heading: 'The changelog, running on this page.',
+      intro: 'Each card is a 2.x change you can see here. The tag says whether it is new or changed since 1.x.',
+      new: 'New',
+      changed: 'Changed',
+      astro: {
+        title: 'Astro 7 underneath',
+        text: 'Rust compiler, Vite 8, Actions and route caching. Pages are prerendered HTML, and this section ships no JavaScript.',
+      },
       agents: {
-        label: 'AI Agents',
-        description: 'Rules & skills built in',
-        title: 'Built for AI Coding Agents',
-        content:
-          'Every project ships with rules and skills for Claude Code, Codex, Cursor and other agents. They know how to add pages and components, and which files upgrades replace.',
+        title: 'Agent skills in every project',
+        text: 'Rules and skills for Claude Code, Codex and Cursor: how to add a page or a component, and which files an upgrade replaces.',
       },
-      theming: {
-        label: 'Theming',
-        description: 'Design tokens & dark mode',
-        title: 'Design Tokens & Dark Mode',
-        content:
-          "Complete design system using Tailwind v4's CSS-first configuration with built-in dark mode. Semantic color tokens, system preference detection, and localStorage persistence.",
+      hue: {
+        title: 'One brand hue, OKLCH scale',
+        textBefore: 'All ten brand steps derive from',
+        textAfter: '. Change one number and every brand color follows.',
       },
-      seo: {
-        label: 'SEO & Meta',
-        description: 'OG images & structured data',
-        title: 'Automated SEO Handling',
-        content:
-          'Strictly typed metadata injection for every page with automatic OG image generation. Includes sitemap, robots.txt, and JSON-LD structured data.',
-      },
-      perf: {
-        label: 'Performance',
-        description: 'Zero JS by default',
-        title: 'Zero JS by Default',
-        content:
-          "Astro's island architecture ensures your pages ship 0kb of JavaScript unless explicitly interactive. Optimized for Core Web Vitals.",
-      },
-      components: {
-        label: 'Components',
-        description: 'Type-safe UI primitives',
-        title: 'Type-Safe Components',
-        content:
-          'TypeScript-first UI primitives with full prop validation and IDE autocompletion. Includes buttons, inputs, cards, modals, and more.',
-      },
-      i18n: {
-        label: 'i18n Ready',
-        description: 'Optional multi-language',
-        title: 'i18n Ready',
-        content:
-          'Add multi-language support with the --i18n flag. Includes type-safe translations, automatic locale detection, and SEO-friendly URL structures.',
-      },
-      content: {
-        label: 'Content',
-        description: 'Blog, MDX & search',
-        title: 'Content & Search',
-        content:
-          'Type-safe content collections with Zod schemas, MDX support, RSS feeds, and Pagefind integration for lightning-fast static search.',
+      blocks: {
+        title: 'Page sections as components',
+        text: 'Hero, features, pricing, FAQ, contact and more take your copy as props, so a new page is mostly writing.',
       },
     },
-    lighthouse: {
-      badge: 'Lighthouse Report',
-      heading: 'Accessible and search-ready. Out of the box.',
-      listLabel: 'Lighthouse scores',
-      accessibility: 'Accessibility',
-      bestPractices: 'Best Practices',
-      seo: 'SEO',
-      note: '*Tested in production for landing page demo · Desktop & Mobile emulation · Results will vary.',
+    specimens: {
+      eyebrow: 'Components',
+      heading: '{count} components, in their states.',
+      intro: 'Real components, not screenshots. Hover, focus and press work here, and each tile names its source file. Switch the theme to see both.',
+      theme: 'Theme',
+      dark: 'Dark',
+      light: 'Light',
+      browse: 'Browse every component on the components page',
+      primary: 'Primary',
+      secondary: 'Secondary',
+      outline: 'Outline',
+      disabled: 'Disabled',
+      emailLabel: 'Email',
+      emailPlaceholder: 'you@example.com',
+      emailHint: 'Hints sit under the field. Errors replace them.',
+      tabAstro: 'Astro',
+      tabReact: 'React',
+      tabTokens: 'Tokens',
+      tabAstroText: 'Static by default. No JavaScript unless a component needs it.',
+      tabReactText: 'React 19 islands hydrate only where you add a client directive.',
+      tabTokensText: 'Colors, spacing and radii are CSS variables in src/styles/tokens.',
+      alertTitle: 'Message sent',
+      alertText: 'Alerts come in info, success, warning and error.',
+      switchLabel: 'Email me about releases',
+      switchHint: 'A real checkbox with a switch role.',
+      badgeDefault: 'Default',
+      badgeSuccess: 'Success',
+      badgeWarning: 'Warning',
+      badgeInfo: 'Info',
+      kbdText: 'Open search',
     },
-    credibility: {
-      eyebrow: 'One Command',
-      heading: 'Scaffold exactly',
-      headingHighlight: 'what you need.',
-      intro: 'Not every project needs everything. The Velocity CLI lets you pick your starting point.',
-      pagesBefore: 'Need custom pages? Use',
-      pagesMiddle: "and they're generated with routes and nav already wired. Pair it with",
-      pagesAfter: 'and you get localized versions too—translations scaffolded and ready.',
-      outro: 'No prompts to click through. No wizard to escape. Just flags that do what they say.',
+    start: {
+      eyebrow: 'Get started',
+      heading: 'Start a project from this demo.',
+      intro: 'Run the command, choose the flags you need, then follow the docs to make the site your own.',
+      flagsLabel: 'CLI flags',
       flags: {
-        demo: 'Sample landing page + blog posts',
-        components: '24 optional UI components',
-        i18n: 'Multi-language routing configured',
-        pages: 'Generate pages (+ i18n versions)',
-        yes: 'Skip prompts, use defaults',
+        demo: 'This page, the sample pages and blog posts',
+        components: 'Choose which UI components to include',
+        i18n: 'Multi-language routing, with Spanish and French copy',
+        pages: 'Generate pages with routes and nav already wired',
+        yes: 'Skip the prompts and use the defaults',
       },
-      stats: {
-        command: 'command to start',
-        flags: 'flags to customize',
-        components: 'components included',
-      },
-      terminalComment: 'Add what you need',
-      terminalSuccess: 'Project created successfully!',
-    },
-    cta: {
-      heading: 'Stop configuring.',
-      headingHighlight: 'Start building.',
-      description:
-        'Join the developers building faster, better websites with Velocity. Open source and free forever.',
-      docs: 'View Docs',
+      docs: 'Read the docs',
+      github: 'Source on GitHub',
     },
   },
 

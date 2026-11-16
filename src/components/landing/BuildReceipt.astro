@@ -1,0 +1,83 @@
+---
+/**
+ * BuildReceipt: the figures behind the demo home page.
+ *
+ * Rows read at render time come from receipt.ts. Rows marked `post` (JS on the
+ * page, pages built, build time) render hidden and empty; integrations/build-receipt.mjs
+ * fills them in once the build finishes. In `astro dev` they stay hidden.
+ */
+import { getLocale, useTranslations } from '@/i18n';
+import type { Receipt } from './receipt';
+
+interface Props {
+  receipt: Receipt;
+}
+
+const { receipt } = Astro.props;
+const t = useTranslations(getLocale(Astro));
+
+type Row = { label: string; value?: string; source: string; post?: string };
+
+const stack: Row[] = receipt.stack
+  .filter((item) => item.version)
+  .map((item) => ({ label: item.label, value: item.version, source: t('home.receipt.installed') }));
+
+const counts: Row[] = [
+  { label: t('home.receipt.components'), value: String(receipt.components), source: t('home.receipt.counted') },
+  ...(receipt.agentSkills.length
+    ? [{ label: t('home.receipt.agentSkills'), value: String(receipt.agentSkills.length), source: t('home.receipt.counted') }]
+    : []),
+  { label: t('home.receipt.locales'), value: String(receipt.locales), source: t('home.receipt.config') },
+  { label: t('home.receipt.jsKb'), source: t('home.receipt.measured'), post: 'jsKb' },
+  { label: t('home.receipt.pages'), source: t('home.receipt.measured'), post: 'pages' },
+  { label: t('home.receipt.buildTime'), source: t('home.receipt.measured'), post: 'buildSeconds' },
+];
+
+const columns = [stack, counts].filter((rows) => rows.length);
+---
+
+<section id="receipt" aria-labelledby="receipt-heading" class="px-6 pb-[var(--space-section)]">
+  <div class="receipt-card bg-card border-card-border mx-auto max-w-5xl overflow-hidden rounded-[10px] border">
+    <div class="text-foreground-muted flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-dashed border-border-strong px-5 py-3.5 font-mono text-xs">
+      <h2 id="receipt-heading" class="text-foreground text-xs font-semibold tracking-[0.1em] uppercase">
+        {t('home.receipt.title')}
+      </h2>
+      <span class="flex-1" aria-hidden="true"></span>
+      {receipt.velocity && <span>velocity@{receipt.velocity}</span>}
+      {receipt.commit && <span>{t('home.receipt.commit', { sha: receipt.commit })}</span>}
+    </div>
+
+    <div class="grid gap-x-12 px-6 pt-5 pb-2 font-mono text-sm leading-6 md:grid-cols-2">
+      {columns.map((rows) => (
+        <dl class="flex flex-col">
+          {rows.map((row) => (
+            <div
+              data-receipt-row={row.post}
+              hidden={row.post ? true : undefined}
+              class="receipt-row flex items-baseline gap-2 border-b border-dotted border-border py-2"
+            >
+              <dt class="text-foreground-secondary flex-1">{row.label}</dt>
+              <dd class="text-foreground font-semibold" data-receipt-value={row.post}>{row.value}</dd>
+              <dd class="text-foreground-subtle w-20 text-right text-xs">{row.source}</dd>
+            </div>
+          ))}
+        </dl>
+      ))}
+    </div>
+
+    <p class="text-foreground-subtle border-t border-dashed border-border-strong px-6 py-3.5 text-xs leading-relaxed">
+      {t('home.receipt.note')}
+    </p>
+  </div>
+</section>
+
+<style>
+  .receipt-card {
+    box-shadow: 0 30px 120px -40px color-mix(in oklch, var(--color-brand-500) 45%, transparent);
+  }
+
+  /* The last visible row in each column drops its rule */
+  .receipt-row:not(:has(~ .receipt-row:not([hidden]))) {
+    border-bottom-color: transparent;
+  }
+</style>

@@ -12,9 +12,9 @@ const fr: SiteStrings = {
 
   meta: {
     home: {
-      title: 'Le starter Astro complet',
+      title: 'Démo du starter Astro 7',
       description:
-        "Design tokens, composants accessibles, SEO et i18n configurés dès le premier commit. Velocity fournit ce que les autres starters vous laissent à faire.",
+        'Le starter Velocity tel que vous le recevez : composants, tokens de design, formulaires, recherche et i18n, avec les chiffres de compilation de cette page.',
     },
     about: {
       title: 'À propos',
@@ -28,121 +28,100 @@ const fr: SiteStrings = {
 
   home: {
     hero: {
-      badge: 'La v2.0 est disponible, désormais sur Astro 7',
-      title: 'Votre prochain site',
-      titleHighlight: 'commence ici.',
-      description:
-        "Design tokens, composants accessibles, SEO et i18n configurés dès le premier commit. Velocity fournit ce que les autres starters vous laissent à faire.",
-      docs: 'Voir la documentation',
-      github: 'Voir sur GitHub',
-      socialProof: 'En production chaque semaine.',
-    },
-  },
-
-  landing: {
-    techStack: {
-      astro: 'Compilateur Rust, Vite 8, Actions, cache des routes et zéro JS par défaut',
-      tailwind: 'Moteur Lightning CSS, API @theme et couleurs OKLCH',
-      typescript: 'Mode strict, alias de chemins et inférence de types complète',
-      react: 'Server components, actions et prise en charge du hook use()',
-    },
-    features: {
-      heading: 'Tout ce dont vous avez besoin.',
-      headingHighlight: 'Rien de superflu.',
-      intro:
-        "Nous avons retiré le superflu pour ne garder que les briques qui accélèrent vraiment le développement des agences et des freelances.",
-      copy: 'Copier',
+      badge: 'Velocity v{version} · compilé le {date}',
+      badgeNoVersion: 'Compilé le {date}',
+      title: 'Cette page, c’est Velocity,',
+      titleHighlight: 'mesuré',
+      titleEnd: '.',
+      leadBefore: 'Chaque chiffre de cette page est compté ou mesuré à la compilation. Créez un projet avec',
+      leadAfter: 'et elle devient votre page d’accueil, avec vos propres chiffres.',
+      whatsNew: 'Ce qui change en 2.x',
       copied: 'Copié',
+    },
+    receipt: {
+      title: 'Reçu de compilation',
+      commit: 'commit {sha}',
+      components: 'Composants',
+      agentSkills: 'Skills pour agents',
+      locales: 'Langues',
+      jsKb: 'JS sur cette page',
+      pages: 'Pages générées',
+      buildTime: 'Durée de compilation',
+      installed: 'installé',
+      counted: 'compté',
+      measured: 'mesuré',
+      config: 'config',
+      note: 'Les versions viennent des paquets installés et les décomptes des fichiers du projet pendant le rendu de cette page. Le JavaScript (gzip), les pages et la durée de compilation sont mesurés à la fin de la compilation puis écrits dans la page. Un chiffre qui ne peut pas être mesuré n’est pas affiché.',
+    },
+    whatsNew: {
+      eyebrow: 'Nouveautés de la 2.x',
+      heading: 'Le changelog, en marche sur cette page.',
+      intro: 'Chaque carte est un changement de la 2.x visible ici. L’étiquette indique s’il est nouveau ou modifié depuis la 1.x.',
+      new: 'Nouveau',
+      changed: 'Modifié',
+      astro: {
+        title: 'Astro 7 en dessous',
+        text: 'Compilateur Rust, Vite 8, Actions et cache des routes. Les pages sont du HTML prérendu, et cette section n’envoie aucun JavaScript.',
+      },
       agents: {
-        label: 'Agents IA',
-        description: 'Règles et skills inclus',
-        title: 'Prêt pour les agents IA',
-        content:
-          'Chaque projet inclut des règles et des skills pour Claude Code, Codex, Cursor et d\'autres agents. Ils savent ajouter des pages et des composants, et quels fichiers les mises à jour remplacent.',
+        title: 'Des skills pour agents dans chaque projet',
+        text: 'Règles et skills pour Claude Code, Codex et Cursor : comment ajouter une page ou un composant, et quels fichiers une mise à jour remplace.',
       },
-      theming: {
-        label: 'Thèmes',
-        description: 'Design tokens et mode sombre',
-        title: 'Design tokens et mode sombre',
-        content:
-          "Système de design complet basé sur la configuration CSS-first de Tailwind v4, avec mode sombre intégré. Tokens de couleur sémantiques, détection des préférences système et persistance via localStorage.",
+      hue: {
+        title: 'Une seule teinte de marque, échelle OKLCH',
+        textBefore: 'Les dix nuances de la marque dérivent de',
+        textAfter: '. Changez un nombre et toutes les couleurs de marque suivent.',
       },
-      seo: {
-        label: 'SEO et métadonnées',
-        description: 'Images OG et données structurées',
-        title: 'SEO automatisé',
-        content:
-          "Métadonnées typées pour chaque page avec génération automatique des images OG. Inclut le sitemap, le robots.txt et des données structurées JSON-LD.",
-      },
-      perf: {
-        label: 'Performance',
-        description: 'Zéro JS par défaut',
-        title: 'Zéro JS par défaut',
-        content:
-          "L'architecture en îlots d'Astro garantit que vos pages n'envoient aucun JavaScript, sauf si elles sont explicitement interactives. Optimisé pour les Core Web Vitals.",
-      },
-      components: {
-        label: 'Composants',
-        description: "Primitives d'interface typées",
-        title: 'Composants typés',
-        content:
-          "Primitives d'interface pensées pour TypeScript, avec validation complète des props et autocomplétion dans l'éditeur. Boutons, champs, cartes, fenêtres modales et bien plus.",
-      },
-      i18n: {
-        label: 'Prêt pour l’i18n',
-        description: 'Multilingue en option',
-        title: 'Prêt pour l’i18n',
-        content:
-          "Ajoutez la prise en charge multilingue avec l'option --i18n. Traductions typées, détection automatique de la langue et URL optimisées pour le SEO.",
-      },
-      content: {
-        label: 'Contenu',
-        description: 'Blog, MDX et recherche',
-        title: 'Contenu et recherche',
-        content:
-          'Collections de contenu typées avec des schémas Zod, prise en charge de MDX, flux RSS et intégration de Pagefind pour une recherche statique ultra-rapide.',
+      blocks: {
+        title: 'Des sections de page en composants',
+        text: 'Hero, fonctionnalités, tarifs, FAQ, contact et plus reçoivent vos textes en props : une nouvelle page, c’est surtout de l’écriture.',
       },
     },
-    lighthouse: {
-      badge: 'Rapport Lighthouse',
-      heading: 'Accessible et prêt pour les moteurs de recherche, dès le départ.',
-      listLabel: 'Scores Lighthouse',
-      accessibility: 'Accessibilité',
-      bestPractices: 'Bonnes pratiques',
-      seo: 'SEO',
-      note: '*Mesuré en production sur la page de démonstration · Émulation ordinateur et mobile · Les résultats peuvent varier.',
+    specimens: {
+      eyebrow: 'Composants',
+      heading: '{count} composants, dans leurs états.',
+      intro: 'De vrais composants, pas des captures. Survol, focus et clic fonctionnent ici, et chaque carte indique son fichier source. Changez de thème pour voir les deux.',
+      theme: 'Thème',
+      dark: 'Sombre',
+      light: 'Clair',
+      browse: 'Voir tous les composants sur la page des composants',
+      primary: 'Principal',
+      secondary: 'Secondaire',
+      outline: 'Contour',
+      disabled: 'Désactivé',
+      emailLabel: 'E-mail',
+      emailPlaceholder: 'vous@exemple.com',
+      emailHint: 'L’aide s’affiche sous le champ. Les erreurs la remplacent.',
+      tabAstro: 'Astro',
+      tabReact: 'React',
+      tabTokens: 'Tokens',
+      tabAstroText: 'Statique par défaut. Pas de JavaScript sauf si un composant en a besoin.',
+      tabReactText: 'Les îlots React 19 ne s’hydratent que là où vous ajoutez une directive client.',
+      tabTokensText: 'Couleurs, espacements et rayons sont des variables CSS dans src/styles/tokens.',
+      alertTitle: 'Message envoyé',
+      alertText: 'Les alertes existent en info, succès, avertissement et erreur.',
+      switchLabel: 'M’avertir des nouvelles versions',
+      switchHint: 'Une vraie case à cocher avec le rôle d’interrupteur.',
+      badgeDefault: 'Par défaut',
+      badgeSuccess: 'Succès',
+      badgeWarning: 'Avertissement',
+      badgeInfo: 'Info',
+      kbdText: 'Ouvrir la recherche',
     },
-    credibility: {
-      eyebrow: 'Une seule commande',
-      heading: 'Générez exactement',
-      headingHighlight: 'ce dont vous avez besoin.',
-      intro:
-        "Tous les projets n'ont pas besoin de tout. La CLI de Velocity vous laisse choisir votre point de départ.",
-      pagesBefore: 'Besoin de pages personnalisées ? Utilisez',
-      pagesMiddle: 'et elles sont générées avec les routes et la navigation déjà en place. Associez-la à',
-      pagesAfter: 'et vous obtenez aussi les versions traduites, avec des traductions prêtes à remplir.',
-      outro: "Pas d'assistant à parcourir, pas de questions à répondre. Juste des options qui font ce qu'elles disent.",
+    start: {
+      eyebrow: 'Démarrer',
+      heading: 'Créez un projet à partir de cette démo.',
+      intro: 'Lancez la commande, choisissez les flags utiles, puis suivez la documentation pour faire du site le vôtre.',
+      flagsLabel: 'Flags de la CLI',
       flags: {
-        demo: "Page d'accueil de démonstration et articles de blog",
-        components: "24 composants d'interface optionnels",
-        i18n: 'Routage multilingue configuré',
-        pages: 'Génère des pages (et leurs versions i18n)',
-        yes: 'Ignore les questions et utilise les valeurs par défaut',
+        demo: 'Cette page, les pages d’exemple et les articles de blog',
+        components: 'Choisir les composants d’UI à inclure',
+        i18n: 'Routage multilingue, avec les textes en espagnol et en français',
+        pages: 'Générer des pages avec routes et navigation déjà reliées',
+        yes: 'Passer les questions et garder les valeurs par défaut',
       },
-      stats: {
-        command: 'commande pour démarrer',
-        flags: 'options de personnalisation',
-        components: 'composants inclus',
-      },
-      terminalComment: 'Ajoutez ce dont vous avez besoin',
-      terminalSuccess: 'Projet créé avec succès !',
-    },
-    cta: {
-      heading: 'Arrêtez de configurer.',
-      headingHighlight: 'Commencez à créer.',
-      description:
-        'Rejoignez les développeurs qui créent des sites plus rapides et de meilleure qualité avec Velocity. Open source et gratuit pour toujours.',
-      docs: 'Voir la documentation',
+      docs: 'Lire la documentation',
+      github: 'Code source sur GitHub',
     },
   },
 

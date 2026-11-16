@@ -20,6 +20,7 @@ interface Props {
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
+const github = siteConfig.socialLinks.find((url) => new URL(url).hostname === 'github.com');
 ---
 
 <PageLayout title={t('meta.contact.title')} description={t('meta.contact.description')}>
@@ -91,25 +92,22 @@ const t = useTranslations(locale);
                 </Card>
               </a>
 
-              <!-- GitHub -->
-              <a
-                href="https://github.com/southwellmedia/velocity"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="block"
-              >
-                <Card hover padding="sm">
-                  <div class="flex items-center gap-4">
-                    <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-500/5 flex items-center justify-center text-brand-500 shrink-0">
-                      <Icon name="github" size="md" />
+              <!-- GitHub: the first github.com profile in siteConfig.socialLinks -->
+              {github && (
+                <a href={github} target="_blank" rel="noopener noreferrer" class="block">
+                  <Card hover padding="sm">
+                    <div class="flex items-center gap-4">
+                      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-brand-500/20 to-brand-500/5 flex items-center justify-center text-brand-500 shrink-0">
+                        <Icon name="github" size="md" />
+                      </div>
+                      <div>
+                        <p class="text-sm text-foreground-muted">{t('contact.other.github')}</p>
+                        <p class="font-medium text-foreground">{new URL(github).pathname.replace(/^\/|\/$/g, '')}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p class="text-sm text-foreground-muted">{t('contact.other.github')}</p>
-                      <p class="font-medium text-foreground">velocity</p>
-                    </div>
-                  </div>
-                </Card>
-              </a>
+                  </Card>
+                </a>
+              )}
 
               <!-- Twitter -->
               {siteConfig.twitter && (
