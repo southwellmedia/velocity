@@ -56,6 +56,8 @@ const siteConfig: SiteConfig = {
   name: 'Velocity',
   description: 'A modern website built with Astro and Tailwind CSS',
   url: SITE_URL || 'https://example.com',
+  // The demo opens in dark mode; visitors can still switch with the toggle
+  defaultTheme: 'dark',
   author: 'Velocity',
   // Demo contact info - replace with your actual business details
   email: 'hello@example.com',
