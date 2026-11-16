@@ -1,9 +1,10 @@
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { completeSocialImages } from './og-images.mjs';
+import { completeBuildReceipt } from './build-receipt.mjs';
 
 /**
- * Also completes each page's social share image. That runs here because this step
+ * Also completes each page's social share image and the demo's build receipt. That runs here because this step
  * reads every finished page, and because astro.config.mjs belongs to the project,
  * so a new integration would never reach projects that upgrade.
  *
@@ -19,6 +20,7 @@ import { completeSocialImages } from './og-images.mjs';
 export default function pagefind() {
   let clientDir;
   let site;
+  let startedAt;
 
   return {
     name: 'velocity:pagefind',
@@ -30,8 +32,13 @@ export default function pagefind() {
         clientDir = config.adapter ? config.build.client : config.outDir;
         site = config.site;
       },
+      'astro:build:start': () => {
+        startedAt = performance.now();
+      },
       'astro:build:done': async ({ logger }) => {
         const output = fileURLToPath(clientDir);
+        const receipts = await completeBuildReceipt(output, { startedAt });
+        if (receipts) logger.info(`Filled the build receipt on ${receipts} page(s)`);
         const social = await completeSocialImages(output, { site });
         logger.info(`Checked share images on ${social.pages} page(s), drew ${social.generated}`);
 

@@ -3,19 +3,21 @@
  * Home view — the demo landing page.
  * Rendered by src/pages/index.astro (default locale) and
  * src/pages/[lang]/index.astro (other locales).
+ *
+ * Every figure on the page is read or measured at build time (see
+ * src/components/landing/receipt.ts and integrations/build-receipt.mjs),
+ * so it is true wherever the demo is deployed.
  */
 import LandingLayout from '@/layouts/LandingLayout.astro';
 import { Hero } from '@/components/hero';
-import Button from '@/components/ui/form/Button/Button.astro';
 import Badge from '@/components/ui/data-display/Badge/Badge.astro';
-import Icon from '@/components/ui/primitives/Icon/Icon.astro';
-import SocialProof from '@/components/ui/marketing/SocialProof/SocialProof.astro';
-import { TerminalDemo } from '@/components/ui/marketing/TerminalDemo';
-import TechStack from '@/components/landing/TechStack.astro';
-import FeatureTabs, { type FeatureTabsCopy } from '@/components/landing/FeatureTabs.tsx';
-import LighthouseScores from '@/components/landing/LighthouseScores.astro';
-import Credibility from '@/components/landing/Credibility.astro';
-import CTA from '@/components/landing/CTA.astro';
+import Button from '@/components/ui/form/Button/Button.astro';
+import NpmCopyButton from '@/components/ui/marketing/NpmCopyButton/NpmCopyButton.astro';
+import BuildReceipt from '@/components/landing/BuildReceipt.astro';
+import WhatsNew from '@/components/landing/WhatsNew.astro';
+import SpecimenWall from '@/components/landing/SpecimenWall.astro';
+import GetStarted from '@/components/landing/GetStarted.astro';
+import { getReceipt } from '@/components/landing/receipt';
 import { useTranslations, type Locale } from '@/i18n';
 
 interface Props {
@@ -24,76 +26,48 @@ interface Props {
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
-
-const tab = (id: string) => ({
-  label: t(`landing.features.${id}.label`),
-  description: t(`landing.features.${id}.description`),
-  title: t(`landing.features.${id}.title`),
-  content: t(`landing.features.${id}.content`),
-});
-
-const featureCopy: FeatureTabsCopy = {
-  heading: t('landing.features.heading'),
-  headingHighlight: t('landing.features.headingHighlight'),
-  intro: t('landing.features.intro'),
-  copy: t('landing.features.copy'),
-  copied: t('landing.features.copied'),
-  tabs: {
-    agents: tab('agents'),
-    theming: tab('theming'),
-    seo: tab('seo'),
-    perf: tab('perf'),
-    components: tab('components'),
-    i18n: tab('i18n'),
-    content: tab('content'),
-  },
-};
+const receipt = getReceipt();
 ---
 
 <LandingLayout title={t('meta.home.title')} description={t('meta.home.description')}>
-  <Hero layout="split" size="lg" showGrid showBlob blobPosition="right">
-    <Badge slot="badge" pill pulse>{t('home.hero.badge')}</Badge>
+  <Hero layout="centered" size="lg" showGrid>
+    <Badge slot="badge" pill>
+      {receipt.velocity
+        ? t('home.hero.badge', { version: receipt.velocity, date: receipt.builtOn })
+        : t('home.hero.badgeNoVersion', { date: receipt.builtOn })}
+    </Badge>
 
-    <h1 slot="title">
-      {t('home.hero.title')} <span class="text-brand-500">{t('home.hero.titleHighlight')}</span>
+    <h1 slot="title" class="max-w-4xl">
+      {t('home.hero.title')} <span class="hero-highlight">{t('home.hero.titleHighlight')}</span>{t('home.hero.titleEnd')}
     </h1>
 
     <p slot="description">
-      {t('home.hero.description')}
+      {t('home.hero.leadBefore')} <code class="bg-secondary text-foreground-secondary rounded px-1.5 py-0.5 font-mono text-[0.875em]">--demo</code> {t('home.hero.leadAfter')}
     </p>
 
     <Fragment slot="actions">
-      <Button size="lg" href="https://docs.deployvelocity.com" target="_blank">
-        {t('home.hero.docs')}
-        <Icon name="arrow-right" size="sm" />
-      </Button>
-      <Button
-        size="lg"
-        variant="outline"
-        href="https://github.com/southwellmedia/velocity"
-        target="_blank"
-      >
-        <Icon name="github" size="sm" />
-        {t('home.hero.github')}
+      <NpmCopyButton copiedText={t('home.hero.copied')} class="max-sm:px-4 max-sm:text-sm" />
+      <Button size="lg" variant="secondary" href="#features" trailingIcon="arrow-right">
+        {t('home.hero.whatsNew')}
       </Button>
     </Fragment>
-
-    <TerminalDemo slot="aside" client:visible />
-
-    <SocialProof
-      class="mt-[var(--space-stack-lg)]"
-      text={t('home.hero.socialProof')}
-      avatars={[
-        'https://i.pravatar.cc/150?img=12',
-        'https://i.pravatar.cc/150?img=33',
-        '/avatars/michael.webp',
-      ]}
-    />
   </Hero>
 
-  <TechStack />
-  <FeatureTabs client:visible copy={featureCopy} />
-  <LighthouseScores />
-  <Credibility />
-  <CTA />
+  <BuildReceipt receipt={receipt} />
+  <WhatsNew skills={receipt.agentSkills} />
+  <SpecimenWall count={receipt.components} />
+  <GetStarted />
 </LandingLayout>
+
+<style>
+  /* The one use of the brand color on the first screen */
+  .hero-highlight {
+    /* --brand-ink passes AA on --brand-fill */
+    background: var(--color-brand-fill);
+    color: var(--color-brand-ink);
+    padding: 0 0.18em;
+    border-radius: 6px;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+</style>

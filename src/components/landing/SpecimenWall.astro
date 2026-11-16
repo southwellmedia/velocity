@@ -1,0 +1,189 @@
+---
+/**
+ * SpecimenWall: real components in their states, each tile naming its source.
+ * The Dark/Light control is a ToggleGroup wired to the same theme setting as
+ * the header's theme toggle, and stays in sync with it.
+ */
+import Alert from '@/components/ui/feedback/Alert/Alert.astro';
+import Badge from '@/components/ui/data-display/Badge/Badge.astro';
+import Button from '@/components/ui/form/Button/Button.astro';
+import Input from '@/components/ui/form/Input/Input.astro';
+import Kbd from '@/components/ui/content/Kbd/Kbd.astro';
+import Switch from '@/components/ui/form/Switch/Switch.astro';
+import Tabs from '@/components/ui/overlay/Tabs/Tabs.astro';
+import ToggleGroup from '@/components/ui/form/ToggleGroup/ToggleGroup.astro';
+import { getLocale, localizeRoute, useTranslations } from '@/i18n';
+
+interface Props {
+  /** Components counted in the project, for the heading */
+  count: number;
+}
+
+const { count } = Astro.props;
+const locale = getLocale(Astro);
+const t = useTranslations(locale);
+const s = (key: string) => t(`home.specimens.${key}`);
+
+// Component names and source folders are code identifiers, so they aren't translated.
+const label = {
+  button: ['Button', 'ui/form/Button'],
+  input: ['Input', 'ui/form/Input'],
+  tabs: ['Tabs', 'ui/overlay/Tabs'],
+  alert: ['Alert', 'ui/feedback/Alert'],
+  switch: ['Switch', 'ui/form/Switch'],
+  display: ['Badge · Kbd', 'ui/data-display · ui/content'],
+} as const;
+
+const tile = 'bg-card border-card-border flex flex-col gap-4 rounded-[10px] border p-6';
+---
+
+<section id="components" aria-labelledby="components-heading" class="bg-background-secondary border-border border-t">
+  <div class="mx-auto flex max-w-6xl flex-col gap-12 px-6 py-[var(--space-section)]">
+    <div class="flex flex-wrap items-end gap-6">
+      <div class="flex flex-[1_1_28rem] flex-col gap-4">
+        <p class="text-foreground-muted text-xs font-semibold tracking-[0.1em] uppercase">{s('eyebrow')}</p>
+        <h2 id="components-heading" class="font-display text-foreground text-4xl leading-tight font-bold tracking-[-0.02em] text-balance md:text-5xl">
+          {t('home.specimens.heading', { count })}
+        </h2>
+        <p class="text-foreground-muted max-w-xl text-lg">{s('intro')}</p>
+      </div>
+      <ToggleGroup
+        name="specimen-theme"
+        label={s('theme')}
+        value="dark"
+        options={[
+          { value: 'dark', label: s('dark'), icon: 'moon' },
+          { value: 'light', label: s('light'), icon: 'sun' },
+        ]}
+        class="specimen-theme"
+      />
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div class={tile}>
+        <p class="specimen-label"><span>{label.button[0]}</span><code>{label.button[1]}</code></p>
+        <div class="flex flex-wrap gap-2">
+          <Button size="sm">{s('primary')}</Button>
+          <Button size="sm" variant="secondary">{s('secondary')}</Button>
+          <Button size="sm" variant="outline">{s('outline')}</Button>
+          <Button size="sm" variant="secondary" disabled>{s('disabled')}</Button>
+        </div>
+      </div>
+
+      <div class={tile}>
+        <p class="specimen-label"><span>{label.input[0]}</span><code>{label.input[1]}</code></p>
+        <Input
+          id="specimen-email"
+          type="email"
+          name="specimen-email"
+          label={s('emailLabel')}
+          placeholder={s('emailPlaceholder')}
+          hint={s('emailHint')}
+          autocomplete="off"
+        />
+      </div>
+
+      <div class={tile}>
+        <p class="specimen-label"><span>{label.tabs[0]}</span><code>{label.tabs[1]}</code></p>
+        <Tabs
+          tabs={[
+            { id: 'specimen-astro', label: s('tabAstro') },
+            { id: 'specimen-react', label: s('tabReact') },
+            { id: 'specimen-tokens', label: s('tabTokens') },
+          ]}
+        >
+          <p data-tab-content="specimen-astro" class="text-foreground-secondary text-sm">{s('tabAstroText')}</p>
+          <p data-tab-content="specimen-react" class="text-foreground-secondary text-sm">{s('tabReactText')}</p>
+          <p data-tab-content="specimen-tokens" class="text-foreground-secondary text-sm">{s('tabTokensText')}</p>
+        </Tabs>
+      </div>
+
+      <div class={tile}>
+        <p class="specimen-label"><span>{label.alert[0]}</span><code>{label.alert[1]}</code></p>
+        <Alert variant="success" title={s('alertTitle')}>{s('alertText')}</Alert>
+      </div>
+
+      <div class={tile}>
+        <p class="specimen-label"><span>{label.switch[0]}</span><code>{label.switch[1]}</code></p>
+        <Switch id="specimen-switch" name="specimen-switch" label={s('switchLabel')} description={s('switchHint')} checked />
+      </div>
+
+      <div class={tile}>
+        <p class="specimen-label"><span>{label.display[0]}</span><code>{label.display[1]}</code></p>
+        <div class="flex flex-wrap gap-2">
+          <Badge>{s('badgeDefault')}</Badge>
+          <Badge variant="success">{s('badgeSuccess')}</Badge>
+          <Badge variant="warning">{s('badgeWarning')}</Badge>
+          <Badge variant="info">{s('badgeInfo')}</Badge>
+        </div>
+        <p class="text-foreground-secondary flex items-center gap-2 text-sm">
+          <Kbd keys={['Ctrl', 'K']} />
+          {s('kbdText')}
+        </p>
+      </div>
+    </div>
+
+    <a
+      href={localizeRoute('components', locale)}
+      class="text-foreground hover:text-foreground-secondary self-start font-medium underline underline-offset-4"
+    >
+      {s('browse')}
+    </a>
+  </div>
+</section>
+
+<style>
+  .specimen-label {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2);
+    font-size: var(--text-xs);
+    color: var(--color-foreground-muted);
+  }
+
+  .specimen-label span {
+    font-weight: 600;
+    color: var(--color-foreground);
+  }
+
+  .specimen-label code {
+    font-family: var(--font-mono);
+  }
+</style>
+
+<script>
+  // Same setting the header toggle and theme-script.js use: a `dark` class on <html>
+  // plus localStorage.theme. Observing the class keeps both controls in step.
+  function initSpecimenTheme() {
+    const inputs = [...document.querySelectorAll<HTMLInputElement>('input[name="specimen-theme"]')].filter(
+      (input) => !input.dataset.themeBound,
+    );
+    if (!inputs.length) return;
+
+    const root = document.documentElement;
+    const sync = () => {
+      const current = root.classList.contains('dark') ? 'dark' : 'light';
+      inputs.forEach((input) => (input.checked = input.value === current));
+    };
+
+    inputs.forEach((input) => {
+      input.dataset.themeBound = 'true';
+      input.addEventListener('change', () => {
+        if (!input.checked) return;
+        root.classList.toggle('dark', input.value === 'dark');
+        try {
+          localStorage.setItem('theme', input.value);
+        } catch {
+          // Storage blocked: the theme still changes for this page.
+        }
+      });
+    });
+
+    new MutationObserver(sync).observe(root, { attributes: true, attributeFilter: ['class'] });
+    sync();
+  }
+
+  initSpecimenTheme();
+  document.addEventListener('astro:after-swap', initSpecimenTheme);
+</script>

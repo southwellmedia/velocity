@@ -1,0 +1,53 @@
+---
+/**
+ * GetStarted: how to create a project from the demo, with the CLI flags.
+ */
+import Button from '@/components/ui/form/Button/Button.astro';
+import NpmCopyButton from '@/components/ui/marketing/NpmCopyButton/NpmCopyButton.astro';
+import { getLocale, useTranslations } from '@/i18n';
+
+const t = useTranslations(getLocale(Astro));
+
+const flags = [
+  { flag: '--demo', desc: t('home.start.flags.demo') },
+  { flag: '--components', desc: t('home.start.flags.components') },
+  { flag: '--i18n', desc: t('home.start.flags.i18n') },
+  { flag: '--pages', desc: t('home.start.flags.pages') },
+  { flag: '-y', desc: t('home.start.flags.yes') },
+];
+---
+
+<section id="start" aria-labelledby="start-heading" class="bg-background border-border border-t">
+  <div class="mx-auto flex max-w-6xl flex-wrap items-start gap-12 px-6 py-[var(--space-section)]">
+    <div class="flex flex-[1_1_26rem] flex-col gap-4">
+      <p class="text-foreground-muted text-xs font-semibold tracking-[0.1em] uppercase">{t('home.start.eyebrow')}</p>
+      <h2 id="start-heading" class="font-display text-foreground text-4xl leading-tight font-bold tracking-[-0.02em] text-balance md:text-5xl">
+        {t('home.start.heading')}
+      </h2>
+      <p class="text-foreground-muted max-w-lg text-lg">{t('home.start.intro')}</p>
+      <div class="mt-4 flex flex-wrap gap-3">
+        <NpmCopyButton copiedText={t('home.hero.copied')} class="max-sm:px-4 max-sm:text-sm" />
+        <Button size="lg" variant="secondary" href="https://docs.deployvelocity.com" target="_blank" trailingIcon="arrow-up-right">
+          {t('home.start.docs')}
+        </Button>
+        <Button size="lg" variant="ghost" href="https://github.com/southwellmedia/velocity" target="_blank" leadingIcon="github">
+          {t('home.start.github')}
+        </Button>
+      </div>
+    </div>
+
+    <div class="bg-card border-card-border flex-[1_1_22rem] overflow-hidden rounded-[10px] border">
+      <h3 class="text-foreground-muted border-border border-b px-5 py-3 font-mono text-xs font-semibold tracking-[0.1em] uppercase">
+        {t('home.start.flagsLabel')}
+      </h3>
+      <dl class="divide-border divide-y">
+        {flags.map(({ flag, desc }) => (
+          <div class="flex items-baseline gap-4 px-5 py-3.5">
+            <dt class="text-foreground w-28 shrink-0 font-mono text-sm font-semibold">{flag}</dt>
+            <dd class="text-foreground-secondary text-sm">{desc}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </div>
+</section>

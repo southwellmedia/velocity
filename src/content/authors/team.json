@@ -1,9 +1,4 @@
 {
-  "name": "Southwell Media",
-  "bio": "A digital agency focused on building fast, beautiful, and accessible websites.",
-  "social": {
-    "twitter": "https://twitter.com/southwellmedia",
-    "github": "https://github.com/southwellmedia",
-    "linkedin": "https://linkedin.com/company/southwellmedia"
-  }
+  "name": "Velocity",
+  "bio": "Sample author profile. Replace it with your own in src/content/authors/."
 }
