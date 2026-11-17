@@ -1,10 +1,5 @@
-import {
-  useEffect,
-  useRef,
-  useCallback,
-  type ReactNode,
-} from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { X } from 'lucide-react';
 import { cn } from '@/lib/cn';
 
 const sizes = {
@@ -16,185 +11,133 @@ const sizes = {
 
 interface DialogProps {
   open: boolean;
+  /** Called however the dialog closes: Escape, the backdrop, the close button or the back gesture */
   onClose: () => void;
   title?: string;
   description?: string;
+  /** Accessible name when there is no visible title */
+  label?: string;
+  /** Accessible name of the close button (pass a translated string) */
+  closeLabel?: string;
   size?: keyof typeof sizes;
+  /** 'any': Escape and backdrop click close it (default). 'closerequest': Escape only. 'none': only your code closes it. */
+  closedby?: 'any' | 'closerequest' | 'none';
   className?: string;
   children: ReactNode;
   footer?: ReactNode;
 }
 
-const FOCUSABLE_SELECTOR =
-  'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const supportsClosedBy =
+  typeof HTMLDialogElement !== 'undefined' && 'closedBy' in HTMLDialogElement.prototype;
 
+function outside(event: PointerEvent, dialog: HTMLDialogElement) {
+  const r = dialog.getBoundingClientRect();
+  return (
+    event.clientX < r.left ||
+    event.clientX > r.right ||
+    event.clientY < r.top ||
+    event.clientY > r.bottom
+  );
+}
+
+/**
+ * A modal on the native <dialog> element, opened with showModal(). The browser
+ * contains focus, makes the page inert, closes it on Escape and returns focus
+ * to whatever opened it; shares its styles with Dialog.astro.
+ */
 export function Dialog({
   open,
   onClose,
   title,
   description,
+  label,
+  closeLabel = 'Close',
   size = 'md',
+  closedby = 'any',
   className,
   children,
   footer,
 }: DialogProps) {
-  const panelRef = useRef<HTMLDivElement>(null);
-  const previousActiveElementRef = useRef<HTMLElement | null>(null);
+  const ref = useRef<HTMLDialogElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+  const id = useId();
+  const titleId = title ? `${id}-title` : undefined;
+  const descriptionId = description ? `${id}-description` : undefined;
 
-  const getFocusableElements = useCallback((): HTMLElement[] => {
-    if (!panelRef.current) return [];
-    return Array.from(
-      panelRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
-    ).filter((el) => !el.hasAttribute('disabled'));
-  }, []);
-
-  // Body scroll lock and focus management on open/close
+  // Mirror the `open` prop onto the element.
   useEffect(() => {
-    if (open) {
-      previousActiveElementRef.current = document.activeElement as HTMLElement;
-      document.body.classList.add('overflow-hidden');
+    const dialog = ref.current;
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+  }, [open]);
 
-      // Focus first focusable element after render
-      requestAnimationFrame(() => {
-        const focusable = getFocusableElements();
-        if (focusable.length > 0) {
-          focusable[0].focus();
-        }
+  // Report every close back to the parent, and add backdrop clicks where
+  // closedby isn't supported yet (Safari).
+  useEffect(() => {
+    const dialog = ref.current;
+    if (!dialog) return;
+    const controller = new AbortController();
+    const { signal } = controller;
+    dialog.addEventListener('close', () => onCloseRef.current(), { signal });
+    if (closedby === 'any' && !supportsClosedBy) {
+      let pressedOutside = false;
+      dialog.addEventListener('pointerdown', (e) => (pressedOutside = outside(e, dialog)), {
+        signal,
       });
-    } else {
-      document.body.classList.remove('overflow-hidden');
-      previousActiveElementRef.current?.focus();
+      dialog.addEventListener(
+        'pointerup',
+        (e) => {
+          if (pressedOutside && outside(e, dialog)) dialog.close();
+        },
+        { signal }
+      );
     }
+    return () => controller.abort();
+  }, [closedby]);
 
-    return () => {
-      document.body.classList.remove('overflow-hidden');
-    };
-  }, [open, getFocusableElements]);
-
-  // Focus trap and Escape key
-  useEffect(() => {
-    if (!open) return;
-
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        onClose();
-        return;
-      }
-
-      if (e.key !== 'Tab') return;
-
-      const focusable = getFocusableElements();
-      if (focusable.length === 0) return;
-
-      const firstFocusable = focusable[0];
-      const lastFocusable = focusable[focusable.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstFocusable) {
-          e.preventDefault();
-          lastFocusable.focus();
-        }
-      } else {
-        if (document.activeElement === lastFocusable) {
-          e.preventDefault();
-          firstFocusable.focus();
-        }
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open, onClose, getFocusableElements]);
-
-  if (!open) return null;
-
-  const titleId = title ? 'dialog-title' : undefined;
-  const descriptionId = description ? 'dialog-description' : undefined;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-50"
-      role="dialog"
-      aria-modal="true"
+  return (
+    <dialog
+      ref={ref}
+      className={cn(
+        'velocity-dialog bg-background text-foreground border-border m-auto w-[calc(100%-2rem)] rounded-xl border p-0 shadow-xl',
+        sizes[size],
+        className
+      )}
+      {...({ closedby } as Record<string, string>)}
       aria-labelledby={titleId}
+      aria-label={!title ? label : undefined}
       aria-describedby={descriptionId}
     >
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-foreground/50 backdrop-blur-sm opacity-100 transition-opacity duration-200"
-        aria-hidden="true"
-        onClick={onClose}
-      />
+      <button
+        type="button"
+        className="text-foreground-muted hover:text-foreground focus-visible:ring-ring absolute top-4 right-4 rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none"
+        onClick={() => ref.current?.close()}
+        aria-label={closeLabel}
+      >
+        <X className="h-5 w-5" aria-hidden="true" />
+      </button>
 
-      {/* Dialog Panel */}
-      <div className="fixed inset-0 flex items-center justify-center p-4 overflow-y-auto">
-        <div
-          ref={panelRef}
-          className={cn(
-            'relative w-full',
-            sizes[size],
-            'bg-background rounded-xl border border-border shadow-xl',
-            'scale-100 opacity-100 transition-all duration-200',
-            className
+      {(title || description) && (
+        <div className="p-6 pb-0">
+          {title && (
+            <h2 id={titleId} className="text-foreground m-0 pr-8 text-lg font-semibold">
+              {title}
+            </h2>
           )}
-        >
-          {/* Close Button */}
-          <button
-            type="button"
-            className={cn(
-              'absolute top-4 right-4',
-              'text-foreground-muted hover:text-foreground',
-              'transition-colors',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-md'
-            )}
-            onClick={onClose}
-            aria-label="Close dialog"
-          >
-            <svg
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-
-          {/* Header */}
-          {(title || description) && (
-            <div className="p-6 pb-0">
-              {title && (
-                <h2
-                  id={titleId}
-                  className="text-lg font-semibold text-foreground pr-8"
-                >
-                  {title}
-                </h2>
-              )}
-              {description && (
-                <p
-                  id={descriptionId}
-                  className="mt-1 text-sm text-foreground-muted"
-                >
-                  {description}
-                </p>
-              )}
-            </div>
+          {description && (
+            <p id={descriptionId} className="text-foreground-muted mt-1 text-sm">
+              {description}
+            </p>
           )}
-
-          {/* Content */}
-          <div className="p-6">{children}</div>
-
-          {/* Footer */}
-          {footer}
         </div>
-      </div>
-    </div>,
-    document.body
+      )}
+
+      <div className="p-6">{children}</div>
+
+      {footer}
+    </dialog>
   );
 }
 

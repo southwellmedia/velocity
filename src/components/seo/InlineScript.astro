@@ -10,9 +10,12 @@
  *   <InlineScript code={code} />
  *
  * The code must be static. Pass data through <script type="application/json">.
+ * `type` covers other inline script types the CSP governs, such as
+ * "speculationrules".
  */
 interface Props {
   code: string;
+  type?: 'module' | 'speculationrules';
 }
 
 // HTML parsers normalize line endings, so hash what the browser will see
@@ -23,4 +26,4 @@ const hash = btoa(String.fromCharCode(...new Uint8Array(digest)));
 Astro.csp?.insertScriptHash(`sha256-${hash}`);
 ---
 
-<script is:inline set:html={code} />
+<script is:inline type={Astro.props.type} set:html={code} />

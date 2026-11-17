@@ -1,0 +1,37 @@
+{
+  "prerender": [
+    {
+      "source": "document",
+      "where": {
+        "and": [
+          { "href_matches": "/*" },
+          {
+            "not": {
+              "href_matches": [
+                "/_actions/*",
+                "/_astro/*",
+                "/_server-islands/*",
+                "/api/*",
+                "/og/*",
+                "/*.xml",
+                "/*.txt",
+                "/*.png",
+                "/*.webmanifest",
+                "/*logout*",
+                "/*log-out*",
+                "/*signout*",
+                "/*sign-out*"
+              ]
+            }
+          },
+          {
+            "not": {
+              "selector_matches": "[rel~=nofollow], [download], [target=_blank], [data-no-prerender]"
+            }
+          }
+        ]
+      },
+      "eagerness": "moderate"
+    }
+  ]
+}

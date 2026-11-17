@@ -172,7 +172,6 @@ const configJson = JSON.stringify(consentConfig);
         const MODE = config.mode;
         const DELAY = config.showDelay;
         let hideBannerTimeout: ReturnType<typeof setTimeout> | null = null;
-        let currentDialogObserver: MutationObserver | null = null;
         let bindController: AbortController | null = null;
 
         // ── Storage helpers ──
@@ -406,30 +405,20 @@ const configJson = JSON.stringify(consentConfig);
         }
 
         // ── Re-show banner when Dialog closes without saving ──
-        function watchDialogClose() {
+        function watchDialogClose(signal: AbortSignal) {
           const dialogEl = document.getElementById('consent-settings');
           if (!dialogEl) return;
 
-          if (currentDialogObserver) {
-            currentDialogObserver.disconnect();
-            currentDialogObserver = null;
-          }
-
-          currentDialogObserver = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-              if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                if (dialogEl.classList.contains('hidden')) {
-                  const state = w.__consentState;
-                  if ((!state || !state.decided) && needsBanner()) {
-                    showBanner();
-                  } else {
-                    showReopener();
-                  }
-                }
-              }
-            });
-          });
-          currentDialogObserver.observe(dialogEl, { attributes: true, attributeFilter: ['class'] });
+          // The native <dialog> fires `close` however it was dismissed:
+          // Escape, the backdrop, a close button or applyConsent().
+          dialogEl.addEventListener('close', function() {
+            const state = w.__consentState;
+            if ((!state || !state.decided) && needsBanner()) {
+              showBanner();
+            } else {
+              showReopener();
+            }
+          }, { signal: signal });
         }
 
         // ── Bind event listeners ──
@@ -468,7 +457,7 @@ const configJson = JSON.stringify(consentConfig);
             openSettings();
           }, { signal: signal });
 
-          watchDialogClose();
+          watchDialogClose(signal);
         }
 
         // Run on page load and view transitions

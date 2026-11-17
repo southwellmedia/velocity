@@ -2,6 +2,8 @@
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { generateId } from '@/lib/utils';
+import { getLocale, useTranslations } from '@/i18n';
+import { fieldMessages } from '@/lib/field-errors';
 import { inputVariants, inputSizeConfig } from './input.variants';
 
 interface Props extends HTMLAttributes<'input'> {
@@ -17,12 +19,14 @@ interface Props extends HTMLAttributes<'input'> {
 
 const { label, error, hint, size = 'md', leadingIcon, trailingIcon, class: className, id, ...attrs } = Astro.props;
 
+const t = useTranslations(getLocale(Astro));
 const inputId = id || generateId('input');
 const config = inputSizeConfig[size];
 
 const inputStyles = cn(
   inputVariants({ size }),
   error && 'border-destructive focus-visible:ring-destructive',
+  'user-invalid:border-destructive user-invalid:focus-visible:ring-destructive',
   leadingIcon ? config.leadingPadding : config.baseLeftPadding,
   trailingIcon ? config.trailingPadding : config.baseRightPadding
 );
@@ -60,6 +64,8 @@ import Icon from '../../primitives/Icon/Icon.astro';
       class={inputStyles}
       aria-invalid={error ? 'true' : undefined}
       aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+      data-describedby={!error && hint ? `${inputId}-hint` : undefined}
+      data-error-id={!error ? `${inputId}-client-error` : undefined}
       {...attrs}
     />
 
@@ -81,6 +87,16 @@ import Icon from '../../primitives/Icon/Icon.astro';
   }
 
   {
+    !error && (
+      <p id={`${inputId}-client-error`} class="text-destructive flex items-start gap-1.5 text-left text-sm" data-field-error data-messages={fieldMessages(t)} hidden>
+        <Icon name="circle-alert" size="sm" class="mt-0.5 shrink-0" />
+        <span class="sr-only">{t('a11y.error')}: </span>
+        <span data-field-error-text></span>
+      </p>
+    )
+  }
+
+  {
     hint && !error && (
       <p id={`${inputId}-hint`} class="text-sm text-muted-foreground">
         {hint}
@@ -88,3 +104,9 @@ import Icon from '../../primitives/Icon/Icon.astro';
     )
   }
 </div>
+
+<script>
+  import { initFieldErrors } from '@/lib/field-errors';
+
+  initFieldErrors();
+</script>
