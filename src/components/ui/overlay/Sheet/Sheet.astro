@@ -36,6 +36,7 @@ const placement = {
 <dialog
   id={id}
   class={cn('velocity-sheet bg-background text-foreground border-border m-0 border p-0 shadow-xl', placement[side], className)}
+  closedby="any"
   data-sheet
   data-side={side}
   aria-labelledby={`${id}-title`}
@@ -68,30 +69,88 @@ const placement = {
 </dialog>
 
 <style>
+  /* Keep scroll gestures from reaching the page behind the sheet. */
+  .velocity-sheet:modal {
+    overscroll-behavior: contain;
+  }
   .velocity-sheet::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
     background: color-mix(in oklch, var(--color-foreground) 45%, transparent);
+    opacity: 0;
+    transition:
+      opacity 220ms ease-out,
+      overlay 220ms ease-out allow-discrete,
+      display 220ms ease-out allow-discrete;
+  }
+  .velocity-sheet[open]::backdrop {
+    opacity: 1;
+  }
+
+  /* Slide in and out. The closed rule is the exit; @starting-style is the entry. */
+  .velocity-sheet {
+    transition:
+      translate 220ms ease-out,
+      overlay 220ms ease-out allow-discrete,
+      display 220ms ease-out allow-discrete;
+  }
+  .velocity-sheet[data-side='left'] {
+    translate: -100% 0;
+  }
+  .velocity-sheet[data-side='right'] {
+    translate: 100% 0;
+  }
+  .velocity-sheet[data-side='bottom'] {
+    translate: 0 100%;
   }
   .velocity-sheet[open] {
-    animation: velocity-sheet-in 220ms ease-out;
+    translate: 0 0;
   }
-  .velocity-sheet[data-side='left'][open] {
-    --sheet-from: translateX(-100%);
-  }
-  .velocity-sheet[data-side='right'][open] {
-    --sheet-from: translateX(100%);
-  }
-  .velocity-sheet[data-side='bottom'][open] {
-    --sheet-from: translateY(100%);
-  }
-  @keyframes velocity-sheet-in {
-    from {
-      transform: var(--sheet-from);
+  @starting-style {
+    .velocity-sheet[open]::backdrop {
+      opacity: 0;
+    }
+    .velocity-sheet[data-side='left'][open] {
+      translate: -100% 0;
+    }
+    .velocity-sheet[data-side='right'][open] {
+      translate: 100% 0;
+    }
+    .velocity-sheet[data-side='bottom'][open] {
+      translate: 0 100%;
     }
   }
 </style>
 
 <script>
+  // closedby="any" handles backdrop clicks natively; Safari doesn't support it
+  // yet, so there a press and release that both land outside the panel close it
+  // (a text selection dragged onto the backdrop does not).
+  const supportsClosedBy = 'closedBy' in HTMLDialogElement.prototype;
+  function outside(event: PointerEvent, dialog: HTMLDialogElement) {
+    // Only the <dialog> itself is hit outside its box (that's the backdrop).
+    // Events from a descendant, such as a Popover panel that overflows the
+    // dialog, bubble through it and must not count.
+    if (event.target !== dialog) return false;
+    const r = dialog.getBoundingClientRect();
+    return event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom;
+  }
+
   function initSheets() {
+    if (!supportsClosedBy) {
+      document.querySelectorAll<HTMLDialogElement>('dialog[data-sheet]').forEach((sheet) => {
+        if (sheet.dataset.sheetInit) return;
+        sheet.dataset.sheetInit = 'true';
+        let pressedOutside = false;
+        sheet.addEventListener('pointerdown', (e) => {
+          pressedOutside = outside(e, sheet);
+        });
+        sheet.addEventListener('pointerup', (e) => {
+          if (pressedOutside && outside(e, sheet)) sheet.close();
+        });
+      });
+    }
+
     if (document.documentElement.dataset.sheetsInit) return;
     document.documentElement.dataset.sheetsInit = 'true';
 
@@ -100,15 +159,12 @@ const placement = {
       const opener = target.closest<HTMLElement>('[data-sheet-open]');
       if (opener) {
         const sheet = document.getElementById(opener.dataset.sheetOpen ?? '');
-        if (sheet instanceof HTMLDialogElement) sheet.showModal();
+        if (sheet instanceof HTMLDialogElement && !sheet.open) sheet.showModal();
         return;
       }
       if (target.closest('[data-sheet-close]')) {
         target.closest('dialog')?.close();
-        return;
       }
-      // A click on the dialog element itself is a click on its backdrop
-      if (target instanceof HTMLDialogElement && target.hasAttribute('data-sheet')) target.close();
     });
   }
 

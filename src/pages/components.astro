@@ -2436,15 +2436,3 @@ const categories = [
 
 </style>
 
-<script>
-  // Inline onclick handlers are blocked by the CSP, so buttons declare their target
-  type DialogWindow = Window & { openDialog?: (id: string) => void; closeDialog?: (id: string) => void };
-
-  document.addEventListener('click', (event) => {
-    const button = (event.target as Element).closest<HTMLElement>('[data-dialog-open], [data-dialog-close]');
-    if (!button) return;
-    const w = window as DialogWindow;
-    if (button.dataset.dialogOpen) w.openDialog?.(button.dataset.dialogOpen);
-    if (button.dataset.dialogClose) w.closeDialog?.(button.dataset.dialogClose);
-  });
-</script>

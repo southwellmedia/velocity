@@ -2,6 +2,9 @@
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { generateId } from '@/lib/utils';
+import { getLocale, useTranslations } from '@/i18n';
+import { fieldMessages } from '@/lib/field-errors';
+import Icon from '../../primitives/Icon/Icon.astro';
 import { textareaVariants } from './textarea.variants';
 
 interface Props extends HTMLAttributes<'textarea'> {
@@ -10,6 +13,8 @@ interface Props extends HTMLAttributes<'textarea'> {
   hint?: string;
   size?: 'sm' | 'md' | 'lg';
   rows?: number;
+  /** Grow with its content (CSS field-sizing) where supported. Defaults to true. */
+  autoResize?: boolean;
 }
 
 const {
@@ -18,16 +23,26 @@ const {
   hint,
   size = 'md',
   rows = 4,
+  autoResize = true,
   class: className,
   id,
   ...attrs
 } = Astro.props;
 
+const t = useTranslations(getLocale(Astro));
 const textareaId = id || generateId('textarea');
+// The caller's aria-describedby (external help text) is kept alongside our own
+// hint or error, and field-errors.ts only ever adds or removes its error id.
+const { 'aria-describedby': callerDescribedBy, ...fieldAttrs } = attrs;
+const describedBy =
+  [error ? `${textareaId}-error` : hint ? `${textareaId}-hint` : undefined, callerDescribedBy].filter(Boolean).join(' ') || undefined;
 
 const textareaStyles = cn(
   textareaVariants({ size }),
-  error && 'border-destructive focus-visible:ring-destructive'
+  error && 'border-destructive focus-visible:ring-destructive',
+  'user-invalid:border-destructive user-invalid:focus-visible:ring-destructive',
+  // field-sizing: content lets it grow with the text; rows still sets the starting height.
+  autoResize && '[field-sizing:content] max-h-[60vh]'
 );
 ---
 
@@ -44,15 +59,27 @@ const textareaStyles = cn(
     id={textareaId}
     class={textareaStyles}
     rows={rows}
+    style={autoResize ? `min-height: calc(${rows}lh + 1.5rem)` : undefined}
     aria-invalid={error ? 'true' : undefined}
-    aria-describedby={error ? `${textareaId}-error` : hint ? `${textareaId}-hint` : undefined}
-    {...attrs}
+    aria-describedby={describedBy}
+    data-error-id={!error ? `${textareaId}-client-error` : undefined}
+    {...fieldAttrs}
   />
 
   {
     error && (
       <p id={`${textareaId}-error`} class="text-sm text-destructive">
         {error}
+      </p>
+    )
+  }
+
+  {
+    !error && (
+      <p id={`${textareaId}-client-error`} class="text-destructive flex items-start gap-1.5 text-left text-sm" data-field-error data-messages={fieldMessages(t)} hidden>
+        <Icon name="circle-alert" size="sm" class="mt-0.5 shrink-0" />
+        <span class="sr-only">{t('a11y.error')}: </span>
+        <span data-field-error-text></span>
       </p>
     )
   }
@@ -65,3 +92,9 @@ const textareaStyles = cn(
     )
   }
 </div>
+
+<script>
+  import { initFieldErrors } from '@/lib/field-errors';
+
+  initFieldErrors();
+</script>

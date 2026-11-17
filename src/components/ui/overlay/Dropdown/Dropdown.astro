@@ -1,7 +1,11 @@
 ---
 /**
  * Dropdown Component
- * Accessible dropdown menu with keyboard navigation and optional icons
+ * A menu of links opened from the button in the `trigger` slot. The menu is a
+ * native popover, so it sits in the top layer (no clipping by overflow or
+ * z-index), and Escape or an outside click closes it. It sits next to its
+ * button with CSS anchor positioning where supported and a few lines of script
+ * elsewhere. Arrow keys, Home and End move between items; Tab leaves the menu.
  */
 import { cn } from '@/lib/cn';
 import Icon from '../../primitives/Icon/Icon.astro';
@@ -21,6 +25,7 @@ interface Props {
 }
 
 const { items, align = 'start', class: className } = Astro.props;
+const menuId = `dropdown-${Math.random().toString(36).slice(2, 9)}`;
 
 // Map common action names to icons
 const iconMap: Record<string, string> = {
@@ -37,18 +42,17 @@ const iconMap: Record<string, string> = {
 };
 ---
 
-<div class={cn('relative inline-block', className)} data-dropdown>
-  <div data-dropdown-trigger>
+<div class={cn('relative inline-block', className)} data-dropdown data-align={align} data-menu-id={menuId}>
+  <div class="contents" data-dropdown-trigger>
     <slot name="trigger" />
   </div>
 
   <div
+    id={menuId}
+    popover="auto"
     class={cn(
-      'absolute z-[100] mt-2 min-w-[180px] p-1.5',
-      'rounded-xl bg-background border border-border shadow-xl',
-      'opacity-0 invisible translate-y-1',
-      'transition-all duration-150 ease-out',
-      align === 'end' ? 'right-0' : 'left-0'
+      'velocity-dropdown-menu m-0 min-w-[min(180px,calc(100vw-16px))] p-1.5',
+      'bg-background border-border rounded-xl border shadow-xl'
     )}
     data-dropdown-menu
     role="menu"
@@ -56,31 +60,28 @@ const iconMap: Record<string, string> = {
   >
     {items.map((item, index) =>
       item.separator ? (
-        <div class="my-1.5 h-px bg-border" role="separator" />
+        <div class="bg-border my-1.5 h-px" role="separator" />
       ) : (
         <a
-          href={item.href || '#'}
+          href={item.disabled ? undefined : item.href || '#'}
           class={cn(
-            'flex items-center gap-2.5 px-3 py-2 text-sm rounded-md',
-            'transition-colors outline-none',
-            'focus-visible:ring-2 focus-visible:ring-ring',
+            'flex items-center gap-2.5 rounded-md px-3 py-2 text-sm',
+            'outline-none transition-colors',
+            'focus-visible:ring-ring focus-visible:ring-2',
             item.disabled
-              ? 'opacity-50 cursor-not-allowed pointer-events-none text-foreground-muted'
+              ? 'text-foreground-muted cursor-not-allowed opacity-50'
               : 'hover:bg-secondary focus:bg-secondary text-foreground-secondary hover:text-foreground'
           )}
           role="menuitem"
-          tabindex={item.disabled ? -1 : 0}
-          aria-disabled={item.disabled}
+          tabindex="-1"
+          aria-disabled={item.disabled ? 'true' : undefined}
           data-dropdown-item={index}
         >
           {item.icon && (
             <Icon
               name={iconMap[item.icon] || item.icon}
               size="sm"
-              class={cn(
-                'shrink-0',
-                item.disabled ? 'text-foreground-subtle' : 'text-foreground-muted'
-              )}
+              class={cn('shrink-0', item.disabled ? 'text-foreground-subtle' : 'text-foreground-muted')}
             />
           )}
           <span>{item.label}</span>
@@ -90,67 +91,126 @@ const iconMap: Record<string, string> = {
   </div>
 </div>
 
+<style>
+  @media (prefers-reduced-motion: no-preference) {
+    /* Closing: in effect once :popover-open is removed */
+    .velocity-dropdown-menu {
+      opacity: 0;
+      translate: 0 -0.25rem;
+      transition: opacity, translate, display, overlay;
+      transition-duration: 0.15s;
+      transition-behavior: allow-discrete;
+    }
+    .velocity-dropdown-menu:popover-open {
+      opacity: 1;
+      translate: 0 0;
+      transition-duration: 0.1s;
+    }
+    @starting-style {
+      .velocity-dropdown-menu:popover-open {
+        opacity: 0;
+        translate: 0 -0.25rem;
+      }
+    }
+  }
+</style>
+
 <script>
+  import { anchorPopover } from '@/lib/anchor';
+
   function initDropdowns() {
     document.querySelectorAll<HTMLElement>('[data-dropdown]').forEach((dropdown) => {
       if (dropdown.dataset.dropdownInit) return;
+      const menu = dropdown.querySelector<HTMLElement>('[data-dropdown-menu]');
+      const wrapper = dropdown.querySelector<HTMLElement>('[data-dropdown-trigger]');
+      const trigger = wrapper?.querySelector<HTMLElement>('button, a, [tabindex]');
+      if (!menu || !trigger) return;
       dropdown.dataset.dropdownInit = 'true';
 
-      const trigger = dropdown.querySelector('[data-dropdown-trigger]');
-      const menu = dropdown.querySelector<HTMLElement>('[data-dropdown-menu]');
-      const items = dropdown.querySelectorAll<HTMLElement>('[data-dropdown-item]');
-      let isOpen = false;
-      let focusedIndex = -1;
+      const items = () =>
+        Array.from(menu.querySelectorAll<HTMLElement>('[data-dropdown-item]:not([aria-disabled="true"])'));
+      let keyboardOpen = false;
+      let stopAnchor = () => {};
 
-      function open() {
-        isOpen = true;
-        menu?.classList.remove('opacity-0', 'invisible', 'translate-y-1');
-        menu?.classList.add('opacity-100', 'visible', 'translate-y-0');
-        focusedIndex = 0;
-        items[0]?.focus();
+      // A slotted <button> is wired to the popover natively (popovertarget also
+      // keeps it in the menu's light-dismiss group). popovertarget only works on
+      // buttons, so a link-styled trigger toggles the menu from script instead.
+      if (trigger instanceof HTMLButtonElement) {
+        trigger.setAttribute('popovertarget', menu.id);
+      } else {
+        let wasOpen = false;
+        // Light dismiss closes the menu on pointerdown, before this click lands.
+        trigger.addEventListener('pointerdown', () => (wasOpen = menu.matches(':popover-open')));
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          // detail is 0 for keyboard activation, which has no pointerdown first.
+          if (e.detail === 0 ? menu.matches(':popover-open') : wasOpen) menu.hidePopover();
+          else menu.showPopover();
+          wasOpen = false;
+        });
+        trigger.addEventListener('keydown', (e) => {
+          if (e.key === ' ') {
+            e.preventDefault();
+            trigger.click();
+          }
+        });
       }
-
-      function close() {
-        isOpen = false;
-        menu?.classList.add('opacity-0', 'invisible', 'translate-y-1');
-        menu?.classList.remove('opacity-100', 'visible', 'translate-y-0');
-        focusedIndex = -1;
+      trigger.setAttribute('aria-haspopup', 'menu');
+      trigger.setAttribute('aria-expanded', 'false');
+      if (!menu.hasAttribute('aria-labelledby')) {
+        if (!trigger.id) trigger.id = `${menu.id}-trigger`;
+        menu.setAttribute('aria-labelledby', trigger.id);
       }
 
       function focusItem(index: number) {
-        if (index < 0) index = items.length - 1;
-        if (index >= items.length) index = 0;
-        focusedIndex = index;
-        items[index]?.focus();
+        const list = items();
+        if (!list.length) return;
+        const i = (index + list.length) % list.length;
+        list.forEach((el, n) => el.setAttribute('tabindex', n === i ? '0' : '-1'));
+        list[i].focus();
       }
 
-      trigger?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (isOpen) {
-          close();
-        } else {
-          open();
-        }
+      // Opening from the keyboard or assistive technology moves focus into the
+      // menu. Those clicks have detail 0; a mouse or touch click leaves focus on
+      // the trigger (ArrowDown then enters the menu), as native menus do.
+      trigger.addEventListener('click', (e) => {
+        if (e.detail === 0) keyboardOpen = true;
       });
 
-      trigger?.addEventListener('keydown', (event) => {
-        const e = event as KeyboardEvent;
-        if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
+      trigger.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') keyboardOpen = true;
+        if (e.key === 'ArrowDown') {
           e.preventDefault();
-          open();
+          keyboardOpen = true;
+          if (!menu.matches(':popover-open')) menu.showPopover();
+          else focusItem(0);
         }
       });
 
-      menu?.addEventListener('keydown', (event) => {
-        const e = event as KeyboardEvent;
+      menu.addEventListener('toggle', (event) => {
+        const open = (event as ToggleEvent).newState === 'open';
+        trigger.setAttribute('aria-expanded', String(open));
+        if (open) {
+          stopAnchor = anchorPopover(menu, trigger, { align: dropdown.dataset.align === 'end' ? 'end' : 'start' });
+          if (keyboardOpen) focusItem(0);
+        } else {
+          stopAnchor();
+          items().forEach((el) => el.setAttribute('tabindex', '-1'));
+        }
+        keyboardOpen = false;
+      });
+
+      menu.addEventListener('keydown', (e) => {
+        const list = items();
+        const current = list.indexOf(document.activeElement as HTMLElement);
         switch (e.key) {
           case 'ArrowDown':
             e.preventDefault();
-            focusItem(focusedIndex + 1);
+            focusItem(current + 1);
             break;
           case 'ArrowUp':
             e.preventDefault();
-            focusItem(focusedIndex - 1);
+            focusItem(current - 1);
             break;
           case 'Home':
             e.preventDefault();
@@ -158,29 +218,36 @@ const iconMap: Record<string, string> = {
             break;
           case 'End':
             e.preventDefault();
-            focusItem(items.length - 1);
+            focusItem(list.length - 1);
             break;
           case 'Escape':
+            // popover="auto" closes on Escape; return focus to the trigger.
             e.preventDefault();
-            close();
-            (trigger as HTMLElement)?.focus();
+            menu.hidePopover();
+            trigger.focus();
             break;
           case 'Tab':
-            close();
+            // Clear the tab stop first: hiding returns focus to the trigger, and
+            // Tab's default action must move past the (still animating) menu.
+            list.forEach((el) => el.setAttribute('tabindex', '-1'));
+            menu.hidePopover();
             break;
         }
       });
 
-      document.addEventListener('click', (e) => {
-        if (!dropdown.contains(e.target as Node)) close();
+      // Hovering an item focuses it, so hover and focus are one item.
+      menu.addEventListener('pointermove', (e) => {
+        const item = (e.target as Element).closest<HTMLElement>('[data-dropdown-item]:not([aria-disabled="true"])');
+        if (item && document.activeElement !== item) focusItem(items().indexOf(item));
       });
 
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && isOpen) close();
+      // Choosing a link closes the menu.
+      menu.addEventListener('click', (e) => {
+        if ((e.target as Element).closest('[data-dropdown-item]:not([aria-disabled="true"])')) menu.hidePopover();
       });
     });
   }
 
   initDropdowns();
-  document.addEventListener('astro:page-load', initDropdowns);
+  document.addEventListener('astro:after-swap', initDropdowns);
 </script>

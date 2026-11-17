@@ -1,3 +1,5 @@
+import nodePath from 'node:path';
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -223,4 +225,121 @@ test('sheet and popover open, pass axe and close with Escape', async ({ page }) 
   await page.locator('[data-popover-trigger]').first().click();
   await expect(page.locator('[data-popover]').first()).toBeVisible();
   expect(seriousOnly((await new AxeBuilder({ page }).include('[data-popover]').analyze()).violations)).toEqual([]);
+});
+
+test('dialog is a native modal: Escape closes it and focus returns to its opener', async ({ page }) => {
+  test.skip(!hasRoute('components'), 'no component showcase in this project');
+  await page.goto('/components');
+  const opener = page.locator('[data-dialog-open="demo-dialog"]');
+  await opener.click();
+  const dialog = page.locator('dialog#demo-dialog');
+  await expect(dialog).toBeVisible();
+  expect(await dialog.evaluate((el: HTMLDialogElement) => el.matches(':modal'))).toBe(true);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(opener).toBeFocused();
+});
+
+test('dropdown opens in the top layer and moves through items with the arrow keys', async ({ page }) => {
+  test.skip(!hasRoute('components'), 'no component showcase in this project');
+  await page.goto('/components');
+  const menu = page.locator('[data-dropdown-menu]').first();
+  const trigger = page.locator(`[popovertarget="${await menu.getAttribute('id')}"]`);
+  await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+  await trigger.focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(menu).toBeVisible();
+  await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+  const items = menu.locator('[role="menuitem"]:not([aria-disabled="true"])');
+  await expect(items.first()).toBeFocused();
+  await page.keyboard.press('ArrowDown');
+  await expect(items.nth(1)).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+  await expect(trigger).toBeFocused();
+});
+
+test('theme toggle sets color-scheme and only stores a choice that differs from the default', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'light' });
+  await page.goto('/');
+  const html = page.locator('html');
+  const fallback = (await html.getAttribute('data-default-theme')) ?? 'system';
+  const startDark = fallback === 'dark';
+  const scheme = () => html.evaluate((el) => getComputedStyle(el).colorScheme);
+  const stored = () => page.evaluate(() => localStorage.getItem('theme'));
+  expect(await scheme()).toBe(startDark ? 'dark' : 'light');
+
+  const toggle = page.locator('[data-theme-toggle]:visible').first();
+  await toggle.click();
+  expect(await scheme()).toBe(startDark ? 'light' : 'dark');
+  expect(await stored()).toBe(startDark ? 'light' : 'dark');
+
+  // Back to what the default shows: the stored value goes instead of pinning it
+  await toggle.click();
+  expect(await scheme()).toBe(startDark ? 'dark' : 'light');
+  expect(await stored()).toBeNull();
+
+  if (fallback === 'system') {
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await expect(html).toHaveClass(/\bdark\b/);
+  }
+});
+
+test('carousel steps one slide at a time and marks the current position', async ({ page }) => {
+  test.skip(!hasRoute('components'), 'no component showcase in this project');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/components');
+  const carousel = page.locator('[data-carousel]').first();
+  await carousel.scrollIntoViewIfNeeded();
+  const markers = carousel.locator('[data-carousel-markers] button');
+  await expect(markers.first()).toHaveAttribute('aria-current', 'true');
+  await expect(carousel.locator('[data-carousel-prev]')).toBeDisabled();
+  await carousel.locator('[data-carousel-next]').click();
+  await expect(markers.nth(1)).toHaveAttribute('aria-current', 'true');
+  await expect(carousel.locator('[data-carousel-status]')).toHaveText(/2/);
+  await expect(carousel.locator('[aria-roledescription="slide"]').first()).toHaveAttribute('aria-label', /1/);
+});
+
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`destructive buttons and field errors meet contrast in ${colorScheme} mode`, async ({ page }) => {
+    test.skip(!hasRoute('components') || !hasRoute('contact'), 'needs the showcase and contact page');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.addInitScript((scheme) => localStorage.setItem('theme', scheme), colorScheme);
+    await page.goto('/components');
+    const buttons = await new AxeBuilder({ page }).include('button[class*="destructive"]').withTags(['wcag2aa']).analyze();
+    expect(seriousOnly(buttons.violations)).toEqual([]);
+
+    await page.goto('/contact');
+    const message = page.locator('#contact-form').getByLabel('Message');
+    await message.fill('short');
+    await message.blur();
+    await expect(page.locator('[data-field-error]:not([hidden])')).toHaveCount(1);
+    const form = await new AxeBuilder({ page }).include('#contact-form').withTags(['wcag2a', 'wcag2aa']).analyze();
+    expect(seriousOnly(form.violations)).toEqual([]);
+  });
+}
+
+test('without native closedby, a backdrop click still closes the dialog', async ({ page }) => {
+  test.skip(!hasRoute('components'), 'no component showcase in this project');
+  // Simulate Safari, which has no closedby yet, so the fallback script runs.
+  await page.addInitScript(() => {
+    delete (HTMLDialogElement.prototype as unknown as Record<string, unknown>).closedBy;
+  });
+  await page.goto('/components');
+  await page.locator('[data-dialog-open="demo-dialog"]').click();
+  const dialog = page.locator('dialog#demo-dialog');
+  await expect(dialog).toBeVisible();
+  // A click inside the panel does not close it
+  await dialog.locator('p').first().click();
+  await expect(dialog).toBeVisible();
+  // A click on the backdrop does
+  await page.mouse.click(5, 5);
+  await expect(dialog).toBeHidden();
+});
+
+test('speculation rules ship only when site.config opts in', async ({ page }) => {
+  const config = readFileSync(nodePath.join(process.cwd(), 'src/config/site.config.ts'), 'utf8');
+  const optedIn = /^\s*speculation:\s*'prerender'/m.test(config);
+  await page.goto('/');
+  await expect(page.locator('script[type="speculationrules"]')).toHaveCount(optedIn ? 1 : 0);
 });

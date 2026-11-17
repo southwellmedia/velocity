@@ -20,6 +20,13 @@ import { parseEnv } from 'node:util';
 /** Rendered on every page. */
 export const THEME_SCRIPT = 'src/layouts/theme-script.js';
 
+/**
+ * Rendered when site.config.ts sets `speculation: 'prerender'`. Listed either
+ * way: the setting lives in a TypeScript file this integration can't import,
+ * and the hash only admits these exact rules, so listing it unused is harmless.
+ */
+export const SPECULATION_RULES = 'src/layouts/speculation-rules.json';
+
 /** Rendered when analytics is configured. Which ones depends on the consent mode. */
 export const ANALYTICS_SCRIPTS = ['consent-defaults', 'load-ga', 'load-gtm', 'strict-ga', 'strict-gtm'].map(
   (name) => `src/components/layout/analytics/${name}.js`,
@@ -53,7 +60,7 @@ export function readBuildEnv(root) {
  */
 export function layoutScriptHashes(env, root = new URL('../', import.meta.url)) {
   const analytics = Boolean(env.PUBLIC_GA_MEASUREMENT_ID || env.PUBLIC_GTM_ID);
-  return [THEME_SCRIPT, ...(analytics ? ANALYTICS_SCRIPTS : [])].map((file) =>
+  return [THEME_SCRIPT, SPECULATION_RULES, ...(analytics ? ANALYTICS_SCRIPTS : [])].map((file) =>
     inlineScriptHash(readFileSync(new URL(file, root), 'utf8')),
   );
 }

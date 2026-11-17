@@ -2,6 +2,9 @@
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { generateId } from '@/lib/utils';
+import { getLocale, useTranslations } from '@/i18n';
+import { fieldMessages } from '@/lib/field-errors';
+import Icon from '../../primitives/Icon/Icon.astro';
 import { selectVariants } from './select.variants';
 
 interface Option {
@@ -31,11 +34,18 @@ const {
   ...attrs
 } = Astro.props;
 
+const t = useTranslations(getLocale(Astro));
 const selectId = id || generateId('select');
+// The caller's aria-describedby (external help text) is kept alongside our own
+// hint or error, and field-errors.ts only ever adds or removes its error id.
+const { 'aria-describedby': callerDescribedBy, ...fieldAttrs } = attrs;
+const describedBy =
+  [error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined, callerDescribedBy].filter(Boolean).join(' ') || undefined;
 
 const selectStyles = cn(
   selectVariants({ size }),
-  error && 'border-destructive focus-visible:ring-destructive'
+  error && 'border-destructive focus-visible:ring-destructive',
+  'user-invalid:border-destructive user-invalid:focus-visible:ring-destructive'
 );
 ---
 
@@ -53,8 +63,9 @@ const selectStyles = cn(
       id={selectId}
       class={selectStyles}
       aria-invalid={error ? 'true' : undefined}
-      aria-describedby={error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined}
-      {...attrs}
+      aria-describedby={describedBy}
+      data-error-id={!error ? `${selectId}-client-error` : undefined}
+      {...fieldAttrs}
     >
       {placeholder && <option value="" disabled selected>{placeholder}</option>}
       {options.map((option) => (
@@ -90,6 +101,16 @@ const selectStyles = cn(
   }
 
   {
+    !error && (
+      <p id={`${selectId}-client-error`} class="text-destructive flex items-start gap-1.5 text-left text-sm" data-field-error data-messages={fieldMessages(t)} hidden>
+        <Icon name="circle-alert" size="sm" class="mt-0.5 shrink-0" />
+        <span class="sr-only">{t('a11y.error')}: </span>
+        <span data-field-error-text></span>
+      </p>
+    )
+  }
+
+  {
     hint && !error && (
       <p id={`${selectId}-hint`} class="text-sm text-muted-foreground">
         {hint}
@@ -97,3 +118,9 @@ const selectStyles = cn(
     )
   }
 </div>
+
+<script>
+  import { initFieldErrors } from '@/lib/field-errors';
+
+  initFieldErrors();
+</script>

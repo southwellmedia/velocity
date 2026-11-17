@@ -16,7 +16,7 @@ This file lists every component Velocity ships. Read it before reading component
 |-----------|--------|-------------|
 | [Button](#button) | `@/components/ui/form/Button/Button.astro` | Button or button-styled link with variants (brand, primary, secondary, outline, ghost, link, destructive), sizes, loading state and optional leading/trailing icons. With unstyled it drops its own look and takes yours from class. |
 | [Input](#input) | `@/components/ui/form/Input/Input.astro` | Text input with built-in label, hint, error message and optional leading/trailing icons. |
-| [Textarea](#textarea) | `@/components/ui/form/Textarea/Textarea.astro` | Multi-line text field with built-in label, hint and error message. |
+| [Textarea](#textarea) | `@/components/ui/form/Textarea/Textarea.astro` | Multi-line text field with built-in label, hint and error message; grows with its content where supported (autoResize). |
 | [Select](#select) | `@/components/ui/form/Select/Select.astro` | Native `<select>` built from an options array, with label, placeholder, hint and error. |
 | [Checkbox](#checkbox) | `@/components/ui/form/Checkbox/Checkbox.astro` | Native checkbox with label, optional description and error message. A label with links or emphasis goes in the default slot. |
 | [Radio](#radio) | `@/components/ui/form/Radio/Radio.astro` | Single native radio input with label and description; give a group the same name. The card variant renders a selectable card, with a media slot for a photo or icon and a default slot for extra content. |
@@ -30,15 +30,15 @@ This file lists every component Velocity ships. Read it before reading component
 | [Pagination](#pagination) | `@/components/ui/data-display/Pagination/Pagination.astro` | Page navigation (`<nav>`) with previous/next links and a window of numbered pages built from baseUrl. |
 | [Progress](#progress) | `@/components/ui/data-display/Progress/Progress.astro` | Progress bar with semantic color variants and optional percentage label; omit value for an indeterminate bar. |
 | [Skeleton](#skeleton) | `@/components/ui/data-display/Skeleton/Skeleton.astro` | Animated placeholder block, circle or text line for content that is still loading. |
-| [Carousel](#carousel) | `@/components/ui/data-display/Carousel/Carousel.astro` | A sideways-scrolling row of slides on CSS scroll snap (swipe, trackpad, keyboard) with previous / next buttons; 1-4 slides in view. |
+| [Carousel](#carousel) | `@/components/ui/data-display/Carousel/Carousel.astro` | A sideways-scrolling row of slides on CSS scroll snap (swipe, trackpad, keyboard) with previous / next buttons, a marker per position and a screen-reader status line; 1-4 slides in view. |
 | [Alert](#alert) | `@/components/ui/feedback/Alert/Alert.astro` | Inline message box (info, success, warning, error) with an icon, optional title and dismiss button. |
 | [Toast](#toast) | `@/components/ui/feedback/Toast/Toast.astro` | React toast notifications: ToastProvider renders the stack and useToast() returns toast()/dismiss(). Toast.astro mounts the provider as an island around its slot. |
 | [Tooltip](#tooltip) | `@/components/ui/feedback/Tooltip/Tooltip.astro` | Text tooltip shown on hover and focus around a trigger passed in the default slot. |
 | [Spinner](#spinner) | `@/components/ui/feedback/Spinner/Spinner.astro` | A loading spinner that inherits the text colour, with a screen-reader label; stops with reduced motion. |
-| [Dialog](#dialog) | `@/components/ui/overlay/Dialog/Dialog.astro` | Accessible modal with focus trap, Escape/backdrop close, title, description and a footer slot. Open it with window.openDialog(id). |
-| [Sheet](#sheet) | `@/components/ui/overlay/Sheet/Sheet.astro` | A panel that slides in from the left, right or bottom (filters, cart, menu), on the native `<dialog>`: focus stays inside and Escape closes it. Opened by any button with data-sheet-open. |
-| [Dropdown](#dropdown) | `@/components/ui/overlay/Dropdown/Dropdown.astro` | Menu of links or actions (with icons, separators and disabled items) opened from a trigger slot, with keyboard support. |
-| [Popover](#popover) | `@/components/ui/overlay/Popover/Popover.astro` | A small panel anchored to its button (details, a few actions), on the native popover attribute: Escape and outside clicks close it with no script. |
+| [Dialog](#dialog) | `@/components/ui/overlay/Dialog/Dialog.astro` | Modal on the native `<dialog>` (showModal): focus containment, Escape, backdrop click and focus return come from the browser. Title, description and a footer slot. Open it with data-dialog-open="id" or window.openDialog(id). |
+| [Sheet](#sheet) | `@/components/ui/overlay/Sheet/Sheet.astro` | A panel that slides in and out from the left, right or bottom (filters, cart, menu), on the native `<dialog>`: focus stays inside, Escape or a backdrop click closes it. Opened by any button with data-sheet-open. |
+| [Dropdown](#dropdown) | `@/components/ui/overlay/Dropdown/Dropdown.astro` | Menu of links (with icons, separators and disabled items) opened from a trigger slot. A native popover in the top layer, anchored to its button, with arrow-key navigation. |
+| [Popover](#popover) | `@/components/ui/overlay/Popover/Popover.astro` | A small panel anchored to its button (details, a few actions), on the native popover attribute: Escape and outside clicks close it with no script; CSS anchor positioning keeps it beside the button. |
 | [Tabs](#tabs) | `@/components/ui/overlay/Tabs/Tabs.astro` | Horizontal tabs with keyboard navigation; panels are children marked data-tab-content="`<tab id>`". |
 | [VerticalTabs](#verticaltabs) | `@/components/ui/overlay/VerticalTabs/VerticalTabs.astro` | Side-list tabs with optional descriptions and icons that turn into a dropdown or bottom sheet on mobile; panels use data-tab-content. |
 | [Accordion](#accordion) | `@/components/ui/overlay/Accordion/Accordion.astro` | Collapsible sections built on native `<details>`/`<summary>` (works without JS), with an exclusive single-open mode. |
@@ -196,11 +196,12 @@ import Input from '@/components/ui/form/Input/Input.astro';
 
 ## Textarea
 
-Multi-line text field with built-in label, hint and error message.
+Multi-line text field with built-in label, hint and error message; grows with its content where supported (autoResize).
 
 - **Import:** `import Textarea from '@/components/ui/form/Textarea/Textarea.astro';`
 - **React island:** `import { Textarea } from '@/components/ui/form/Textarea/Textarea';`
 - **Registry id:** `textarea` · **Category:** UI Components / Form
+- **Uses:** Icon
 - **Files:** `src/components/ui/form/Textarea/Textarea.astro`, `src/components/ui/form/Textarea/Textarea.tsx`, `src/components/ui/form/Textarea/textarea.variants.ts`, `src/components/ui/form/Textarea/index.ts`
 
 ### Props
@@ -212,6 +213,7 @@ Multi-line text field with built-in label, hint and error message.
 | `hint` | `string` |  |  |  |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` |  |  |
 | `rows` | `number` | `4` |  |  |
+| `autoResize` | `boolean` | `true` |  | Grow with its content (CSS field-sizing) where supported. Defaults to true. |
 
 Also accepts: `HTMLAttributes<'textarea'>`.
 
@@ -242,6 +244,7 @@ Native `<select>` built from an options array, with label, placeholder, hint and
 - **Import:** `import Select from '@/components/ui/form/Select/Select.astro';`
 - **React island:** `import { Select } from '@/components/ui/form/Select/Select';`
 - **Registry id:** `select` · **Category:** UI Components / Form
+- **Uses:** Icon
 - **Files:** `src/components/ui/form/Select/Select.astro`, `src/components/ui/form/Select/Select.tsx`, `src/components/ui/form/Select/select.variants.ts`, `src/components/ui/form/Select/index.ts`
 
 ### Props
@@ -922,7 +925,7 @@ import Skeleton from '@/components/ui/data-display/Skeleton/Skeleton.astro';
 
 ## Carousel
 
-A sideways-scrolling row of slides on CSS scroll snap (swipe, trackpad, keyboard) with previous / next buttons; 1-4 slides in view.
+A sideways-scrolling row of slides on CSS scroll snap (swipe, trackpad, keyboard) with previous / next buttons, a marker per position and a screen-reader status line; 1-4 slides in view.
 
 - **Import:** `import Carousel from '@/components/ui/data-display/Carousel/Carousel.astro';`
 - **Registry id:** `carousel` · **Category:** UI Components / Data Display
@@ -1121,7 +1124,7 @@ import Spinner from '@/components/ui/feedback/Spinner/Spinner.astro';
 
 ## Dialog
 
-Accessible modal with focus trap, Escape/backdrop close, title, description and a footer slot. Open it with window.openDialog(id).
+Modal on the native `<dialog>` (showModal): focus containment, Escape, backdrop click and focus return come from the browser. Title, description and a footer slot. Open it with data-dialog-open="id" or window.openDialog(id).
 
 - **Import:** `import Dialog from '@/components/ui/overlay/Dialog/Dialog.astro';`
 - **React island:** `import { Dialog } from '@/components/ui/overlay/Dialog/Dialog';`
@@ -1136,7 +1139,9 @@ Accessible modal with focus trap, Escape/backdrop close, title, description and 
 | `id` | `string` |  | yes |  |
 | `title` | `string` |  |  |  |
 | `description` | `string` |  |  |  |
+| `label` | `string` |  |  | Accessible name when there is no visible title |
 | `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` |  |  |
+| `closedby` | `'any' \| 'closerequest' \| 'none'` | `'any'` |  | 'any': Escape and backdrop click close it (default). 'closerequest': Escape only. 'none': only your code closes it. |
 | `class` | `string` |  |  |  |
 
 **Slots:** `default`, `footer`
@@ -1149,30 +1154,25 @@ import Dialog from '@/components/ui/overlay/Dialog/Dialog.astro';
 import Button from '@/components/ui/form/Button/Button.astro';
 ---
 
-<Button variant="destructive" id="delete-trigger">Delete project</Button>
+<Button variant="destructive" data-dialog-open="delete-dialog">Delete project</Button>
 
 <Dialog id="delete-dialog" title="Delete project?" description="This can't be undone." size="sm">
   <p class="text-sm text-foreground-muted">All deployments will be removed.</p>
-  <div slot="footer" class="flex justify-end gap-3">
+  <div slot="footer" class="flex justify-end gap-3 px-6 pb-6">
     <Button variant="outline" data-dialog-close>Cancel</Button>
     <Button variant="destructive" data-dialog-close>Delete</Button>
   </div>
 </Dialog>
-
-<script>
-  const w = window as Window & { openDialog?: (id: string) => void };
-  document.getElementById('delete-trigger')?.addEventListener('click', () => w.openDialog?.('delete-dialog'));
-</script>
 ```
 
 ### Use instead
 
-- Inline onclick is blocked by the CSP: open dialogs from a bundled `<script>` calling window.openDialog(id). Elements with data-dialog-close inside the dialog close it.
+- Inline onclick is blocked by the CSP: open dialogs from any button with data-dialog-open="id" (or a bundled `<script>` calling window.openDialog(id)). Elements with data-dialog-close inside the dialog close it.
 - Use Tooltip for hints and Alert for in-page messages; reserve Dialog for tasks that need focus.
 
 ## Sheet
 
-A panel that slides in from the left, right or bottom (filters, cart, menu), on the native `<dialog>`: focus stays inside and Escape closes it. Opened by any button with data-sheet-open.
+A panel that slides in and out from the left, right or bottom (filters, cart, menu), on the native `<dialog>`: focus stays inside, Escape or a backdrop click closes it. Opened by any button with data-sheet-open.
 
 - **Import:** `import Sheet from '@/components/ui/overlay/Sheet/Sheet.astro';`
 - **Registry id:** `sheet` · **Category:** UI Components / Overlay
@@ -1213,7 +1213,7 @@ import Button from '@/components/ui/form/Button/Button.astro';
 
 ## Dropdown
 
-Menu of links or actions (with icons, separators and disabled items) opened from a trigger slot, with keyboard support.
+Menu of links (with icons, separators and disabled items) opened from a trigger slot. A native popover in the top layer, anchored to its button, with arrow-key navigation.
 
 - **Import:** `import Dropdown from '@/components/ui/overlay/Dropdown/Dropdown.astro';`
 - **React island:** `import { Dropdown } from '@/components/ui/overlay/Dropdown/Dropdown';`
@@ -1269,7 +1269,7 @@ import Button from '@/components/ui/form/Button/Button.astro';
 
 ## Popover
 
-A small panel anchored to its button (details, a few actions), on the native popover attribute: Escape and outside clicks close it with no script.
+A small panel anchored to its button (details, a few actions), on the native popover attribute: Escape and outside clicks close it with no script; CSS anchor positioning keeps it beside the button.
 
 - **Import:** `import Popover from '@/components/ui/overlay/Popover/Popover.astro';`
 - **Registry id:** `popover` · **Category:** UI Components / Overlay

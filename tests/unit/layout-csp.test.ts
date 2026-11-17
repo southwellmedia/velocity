@@ -5,6 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
   ANALYTICS_SCRIPTS,
+  SPECULATION_RULES,
   THEME_SCRIPT,
   inlineScriptHash,
   layoutScriptHashes,
@@ -30,7 +31,7 @@ async function hashLikeInlineScript(source: string) {
 
 describe('layout CSP', () => {
   it('lists every inline script the layout renders', () => {
-    expect(rawImports('src/layouts/BaseLayout.astro')).toEqual([THEME_SCRIPT]);
+    expect(rawImports('src/layouts/BaseLayout.astro')).toEqual([THEME_SCRIPT, SPECULATION_RULES]);
     expect(rawImports('src/components/layout/Analytics.astro').sort()).toEqual([...ANALYTICS_SCRIPTS].sort());
   });
 
@@ -41,14 +42,14 @@ describe('layout CSP', () => {
     expect(inlineScriptHash(source.replace(/\n/g, '\r\n'))).toBe(expected);
   });
 
-  it('always lists the theme script, and nothing else without analytics', () => {
-    expect(layoutScriptHashes({})).toEqual([inlineScriptHash(read(THEME_SCRIPT))]);
+  it('always lists the theme script and the speculation rules, and nothing else without analytics', () => {
+    expect(layoutScriptHashes({})).toEqual([THEME_SCRIPT, SPECULATION_RULES].map((file) => inlineScriptHash(read(file))));
     expect(layoutScriptHashes({ PUBLIC_GA_MEASUREMENT_ID: '' })).toEqual(layoutScriptHashes({}));
   });
 
   it.each(['PUBLIC_GA_MEASUREMENT_ID', 'PUBLIC_GTM_ID'])('adds the analytics scripts when %s is set', (name) => {
     expect(layoutScriptHashes({ [name]: 'X-TEST' })).toEqual(
-      [THEME_SCRIPT, ...ANALYTICS_SCRIPTS].map((file) => inlineScriptHash(read(file))),
+      [THEME_SCRIPT, SPECULATION_RULES, ...ANALYTICS_SCRIPTS].map((file) => inlineScriptHash(read(file))),
     );
   });
 

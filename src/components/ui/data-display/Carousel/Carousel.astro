@@ -2,7 +2,9 @@
 /**
  * A row of slides that scrolls sideways: images, cards, quotes. Built on CSS
  * scroll snap, so it swipes on touch screens and scrolls with a trackpad or the
- * keyboard; the previous / next buttons page through it, and stop at the ends.
+ * keyboard. Previous / next buttons step one slide at a time and stop at the
+ * ends, a marker per position jumps straight to it, and a hidden status line
+ * announces the slide once scrolling settles.
  *
  * Every direct child of the default slot is a slide.
  *
@@ -34,13 +36,45 @@ const columns = {
 };
 const button =
   'border-border bg-background text-foreground hover:bg-secondary focus-visible:ring-ring grid size-10 place-items-center rounded-full border transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-40';
+// Templates the script fills in per slide; {n} and {total} survive translation.
+const templates = {
+  slide: t('a11y.slideLabel', { n: '{n}', total: '{total}' }),
+  status: t('a11y.slideStatus', { n: '{n}', total: '{total}' }),
+  marker: t('a11y.goToSlide', { n: '{n}' }),
+};
 ---
 
-<section class={cn('flex flex-col gap-4', className)} aria-roledescription="carousel" aria-label={label} data-carousel>
+<section
+  class={cn('flex flex-col gap-4', className)}
+  aria-roledescription={t('a11y.carousel')}
+  aria-label={label}
+  data-carousel
+  data-label-slide={templates.slide}
+  data-roledescription-slide={t('a11y.slide')}
+  data-label-status={templates.status}
+  data-label-marker={templates.marker}
+>
+  {
+    !hideControls && (
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-1" role="group" aria-label={t('a11y.slides')} data-carousel-markers />
+        <div class="order-last flex gap-2">
+          <button type="button" class={button} aria-label={t('a11y.previous')} data-carousel-prev>
+            <Icon name="chevron-left" size="md" />
+          </button>
+          <button type="button" class={button} aria-label={t('a11y.next')} data-carousel-next>
+            <Icon name="chevron-right" size="md" />
+          </button>
+        </div>
+      </div>
+    )
+  }
   <div
     class={cn(
-      'grid snap-x snap-mandatory grid-flow-col gap-6 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 motion-reduce:scroll-auto',
-      '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:snap-start',
+      'relative grid snap-x snap-mandatory grid-flow-col gap-6 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 motion-reduce:scroll-auto',
+      '[&>*]:snap-start',
+      // The buttons and markers show that it scrolls; without them, keep a thin scrollbar as the cue.
+      hideControls ? '[scrollbar-width:thin]' : '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
       columns[perView]
     )}
     tabindex="0"
@@ -48,41 +82,206 @@ const button =
   >
     <slot />
   </div>
-  {
-    !hideControls && (
-      <div class="flex justify-end gap-2">
-        <button type="button" class={button} aria-label={t('a11y.previous')} data-carousel-prev>
-          <Icon name="chevron-left" size="md" />
-        </button>
-        <button type="button" class={button} aria-label={t('a11y.next')} data-carousel-next>
-          <Icon name="chevron-right" size="md" />
-        </button>
-      </div>
-    )
-  }
+  <p class="sr-only" aria-live="polite" aria-atomic="true" data-carousel-status></p>
 </section>
 
+<style>
+  /* Markers: a 24px target around an 8px dot; the current one is wider, so it
+     doesn't rely on colour alone. */
+  [data-carousel-markers] :global(button) {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+  }
+  [data-carousel-markers] :global(button)::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: var(--color-foreground-subtle);
+    transition: width 150ms ease-out, background-color 150ms ease-out;
+  }
+  [data-carousel-markers] :global(button[aria-current='true'])::before {
+    width: 1.25rem;
+    background: var(--color-foreground);
+  }
+  [data-carousel-markers] :global(button:focus-visible) {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 0;
+  }
+
+</style>
+
 <script>
+  const fill = (template: string, values: Record<string, number>) =>
+    template.replace(/\{(\w+)\}/g, (_, key: string) => String(values[key] ?? ''));
+
   function initCarousels() {
     document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((carousel) => {
       if (carousel.dataset.carouselInit) return;
+      const found = carousel.querySelector<HTMLElement>('[data-carousel-track]');
+      if (!found) return;
+      const track: HTMLElement = found;
       carousel.dataset.carouselInit = 'true';
-      const track = carousel.querySelector<HTMLElement>('[data-carousel-track]');
+
       const prev = carousel.querySelector<HTMLButtonElement>('[data-carousel-prev]');
       const next = carousel.querySelector<HTMLButtonElement>('[data-carousel-next]');
-      if (!track) return;
+      const markerGroup = carousel.querySelector<HTMLElement>('[data-carousel-markers]');
+      const status = carousel.querySelector<HTMLElement>('[data-carousel-status]');
+      const { labelSlide = '{n} / {total}', labelStatus = '{n} / {total}', labelMarker = '{n}', roledescriptionSlide = 'slide' } =
+        carousel.dataset;
+      const children = Array.from(track.children).filter((el): el is HTMLElement => el instanceof HTMLElement);
+      const total = children.length;
 
-      const update = () => {
-        const max = track.scrollWidth - track.clientWidth - 1;
-        if (prev) prev.disabled = track.scrollLeft <= 0;
-        if (next) next.disabled = track.scrollLeft >= max;
+      // Each slide is a group named by its position. A slide that is a control
+      // or already has a name of its own (a link card, an <img alt>, an element
+      // with a role or label) keeps it: it moves into a wrapper that carries the
+      // slide semantics instead, so neither overrides the other.
+      const NAMED = 'a[href], button, input, select, textarea, img, video, iframe, [role], [aria-label], [aria-labelledby], [tabindex]';
+      const slides = children.map((child, i) => {
+        let slide = child;
+        if (child.matches(NAMED)) {
+          slide = document.createElement('div');
+          // One zero-minimum column, so long unbroken text can't widen the slide.
+          slide.className = 'grid grid-cols-1';
+          slide.dataset.carouselSlide = '';
+          child.before(slide);
+          slide.append(child);
+        }
+        slide.setAttribute('role', 'group');
+        slide.setAttribute('aria-roledescription', roledescriptionSlide);
+        slide.setAttribute('aria-label', fill(labelSlide, { n: i + 1, total }));
+        return slide;
+      });
+
+      const maxScroll = () => track.scrollWidth - track.clientWidth;
+      // Where each slide snaps to, clamped to the end of the track. With several
+      // slides in view the last few share the final position.
+      const snapLeft = (slide: HTMLElement) => Math.min(slide.offsetLeft, maxScroll()); // track is the offsetParent
+      // Slides that have a distinct snap position (the ones a marker can reach).
+      const stops = () => {
+        const seen = new Set<number>();
+        return slides.filter((slide) => {
+          const left = Math.round(snapLeft(slide));
+          if (seen.has(left)) return false;
+          seen.add(left);
+          return true;
+        });
       };
-      // Page by the visible width, so a step shows a whole new set of slides
-      prev?.addEventListener('click', () => track.scrollBy({ left: -track.clientWidth }));
-      next?.addEventListener('click', () => track.scrollBy({ left: track.clientWidth }));
-      track.addEventListener('scroll', update, { passive: true });
-      window.addEventListener('resize', update);
-      update();
+      const nearest = (list = stops()) => {
+        let best = 0;
+        list.forEach((slide, i) => {
+          if (Math.abs(snapLeft(slide) - track.scrollLeft) < Math.abs(snapLeft(list[best]) - track.scrollLeft)) best = i;
+        });
+        return best;
+      };
+
+      let pending: number | null = null;
+      let settled = -1;
+      let markers: HTMLButtonElement[] = [];
+
+      const scrollToStop = (index: number) => {
+        const list = stops();
+        const i = Math.max(0, Math.min(list.length - 1, index));
+        pending = i;
+        setCurrent(i);
+        track.scrollBy({ left: snapLeft(list[i]) - track.scrollLeft });
+      };
+
+      function setCurrent(i: number) {
+        markers.forEach((m, n) => (n === i ? m.setAttribute('aria-current', 'true') : m.removeAttribute('aria-current')));
+      }
+
+      function buildMarkers() {
+        if (!markerGroup) return;
+        const list = stops();
+        // Rebuilding removes the markers; keep keyboard focus on the same one.
+        const focusedMarker = markers.indexOf(document.activeElement as HTMLButtonElement);
+        markerGroup.replaceChildren();
+        markers = list.length > 1 ? list.map((slide, i) => {
+          const marker = document.createElement('button');
+          marker.type = 'button';
+          marker.setAttribute('aria-label', fill(labelMarker, { n: slides.indexOf(slide) + 1 }));
+          marker.addEventListener('click', () => scrollToStop(i));
+          markerGroup.append(marker);
+          return marker;
+        }) : [];
+        if (focusedMarker !== -1) {
+          const target = markers[Math.min(focusedMarker, markers.length - 1)];
+          if (target) target.focus();
+          else track.focus();
+        }
+        setCurrent(nearest(list));
+      }
+
+      function settle() {
+        const list = stops();
+        const i = nearest(list);
+        pending = null;
+        setCurrent(i);
+        const atStart = track.scrollLeft <= 1;
+        const atEnd = track.scrollLeft >= maxScroll() - 1;
+        // Don't strand focus on a button that is about to be disabled: enable
+        // the other one first, since a disabled button can't take focus.
+        const focused = document.activeElement;
+        if (atStart && atEnd && (focused === prev || focused === next)) {
+          // Everything fits: both buttons go, so focus the (focusable) track.
+          track.focus();
+        } else {
+          if (prev) prev.disabled = atStart && focused !== prev;
+          if (next) next.disabled = atEnd && focused !== next;
+          if (prev && atStart && focused === prev) next?.focus();
+          if (next && atEnd && focused === next) prev?.focus();
+        }
+        if (prev) prev.disabled = atStart;
+        if (next) next.disabled = atEnd;
+        if (settled !== -1 && i !== settled && status) {
+          status.textContent = fill(labelStatus, { n: slides.indexOf(list[i]) + 1, total });
+        }
+        settled = i;
+      }
+
+      prev?.addEventListener('click', () => scrollToStop((pending ?? nearest()) - 1));
+      next?.addEventListener('click', () => scrollToStop((pending ?? nearest()) + 1));
+
+      // Keep the markers in step while scrolling, at most once per frame.
+      let frame = 0;
+      track.addEventListener(
+        'scroll',
+        () => {
+          if (pending !== null || frame) return;
+          frame = requestAnimationFrame(() => {
+            frame = 0;
+            setCurrent(nearest());
+          });
+        },
+        { passive: true }
+      );
+
+      if ('onscrollend' in window) {
+        track.addEventListener('scrollend', settle);
+      } else {
+        let timer: ReturnType<typeof setTimeout>;
+        track.addEventListener('scroll', () => {
+          clearTimeout(timer);
+          timer = setTimeout(settle, 120);
+        }, { passive: true });
+      }
+
+      // Rebuild when the track or a slide changes size: crossing a breakpoint
+      // can change how many slides fit without changing the track's own size.
+      let resizeFrame = 0;
+      const resize = new ResizeObserver(() => {
+        cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(() => {
+          buildMarkers();
+          settle();
+        });
+      });
+      resize.observe(track);
+      if (slides[0]) resize.observe(slides[0]);
     });
   }
 
