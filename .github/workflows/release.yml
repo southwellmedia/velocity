@@ -1,0 +1,114 @@
+name: Release
+
+# Release by label. Add `release: patch`, `release: minor` or `release: major` to
+# a PR into main:
+#   1. prepare: commits the version bump and the upgrade note (velocity-manifest.json
+#      migration) to the PR, so they're reviewed with it. Re-runs on new commits,
+#      label changes and description edits; it always counts from main's version.
+#   2. publish: when the PR merges, tags the merge commit v<version> and publishes a
+#      GitHub release, then comments with the follow-ups (docs).
+# Release notes come from the PR's "## Release notes" section, the upgrade note from
+# "## Upgrade note" (see .github/pull_request_template.md).
+#
+# main only takes changes through PRs, so the bump goes into the PR rather than being
+# pushed to main afterwards. Commits made with GITHUB_TOKEN don't start workflows,
+# so the bump commit doesn't re-run CI (it only touches two JSON files).
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, labeled, unlabeled, edited, synchronize, reopened, closed]
+
+concurrency:
+  group: release-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: >-
+      github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      (contains(github.event.pull_request.labels.*.name, 'release: patch') ||
+       contains(github.event.pull_request.labels.*.name, 'release: minor') ||
+       contains(github.event.pull_request.labels.*.name, 'release: major'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+
+      - name: Bump the version and write the upgrade note
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          level=$(node -e 'const l=JSON.parse(process.env.LABELS).find(n=>n.startsWith("release: "));console.log(l?l.slice(9):"")')
+          count=$(node -e 'console.log(JSON.parse(process.env.LABELS).filter(n=>n.startsWith("release: ")).length)')
+          if [ "$count" != "1" ]; then echo "::error::Use exactly one release label (found $count)."; exit 1; fi
+          git fetch --depth=1 origin main
+          from=$(git show origin/main:package.json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).version))')
+          printf '%s' "$BODY" > "$RUNNER_TEMP/body.md"
+          version=$(node scripts/release.mjs prepare --from "$from" --level "$level" --title "$TITLE" --body-file "$RUNNER_TEMP/body.md")
+          echo "Preparing v$version ($level from $from)" >> "$GITHUB_STEP_SUMMARY"
+          if git diff --quiet; then echo "Already prepared."; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "chore: version $version"
+          git push
+
+  publish:
+    if: >-
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      (contains(github.event.pull_request.labels.*.name, 'release: patch') ||
+       contains(github.event.pull_request.labels.*.name, 'release: minor') ||
+       contains(github.event.pull_request.labels.*.name, 'release: major'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+
+      - name: Tag and publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          PR: ${{ github.event.pull_request.number }}
+          TITLE: ${{ github.event.pull_request.title }}
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          manifest=$(node -p 'require("./velocity-manifest.json").version')
+          if [ "$version" != "$manifest" ]; then
+            echo "::error::package.json ($version) and velocity-manifest.json ($manifest) disagree."; exit 1
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null; then
+            gh pr comment "$PR" --body "Not released: \`v$version\` already exists. The version bump didn't land in this PR (or another release merged first). Open a PR that bumps the version and label it again."
+            echo "::error::Tag v$version already exists."; exit 1
+          fi
+          printf '%s' "$BODY" > "$RUNNER_TEMP/body.md"
+          node scripts/release.mjs notes --body-file "$RUNNER_TEMP/body.md" > "$RUNNER_TEMP/notes.md"
+          printf '\n\n**Pull request:** #%s\n' "$PR" >> "$RUNNER_TEMP/notes.md"
+          title=$(node -e 'import("./scripts/release.mjs").then(m=>console.log(m.releaseTitle(process.env.TITLE)))')
+          gh release create "v$version" --target "$SHA" --title "v$version — $title" --notes-file "$RUNNER_TEMP/notes.md" --latest
+          {
+            printf 'Released [v%s](https://github.com/%s/releases/tag/v%s). Projects get it with `npx create-velocity-astro upgrade`.\n\n' "$version" "$GITHUB_REPOSITORY" "$version"
+            printf 'Still to do by hand:\n'
+            printf -- '- [ ] Docs: changelog entry (and any new helpers) in southwellmedia/velocity-docs\n'
+            printf -- '- [ ] Marketing site: upgrade, and a blog post for a minor or major release\n'
+          } > "$RUNNER_TEMP/comment.md"
+          gh pr comment "$PR" --body-file "$RUNNER_TEMP/comment.md"
