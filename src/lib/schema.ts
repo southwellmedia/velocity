@@ -24,6 +24,7 @@ import type {
   WithContext,
   SearchAction,
 } from 'schema-dts';
+import { routes } from '@/config/nav.config';
 import siteConfig from '@/config/site.config';
 
 /** An absolute URL on this site */
@@ -40,27 +41,32 @@ function logoUrl() {
 }
 
 /**
- * Create WebSite schema for homepage
+ * Create WebSite schema for homepage. It offers a search action only when the
+ * project still has a search route (`routes.search` in src/config/nav.config.ts):
+ * a project that removed its search page must not point search engines at a 404.
  */
 export function createWebsiteSchema(): WithContext<WebSite> {
+  const search = (routes as Record<string, { path: string } | undefined>).search;
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: siteConfig.name,
     url: siteConfig.url,
     description: siteConfig.description,
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${siteConfig.url}/search?q={search_term_string}`,
-      },
-      'query-input': {
-        '@type': 'PropertyValueSpecification',
-        valueRequired: true,
-        valueName: 'search_term_string',
-      },
-    } as SearchAction,
+    potentialAction: search
+      ? ({
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: `${siteConfig.url}/${search.path}?q={search_term_string}`,
+          },
+          'query-input': {
+            '@type': 'PropertyValueSpecification',
+            valueRequired: true,
+            valueName: 'search_term_string',
+          },
+        } as SearchAction)
+      : undefined,
   };
 }
 
