@@ -35,20 +35,27 @@ describe('schema logos', () => {
 describe('createLocalBusinessSchema', () => {
   it('takes the name and contact details from the site config', () => {
     const schema = rendered(createLocalBusinessSchema());
-    expect(schema).toMatchObject({
-      '@context': 'https://schema.org',
-      '@type': 'LocalBusiness',
-      name: siteConfig.name,
-      url: siteConfig.url,
-      telephone: siteConfig.phone,
-      email: siteConfig.email,
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: siteConfig.address?.street,
-        addressLocality: siteConfig.address?.city,
-        addressCountry: siteConfig.address?.country,
-      },
-    });
+    const { address } = siteConfig;
+    // `rendered` drops what the site config leaves out (a phone, an address),
+    // so this holds for any project's config
+    expect(schema).toMatchObject(
+      rendered({
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: siteConfig.name,
+        url: siteConfig.url,
+        telephone: siteConfig.phone,
+        email: siteConfig.email,
+        address: address && {
+          '@type': 'PostalAddress',
+          streetAddress: address.street,
+          addressLocality: address.city,
+          addressCountry: address.country,
+        },
+      }),
+    );
+    if (!siteConfig.phone) expect(schema).not.toHaveProperty('telephone');
+    if (!address) expect(schema).not.toHaveProperty('address');
   });
 
   it('uses the type and the details it is given', () => {
