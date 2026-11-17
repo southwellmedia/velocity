@@ -1,5 +1,4 @@
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -9,7 +8,6 @@ import {
   THEME_SCRIPT,
   inlineScriptHash,
   layoutScriptHashes,
-  readBuildEnv,
 } from '../../integrations/layout-csp.mjs';
 import localized404 from '../../integrations/localized-404.mjs';
 
@@ -42,32 +40,12 @@ describe('layout CSP', () => {
     expect(inlineScriptHash(source.replace(/\n/g, '\r\n'))).toBe(expected);
   });
 
-  it('always lists the theme script and the speculation rules, and nothing else without analytics', () => {
-    expect(layoutScriptHashes({})).toEqual([THEME_SCRIPT, SPECULATION_RULES].map((file) => inlineScriptHash(read(file))));
-    expect(layoutScriptHashes({ PUBLIC_GA_MEASUREMENT_ID: '' })).toEqual(layoutScriptHashes({}));
-  });
-
-  it.each(['PUBLIC_GA_MEASUREMENT_ID', 'PUBLIC_GTM_ID'])('adds the analytics scripts when %s is set', (name) => {
-    expect(layoutScriptHashes({ [name]: 'X-TEST' })).toEqual(
+  it('lists every script the layout can render, analytics included', () => {
+    // Analytics hashes are listed even without GA/GTM: which .env a build reads
+    // depends on its mode and envDir, and an unused hash admits nothing else.
+    expect(layoutScriptHashes()).toEqual(
       [THEME_SCRIPT, SPECULATION_RULES, ...ANALYTICS_SCRIPTS].map((file) => inlineScriptHash(read(file))),
     );
-  });
-
-  it('reads the production .env files, with the process environment on top', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'velocity-env-'));
-    try {
-      fs.writeFileSync(path.join(dir, '.env'), 'PUBLIC_GTM_ID=GTM-BASE\nLAYOUT_CSP_TEST=file\n');
-      fs.writeFileSync(path.join(dir, '.env.development'), 'PUBLIC_GTM_ID=GTM-DEV\n');
-      const root = pathToFileURL(dir + path.sep);
-      expect(readBuildEnv(root).PUBLIC_GTM_ID).toBe('GTM-BASE');
-      fs.writeFileSync(path.join(dir, '.env.production'), 'PUBLIC_GTM_ID=GTM-PROD\n');
-      expect(readBuildEnv(root).PUBLIC_GTM_ID).toBe('GTM-PROD');
-      process.env.LAYOUT_CSP_TEST = 'process';
-      expect(readBuildEnv(root).LAYOUT_CSP_TEST).toBe('process');
-    } finally {
-      delete process.env.LAYOUT_CSP_TEST;
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
   });
 });
 
@@ -83,7 +61,7 @@ describe('localized404', () => {
   };
 
   it("adds the layout's script hashes to the policy", () => {
-    const scriptDirective = { hashes: layoutScriptHashes(readBuildEnv(root)) };
+    const scriptDirective = { hashes: layoutScriptHashes(root) };
     expect(setup({ scriptDirective: { resources: ["'self'"] } })).toEqual([{ security: { csp: { scriptDirective } } }]);
     expect(setup(true)).toEqual([{ security: { csp: { algorithm: 'SHA-256', scriptDirective } } }]);
   });

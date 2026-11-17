@@ -1,6 +1,5 @@
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
-import { parseEnv } from 'node:util';
+import { readFileSync } from 'node:fs';
 
 /**
  * Content Security Policy hashes for the scripts BaseLayout renders inline.
@@ -27,7 +26,7 @@ export const THEME_SCRIPT = 'src/layouts/theme-script.js';
  */
 export const SPECULATION_RULES = 'src/layouts/speculation-rules.json';
 
-/** Rendered when analytics is configured. Which ones depends on the consent mode. */
+/** Rendered when GA or GTM is configured. Which ones depends on the consent mode. */
 export const ANALYTICS_SCRIPTS = ['consent-defaults', 'load-ga', 'load-gtm', 'strict-ga', 'strict-gtm'].map(
   (name) => `src/components/layout/analytics/${name}.js`,
 );
@@ -38,29 +37,15 @@ export function inlineScriptHash(code) {
 }
 
 /**
- * The variables a build sees, read the way Vite reads them for `astro:env`:
- * the .env files for production, then the process environment on top.
- * (The policy only applies to builds, and builds run in production mode.)
- * @param {URL} root project root
- */
-export function readBuildEnv(root) {
-  const env = {};
-  for (const name of ['.env', '.env.local', '.env.production', '.env.production.local']) {
-    const file = new URL(name, root);
-    if (existsSync(file)) Object.assign(env, parseEnv(readFileSync(file, 'utf8')));
-  }
-  return { ...env, ...process.env };
-}
-
-/**
- * Hashes for `security.csp.scriptDirective.hashes`. The analytics scripts are
- * only listed when Analytics.astro will render them.
- * @param {Record<string, string | undefined>} env
+ * Hashes for `security.csp.scriptDirective.hashes`: every script the layout can
+ * render inline. The analytics scripts are listed whether or not GA or GTM is
+ * configured. Which .env file a build reads depends on its mode and envDir, so
+ * guessing here could leave them out of a build that renders them; a hash only
+ * admits that exact script, so listing one that never renders is harmless.
  * @param {URL} [root] project root
  */
-export function layoutScriptHashes(env, root = new URL('../', import.meta.url)) {
-  const analytics = Boolean(env.PUBLIC_GA_MEASUREMENT_ID || env.PUBLIC_GTM_ID);
-  return [THEME_SCRIPT, SPECULATION_RULES, ...(analytics ? ANALYTICS_SCRIPTS : [])].map((file) =>
+export function layoutScriptHashes(root = new URL('../', import.meta.url)) {
+  return [THEME_SCRIPT, SPECULATION_RULES, ...ANALYTICS_SCRIPTS].map((file) =>
     inlineScriptHash(readFileSync(new URL(file, root), 'utf8')),
   );
 }

@@ -1,5 +1,5 @@
 import { locales } from '../src/i18n/locales.mjs';
-import { layoutScriptHashes, readBuildEnv } from './layout-csp.mjs';
+import { layoutScriptHashes } from './layout-csp.mjs';
 
 /**
  * A prerendered 404 can only be in one language. With several locales, render it
@@ -18,7 +18,7 @@ export default function localized404() {
       'astro:config:setup': ({ config, updateConfig }) => {
         const { csp } = config.security;
         if (!csp) return;
-        const hashes = layoutScriptHashes(readBuildEnv(config.root), config.root);
+        const hashes = layoutScriptHashes(config.root);
         // `csp: true` is replaced by this object, so it needs Astro's default algorithm
         const algorithm = csp === true ? { algorithm: 'SHA-256' } : {};
         updateConfig({ security: { csp: { ...algorithm, scriptDirective: { hashes } } } });
