@@ -2,9 +2,25 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { nextVersion, notes, prepare, releaseTitle, section, setVersion, upsertMigration } from '../../scripts/release.mjs';
+import { nextVersion, notes, prepare, releaseTitle, removeMigration, section, setVersion, upsertMigration } from '../../scripts/release.mjs';
 
 const manifest = fs.readFileSync('velocity-manifest.json', 'utf8');
+const current = JSON.parse(manifest).version as string;
+
+/** A temporary copy of package.json and the manifest, removed after `fn` */
+function withFixture(fn: (dir: string) => void) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'velocity-release-'));
+  try {
+    fs.copyFileSync('package.json', path.join(dir, 'package.json'));
+    fs.copyFileSync('velocity-manifest.json', path.join(dir, 'velocity-manifest.json'));
+    fn(dir);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+}
+const readManifest = (dir: string) => JSON.parse(fs.readFileSync(path.join(dir, 'velocity-manifest.json'), 'utf8'));
+const entryFor = (dir: string, version: string) =>
+  readManifest(dir).migrations.find((m: { toVersion: string }) => m.toVersion === version);
 
 const BODY = `Adds the X logo.
 
@@ -62,35 +78,49 @@ describe('release helper', () => {
   });
 
   it('prepares a release idempotently from the base version', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'velocity-release-'));
-    try {
-      fs.copyFileSync('package.json', path.join(dir, 'package.json'));
-      fs.copyFileSync('velocity-manifest.json', path.join(dir, 'velocity-manifest.json'));
-      const from = JSON.parse(manifest).version;
-      const run = () => prepare({ root: dir, from, level: 'patch', title: 'feat(Icon): add brand-x', body: BODY });
+    withFixture((dir) => {
+      const run = () => prepare({ root: dir, from: current, level: 'patch', title: 'feat(Icon): add brand-x', body: BODY });
       const version = run();
       const once = fs.readFileSync(path.join(dir, 'velocity-manifest.json'), 'utf8');
       run();
       expect(fs.readFileSync(path.join(dir, 'velocity-manifest.json'), 'utf8')).toBe(once);
       expect(JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8')).version).toBe(version);
-      const entry = JSON.parse(once).migrations.at(-1);
-      expect(entry).toMatchObject({ toVersion: version, title: 'Add brand-x' });
-      expect(entry.description).toContain("platform: 'x'");
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
+      expect(entryFor(dir, version)).toMatchObject({ title: 'Add brand-x' });
+      expect(entryFor(dir, version).description).toContain("platform: 'x'");
+    });
   });
 
   it('defaults the upgrade note when the PR has none', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'velocity-release-'));
-    try {
-      fs.copyFileSync('package.json', path.join(dir, 'package.json'));
-      fs.copyFileSync('velocity-manifest.json', path.join(dir, 'velocity-manifest.json'));
-      prepare({ root: dir, from: '2.7.1', level: 'patch', title: 'fix: something small', body: 'No sections here.' });
-      const entry = JSON.parse(fs.readFileSync(path.join(dir, 'velocity-manifest.json'), 'utf8')).migrations.at(-1);
-      expect(entry.description).toBe('Nothing needs doing.');
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
+    withFixture((dir) => {
+      const version = prepare({ root: dir, from: current, level: 'patch', title: 'fix: something small', body: 'No sections here.' });
+      expect(entryFor(dir, version).description).toBe('Nothing needs doing.');
+    });
+  });
+
+  it('drops the draft entry when the label changes, and keeps the entries main has', () => {
+    withFixture((dir) => {
+      const before = JSON.parse(manifest).migrations.length;
+      const minor = prepare({ root: dir, from: current, level: 'minor', title: 'feat: x', body: BODY });
+      const patch = prepare({ root: dir, from: current, level: 'patch', title: 'feat: x', body: BODY });
+      expect(entryFor(dir, minor)).toBeUndefined();
+      expect(entryFor(dir, patch)).toBeDefined();
+      expect(readManifest(dir).migrations).toHaveLength(before + 1);
+      expect(readManifest(dir).migrations.slice(0, before)).toEqual(JSON.parse(manifest).migrations);
+    });
+  });
+
+  it('removes an entry wherever it is, keeping the file valid', () => {
+    const first = JSON.parse(manifest).migrations[0].toVersion;
+    const removed = removeMigration(manifest, first);
+    expect(JSON.parse(removed).migrations).toHaveLength(JSON.parse(manifest).migrations.length - 1);
+    expect(removeMigration(manifest, '0.0.0')).toBe(manifest);
+  });
+
+  it('refuses an empty Release notes section instead of publishing the whole description', () => {
+    const empty = BODY.replace('- **Icon:** `brand-x` draws the X logo.', '<!-- template comment -->');
+    expect(() => notes(empty)).toThrow(/empty/);
+    withFixture((dir) => {
+      expect(() => prepare({ root: dir, from: current, level: 'patch', title: 't', body: empty })).toThrow(/empty/);
+    });
   });
 });

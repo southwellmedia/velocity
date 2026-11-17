@@ -43,6 +43,14 @@ export function section(body, heading) {
     .trim();
 }
 
+/** -1, 0 or 1, comparing plain x.y.z versions */
+export function compareVersions(a, b) {
+  const pa = a.split('.').map(Number);
+  const pb = b.split('.').map(Number);
+  for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pa[i] < pb[i] ? -1 : 1;
+  return 0;
+}
+
 /** "fix(Icon): add brand-x" → "Add brand-x" */
 export function releaseTitle(prTitle) {
   const title = prTitle.replace(/^[a-z]+(\([^)]*\))?!?:\s*/i, '').trim();
@@ -84,21 +92,50 @@ export function upsertMigration(text, { toVersion, title, description }) {
   return updated;
 }
 
+/** Removes the migration entry for `toVersion`, keeping the rest byte for byte. */
+export function removeMigration(text, toVersion) {
+  const at = text.indexOf(`"toVersion": "${toVersion}"`);
+  if (at === -1) return text;
+  const open = text.lastIndexOf('\n    {', at);
+  const close = text.indexOf('\n    }', at) + '\n    }'.length;
+  // Drop the separating comma: the one before the entry, or after it if it's first.
+  const before = text.slice(0, open);
+  const after = text.slice(close);
+  const updated = before.endsWith(',') ? before.slice(0, -1) + after : before + after.replace(/^,/, '');
+  JSON.parse(updated);
+  return updated;
+}
+
 /** Bumps package.json and velocity-manifest.json, and writes the upgrade note. */
 export function prepare({ root = '.', from, level, title, body }) {
   const version = nextVersion(from, level);
+  notes(body); // fail now, on the open PR, rather than after the merge
   const note = section(body, 'Upgrade note') || 'Nothing needs doing.';
   const pkgPath = `${root}/package.json`;
   const manifestPath = `${root}/velocity-manifest.json`;
   writeFileSync(pkgPath, setVersion(readFileSync(pkgPath, 'utf8'), version));
-  const manifest = setVersion(readFileSync(manifestPath, 'utf8'), version);
+  let manifest = setVersion(readFileSync(manifestPath, 'utf8'), version);
+  // Main never has entries above its own version, so any are drafts from this
+  // PR, e.g. 2.8.0 left behind when the label changed from minor to patch.
+  for (const { toVersion } of JSON.parse(manifest).migrations) {
+    if (compareVersions(toVersion, from) > 0 && toVersion !== version) manifest = removeMigration(manifest, toVersion);
+  }
   writeFileSync(manifestPath, upsertMigration(manifest, { toVersion: version, title: releaseTitle(title), description: note }));
   return version;
 }
 
-/** Release notes: the "## Release notes" section, or the whole description. */
+/**
+ * Release notes: the "## Release notes" section, or the whole description when
+ * there's no such heading. A heading left empty (the PR template's) is an error,
+ * so the template's other sections never end up in a release.
+ */
 export function notes(body) {
-  return section(body, 'Release notes') || (body ?? '').replace(/<!--[\s\S]*?-->/g, '').trim();
+  const text = (body ?? '').replace(/\r\n/g, '\n');
+  const hasHeading = /^## release notes\s*$/im.test(text);
+  const fromSection = section(text, 'Release notes');
+  if (fromSection) return fromSection;
+  if (hasHeading) throw new Error('The "Release notes" section of the PR description is empty. Fill it in, or remove the heading to use the whole description.');
+  return text.replace(/<!--[\s\S]*?-->/g, '').trim();
 }
 
 function args(argv) {
