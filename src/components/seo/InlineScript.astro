@@ -12,6 +12,12 @@
  * The code must be static. Pass data through <script type="application/json">.
  * `type` covers other inline script types the CSP governs, such as
  * "speculationrules".
+ *
+ * A page rendered on demand (`prerender = false`) sends its CSP before its
+ * components have rendered, so the hash added here comes too late for it. A
+ * script that can render on such a page also needs its hash in
+ * `security.csp.scriptDirective.hashes`: integrations/layout-csp.mjs does that
+ * for the scripts BaseLayout renders.
  */
 interface Props {
   code: string;

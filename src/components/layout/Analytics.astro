@@ -26,6 +26,10 @@
  * component also registers the Google script hosts for the current page via
  * Astro.csp.insertScriptResource() — no manual config needed.
  *
+ * A page rendered on demand sends its CSP before <InlineScript /> has hashed
+ * anything, so integrations/layout-csp.mjs also lists the scripts imported
+ * below in the config. Add new ones there too.
+ *
  * Required CSP directives for GA4/GTM:
  *
  *   script-src:

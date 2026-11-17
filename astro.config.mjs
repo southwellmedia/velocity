@@ -146,6 +146,9 @@ export default defineConfig({
     // adds a <meta http-equiv="content-security-policy"> to each page.
     // Components that load third-party scripts declare their hosts at render
     // time (see Analytics.astro → Astro.csp.insertScriptResource).
+    // A page rendered on demand sends its policy before the layout has rendered,
+    // so localized404() also adds the hashes of the layout's inline scripts to
+    // scriptDirective (integrations/layout-csp.mjs).
     csp: {
       scriptDirective: {
         resources: ["'self'"],

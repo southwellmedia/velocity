@@ -80,6 +80,36 @@ test.describe('i18n', () => {
     });
   }
 
+  // With several locales the 404 is rendered on demand, so its policy is a header
+  // sent before the layout renders. Scripts the layout renders inline (the theme
+  // script) must already be in it, or the browser blocks them.
+  for (const locale of locales as readonly string[]) {
+    const path = locale === defaultLocale ? '/does-not-exist' : `/${locale}/does-not-exist`;
+    test(`${path} has no CSP violations`, async ({ page }) => {
+      const violations: string[] = [];
+      await page.exposeFunction('reportCspViolation', (v: string) => violations.push(v));
+      await page.addInitScript(() => {
+        document.addEventListener('securitypolicyviolation', (e) => {
+          (window as unknown as { reportCspViolation: (v: string) => void }).reportCspViolation(
+            `${e.violatedDirective} blocked ${e.blockedURI || 'inline'}`,
+          );
+        });
+      });
+
+      const response = await page.goto(path);
+      expect(response?.status()).toBe(404);
+      const csp =
+        response?.headers()['content-security-policy'] ??
+        (await page.locator('meta[http-equiv="content-security-policy"]').getAttribute('content'));
+      expect(csp).toMatch(/script-src 'self'[^;]* 'sha256-/);
+      expect(csp).not.toMatch(/script-src[^;]*'unsafe-inline'/);
+
+      // Exercise the theme toggle before checking. Its label is translated, so find it by id.
+      await page.locator('#theme-toggle').first().click();
+      expect(violations).toEqual([]);
+    });
+  }
+
   test('language switcher offers every locale', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');
