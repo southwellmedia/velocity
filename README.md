@@ -22,7 +22,7 @@
 - **Built for AI coding agents** — project rules and skills for Claude Code, Codex, Cursor and other tools, in every project
 - **70 components** — 41 UI primitives in 8 categories, 10 composed patterns, 15 page sections (PageHero, features, pricing, stats, logos, team, timeline, contact, CTA band, FAQ, steps, testimonials, hours and the band they sit in), breadcrumbs, a hero and layout pieces; all accessible, typed, and dark-mode ready. Icons: all 2,000+ Lucide icons by name
 - **Design token system** with OKLCH colors, fluid typography, and two built-in themes
-- **SEO toolkit** — meta tags, JSON-LD, sitemap, robots.txt, and auto-generated OG images
+- **SEO toolkit** — meta tags, JSON-LD helpers (organization, local business with opening hours, product, blog post, breadcrumbs, FAQ), sitemap, robots.txt, and auto-generated OG images
 - **Content collections** — type-safe blog, pages, authors, and FAQs with Zod validation
 - **React islands** — optional client-side interactivity where needed
 - **Astro Actions** — type-safe contact and newsletter forms with server-side validation, forwarded to an endpoint you configure
