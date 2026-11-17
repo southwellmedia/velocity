@@ -39,9 +39,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
+      # No install here: scripts/release.mjs has no dependencies. Caching is switched off because
+      # setup-node would otherwise look for pnpm (package.json names it) and fail without it.
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
+          package-manager-cache: false
 
       - name: Bump the version and write the upgrade note
         env:
@@ -83,6 +86,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
+          package-manager-cache: false
 
       - name: Tag and publish the release
         env:
