@@ -743,6 +743,56 @@
    ------------------------------------------------------------------------- */
 @layer components {
   /* -------------------------------------------------------------------------
+     Dialog (Dialog.astro and Dialog.tsx share these): native <dialog> enter
+     and exit transitions, plus scroll containment for the modal.
+     ------------------------------------------------------------------------- */
+  .velocity-dialog {
+    max-height: calc(100dvh - 2rem);
+    /* Exit: fade and shrink, staying in the top layer until it finishes */
+    opacity: 0;
+    scale: 0.95;
+    transition:
+      opacity 200ms ease-out,
+      scale 200ms ease-out,
+      overlay 200ms ease-out allow-discrete,
+      display 200ms ease-out allow-discrete;
+  }
+  .velocity-dialog[open] {
+    opacity: 1;
+    scale: 1;
+  }
+  @starting-style {
+    .velocity-dialog[open] {
+      opacity: 0;
+      scale: 0.95;
+    }
+  }
+
+  /* Keep scroll gestures from reaching the page behind the modal. */
+  .velocity-dialog:modal {
+    overscroll-behavior: contain;
+  }
+  .velocity-dialog::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
+    background: color-mix(in oklch, var(--color-foreground) 50%, transparent);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition:
+      opacity 200ms ease-out,
+      overlay 200ms ease-out allow-discrete,
+      display 200ms ease-out allow-discrete;
+  }
+  .velocity-dialog[open]::backdrop {
+    opacity: 1;
+  }
+  @starting-style {
+    .velocity-dialog[open]::backdrop {
+      opacity: 0;
+    }
+  }
+
+  /* -------------------------------------------------------------------------
      Navigation Component Tokens
      Customize header navigation via these CSS custom properties
      ------------------------------------------------------------------------- */

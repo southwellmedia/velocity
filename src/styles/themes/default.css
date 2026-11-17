@@ -68,7 +68,8 @@
   --ring: var(--gray-900);
 
   /* Destructive - for delete/remove actions */
-  --destructive: var(--error);
+  /* Darker than --error so white text on it, and it as text on the page, pass WCAG AA (6.1:1). */
+  --destructive: oklch(52% 0.2 27);
   --destructive-foreground: var(--gray-0);
 
   /* Gradient colors - OKLCH */
@@ -160,8 +161,9 @@
 
   --accent-light: var(--brand-900);
 
-  --destructive: oklch(65% 0.22 25);
-  --destructive-foreground: var(--gray-0);
+  /* Light red with dark text: 7:1 as a button, and over 6.7:1 as text on dark surfaces. */
+  --destructive: oklch(72% 0.17 25);
+  --destructive-foreground: oklch(18% 0.03 25);
 
   /* Gradient colors for dark - OKLCH */
   --gradient-start: oklch(12.3% 0 0);

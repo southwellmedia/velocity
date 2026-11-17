@@ -3,6 +3,7 @@ import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { generateId } from '@/lib/utils';
 import { getLocale, useTranslations } from '@/i18n';
+import { fieldMessages } from '@/lib/field-errors';
 import { inputVariants, inputSizeConfig } from './input.variants';
 
 interface Props extends HTMLAttributes<'input'> {
@@ -87,7 +88,7 @@ import Icon from '../../primitives/Icon/Icon.astro';
 
   {
     !error && (
-      <p id={`${inputId}-client-error`} class="text-destructive flex items-start gap-1.5 text-sm" data-field-error hidden>
+      <p id={`${inputId}-client-error`} class="text-destructive flex items-start gap-1.5 text-left text-sm" data-field-error data-messages={fieldMessages(t)} hidden>
         <Icon name="circle-alert" size="sm" class="mt-0.5 shrink-0" />
         <span class="sr-only">{t('a11y.error')}: </span>
         <span data-field-error-text></span>

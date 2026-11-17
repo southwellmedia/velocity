@@ -47,7 +47,8 @@ test.describe('contact form (Astro Action)', () => {
     await expect(message).toHaveAttribute('aria-invalid', 'true');
     const errorId = await message.getAttribute('data-error-id');
     await expect(message).toHaveAttribute('aria-describedby', new RegExp(`\\b${errorId}\\b`));
-    await expect(page.locator(`#${errorId}`)).toBeVisible();
+    // In the site's language (ui.ts), not the browser's
+    await expect(page.locator(`#${errorId}`)).toContainText('Use at least 10 characters (you have 9).');
 
     // Clears as soon as the value is valid
     await message.fill('Long enough to pass the check');

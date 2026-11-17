@@ -132,8 +132,29 @@ const iconMap: Record<string, string> = {
       let keyboardOpen = false;
       let stopAnchor = () => {};
 
-      // The trigger is the slotted button: wire it to the popover natively.
-      trigger.setAttribute('popovertarget', menu.id);
+      // A slotted <button> is wired to the popover natively (popovertarget also
+      // keeps it in the menu's light-dismiss group). popovertarget only works on
+      // buttons, so a link-styled trigger toggles the menu from script instead.
+      if (trigger instanceof HTMLButtonElement) {
+        trigger.setAttribute('popovertarget', menu.id);
+      } else {
+        let wasOpen = false;
+        // Light dismiss closes the menu on pointerdown, before this click lands.
+        trigger.addEventListener('pointerdown', () => (wasOpen = menu.matches(':popover-open')));
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          // detail is 0 for keyboard activation, which has no pointerdown first.
+          if (e.detail === 0 ? menu.matches(':popover-open') : wasOpen) menu.hidePopover();
+          else menu.showPopover();
+          wasOpen = false;
+        });
+        trigger.addEventListener('keydown', (e) => {
+          if (e.key === ' ') {
+            e.preventDefault();
+            trigger.click();
+          }
+        });
+      }
       trigger.setAttribute('aria-haspopup', 'menu');
       trigger.setAttribute('aria-expanded', 'false');
       if (!menu.hasAttribute('aria-labelledby')) {

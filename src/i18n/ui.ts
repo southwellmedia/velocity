@@ -100,6 +100,15 @@ const en = {
       messageTooShort: 'Message must be at least 10 characters',
       messageTooLong: 'Message must be at most 5000 characters',
     },
+    validation: {
+      required: 'Fill in this field.',
+      email: 'Enter an email address, like name@example.com.',
+      url: 'Enter a web address, like https://example.com.',
+      tooShort: 'Use at least {min} characters (you have {count}).',
+      tooLong: 'Use at most {max} characters (you have {count}).',
+      rangeUnderflow: 'Enter {min} or more.',
+      rangeOverflow: 'Enter {max} or less.',
+    },
   },
   search: {
     title: 'Search',
@@ -228,6 +237,15 @@ const es: DeepPartial<UIStrings> = {
       messageTooShort: 'El mensaje debe tener al menos 10 caracteres',
       messageTooLong: 'El mensaje debe tener como máximo 5000 caracteres',
     },
+    validation: {
+      required: 'Completa este campo.',
+      email: 'Escribe un correo electrónico, como nombre@ejemplo.com.',
+      url: 'Escribe una dirección web, como https://ejemplo.com.',
+      tooShort: 'Usa al menos {min} caracteres (tienes {count}).',
+      tooLong: 'Usa como máximo {max} caracteres (tienes {count}).',
+      rangeUnderflow: 'Escribe {min} o más.',
+      rangeOverflow: 'Escribe {max} o menos.',
+    },
   },
   search: {
     title: 'Buscar',
@@ -351,6 +369,15 @@ const fr: DeepPartial<UIStrings> = {
       subjectTooLong: "L'objet doit contenir au plus 200 caractères",
       messageTooShort: 'Le message doit contenir au moins 10 caractères',
       messageTooLong: 'Le message doit contenir au plus 5000 caractères',
+    },
+    validation: {
+      required: 'Remplissez ce champ.',
+      email: 'Saisissez une adresse e-mail, comme nom@exemple.com.',
+      url: 'Saisissez une adresse web, comme https://exemple.com.',
+      tooShort: 'Utilisez au moins {min} caractères (vous en avez {count}).',
+      tooLong: 'Utilisez au plus {max} caractères (vous en avez {count}).',
+      rangeUnderflow: 'Saisissez {min} ou plus.',
+      rangeOverflow: 'Saisissez {max} ou moins.',
     },
   },
   search: {

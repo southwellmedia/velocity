@@ -297,3 +297,22 @@ test('carousel steps one slide at a time and marks the current position', async 
   await expect(carousel.locator('[data-carousel-status]')).toHaveText(/2/);
   await expect(carousel.locator('[aria-roledescription="slide"]').first()).toHaveAttribute('aria-label', /1/);
 });
+
+for (const colorScheme of ['light', 'dark'] as const) {
+  test(`destructive buttons and field errors meet contrast in ${colorScheme} mode`, async ({ page }) => {
+    test.skip(!hasRoute('components') || !hasRoute('contact'), 'needs the showcase and contact page');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.addInitScript((scheme) => localStorage.setItem('theme', scheme), colorScheme);
+    await page.goto('/components');
+    const buttons = await new AxeBuilder({ page }).include('button[class*="destructive"]').withTags(['wcag2aa']).analyze();
+    expect(seriousOnly(buttons.violations)).toEqual([]);
+
+    await page.goto('/contact');
+    const message = page.locator('#contact-form').getByLabel('Message');
+    await message.fill('short');
+    await message.blur();
+    await expect(page.locator('[data-field-error]:not([hidden])')).toHaveCount(1);
+    const form = await new AxeBuilder({ page }).include('#contact-form').withTags(['wcag2a', 'wcag2aa']).analyze();
+    expect(seriousOnly(form.violations)).toEqual([]);
+  });
+}

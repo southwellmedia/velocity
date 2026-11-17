@@ -16,7 +16,11 @@
                 "/*.xml",
                 "/*.txt",
                 "/*.png",
-                "/*.webmanifest"
+                "/*.webmanifest",
+                "/*logout*",
+                "/*log-out*",
+                "/*signout*",
+                "/*sign-out*"
               ]
             }
           },

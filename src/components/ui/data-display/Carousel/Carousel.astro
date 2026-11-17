@@ -70,7 +70,7 @@ const templates = {
   }
   <div
     class={cn(
-      'grid snap-x snap-mandatory grid-flow-col gap-6 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 motion-reduce:scroll-auto',
+      'relative grid snap-x snap-mandatory grid-flow-col gap-6 overflow-x-auto overscroll-x-contain scroll-smooth pb-2 motion-reduce:scroll-auto',
       '[&>*]:snap-start',
       // The buttons and markers show that it scrolls; without them, keep a thin scrollbar as the cue.
       hideControls ? '[scrollbar-width:thin]' : '[scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
@@ -134,6 +134,9 @@ const templates = {
       const { labelSlide = '{n} / {total}', labelStatus = '{n} / {total}', labelMarker = '{n}' } = carousel.dataset;
 
       slides.forEach((slide, i) => {
+        // A slide that is itself a link or button keeps its own role and name;
+        // role="group" would hide them from assistive technology.
+        if (slide.matches('a[href], button, [role]')) return;
         slide.setAttribute('role', 'group');
         slide.setAttribute('aria-roledescription', 'slide');
         if (!slide.hasAttribute('aria-label')) slide.setAttribute('aria-label', fill(labelSlide, { n: i + 1, total }));
@@ -142,7 +145,7 @@ const templates = {
       const maxScroll = () => track.scrollWidth - track.clientWidth;
       // Where each slide snaps to, clamped to the end of the track. With several
       // slides in view the last few share the final position.
-      const snapLeft = (slide: HTMLElement) => Math.min(slide.offsetLeft - track.offsetLeft, maxScroll());
+      const snapLeft = (slide: HTMLElement) => Math.min(slide.offsetLeft, maxScroll()); // track is the offsetParent
       // Slides that have a distinct snap position (the ones a marker can reach).
       const stops = () => {
         const seen = new Set<number>();
