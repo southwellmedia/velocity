@@ -327,7 +327,7 @@ export function generate(root = repoRoot) {
       out.push(
         '### Icon names',
         '',
-        `Any Lucide icon by its kebab-case name, aliases included: https://lucide.dev/icons. Don't draw your own SVG or add another icon set. Brand marks Lucide doesn't ship: ${brands.map((n) => `\`${n}\``).join(', ')}. An unknown name renders the \`x\` icon and warns during the build.`,
+        `Any Lucide icon by its kebab-case name, aliases included: https://lucide.dev/icons. Don't draw your own SVG or add another icon set. Brand marks Lucide doesn't ship: ${brands.map((n) => `\`${n}\``).join(', ')}. For the X (Twitter) logo use \`brand-x\`: \`x\` is Lucide's close icon. An unknown name renders the \`x\` icon and warns during the build.`,
         ''
       );
     }
