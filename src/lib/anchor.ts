@@ -43,6 +43,11 @@ export function anchorPopover(
 
   const place = () => {
     const margin = 8;
+    // Clearing the height cap below resets the panel's own scroll; keep it.
+    const scrollTop = panel.scrollTop;
+    // Never wider than the viewport: long unbroken labels scroll sideways.
+    panel.style.maxWidth = `${window.innerWidth - margin * 2}px`;
+    panel.style.overflowX = 'auto';
     // Measure at natural height: undo a cap from an earlier placement first.
     panel.style.maxHeight = '';
     panel.style.overflowY = '';
@@ -62,12 +67,13 @@ export function anchorPopover(
     // Neither side fits: keep the whole panel on screen, even if it covers the trigger.
     top = Math.min(Math.max(margin, top), window.innerHeight - p.height - margin);
     let left = align === 'end' ? t.right - p.width : t.left;
-    left = Math.min(Math.max(margin, left), window.innerWidth - p.width - margin);
+    left = Math.max(margin, Math.min(left, window.innerWidth - p.width - margin));
     panel.style.position = 'fixed';
     panel.style.margin = '0';
     panel.style.inset = 'auto';
     panel.style.top = `${top}px`;
     panel.style.left = `${left}px`;
+    panel.scrollTop = scrollTop;
   };
 
   place();

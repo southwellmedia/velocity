@@ -144,7 +144,8 @@ const templates = {
         let slide = child;
         if (child.matches(NAMED)) {
           slide = document.createElement('div');
-          slide.className = 'grid';
+          // One zero-minimum column, so long unbroken text can't widen the slide.
+          slide.className = 'grid grid-cols-1';
           slide.dataset.carouselSlide = '';
           child.before(slide);
           slide.append(child);
@@ -196,6 +197,8 @@ const templates = {
       function buildMarkers() {
         if (!markerGroup) return;
         const list = stops();
+        // Rebuilding removes the markers; keep keyboard focus on the same one.
+        const focusedMarker = markers.indexOf(document.activeElement as HTMLButtonElement);
         markerGroup.replaceChildren();
         markers = list.length > 1 ? list.map((slide, i) => {
           const marker = document.createElement('button');
@@ -205,6 +208,11 @@ const templates = {
           markerGroup.append(marker);
           return marker;
         }) : [];
+        if (focusedMarker !== -1) {
+          const target = markers[Math.min(focusedMarker, markers.length - 1)];
+          if (target) target.focus();
+          else track.focus();
+        }
         setCurrent(nearest(list));
       }
 
@@ -217,10 +225,16 @@ const templates = {
         const atEnd = track.scrollLeft >= maxScroll() - 1;
         // Don't strand focus on a button that is about to be disabled: enable
         // the other one first, since a disabled button can't take focus.
-        if (prev) prev.disabled = atStart && document.activeElement !== prev;
-        if (next) next.disabled = atEnd && document.activeElement !== next;
-        if (prev && atStart && document.activeElement === prev) next?.focus();
-        if (next && atEnd && document.activeElement === next) prev?.focus();
+        const focused = document.activeElement;
+        if (atStart && atEnd && (focused === prev || focused === next)) {
+          // Everything fits: both buttons go, so focus the (focusable) track.
+          track.focus();
+        } else {
+          if (prev) prev.disabled = atStart && focused !== prev;
+          if (next) next.disabled = atEnd && focused !== next;
+          if (prev && atStart && focused === prev) next?.focus();
+          if (next && atEnd && focused === next) prev?.focus();
+        }
         if (prev) prev.disabled = atStart;
         if (next) next.disabled = atEnd;
         if (settled !== -1 && i !== settled && status) {
