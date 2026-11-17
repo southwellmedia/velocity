@@ -35,7 +35,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 - `src/content.config.ts` — content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`). Project-specific collections (`siteCollections`) and extra blog frontmatter fields (`blogFields`) go in `src/config/collections.ts`, which upgrades leave alone.
 - `src/styles/tokens/` and `src/styles/themes/` — design tokens (OKLCH). Use semantic Tailwind classes (`bg-background`, `text-foreground-muted`, `bg-brand-600`), never raw colors. `src/styles/theme.css` picks the active theme and upgrades leave it alone.
 - `integrations/` — local Astro integrations: `deploy-target.mjs` (adapter + cache provider detection), `pagefind.mjs` (search index).
-- `velocity-manifest.json` — consumed by `create-velocity-astro` to upgrade user projects. Breaking changes need a migration entry with `fromVersion`/`toVersion`.
+- `velocity-manifest.json` — consumed by `create-velocity-astro` to upgrade user projects. Breaking changes need a migration entry with `fromVersion`/`toVersion`. Don't bump versions or add release migration entries by hand: a `release: patch|minor|major` label on the PR does it (`.github/workflows/release.yml`, `scripts/release.mjs`), from the PR's "Upgrade note" section. See README → Releasing.
 
 ## Rules
 

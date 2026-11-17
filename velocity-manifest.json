@@ -634,7 +634,11 @@
       "tests/unit/components-ref.test.ts",
       "tests/unit/check-agent.test.ts",
       "tests/unit/scaffold.test.ts",
-      ".github/workflows/scaffold.yml"
+      ".github/workflows/scaffold.yml",
+      ".github/workflows/release.yml",
+      ".github/pull_request_template.md",
+      "scripts/release.mjs",
+      "tests/unit/release.test.ts"
     ],
     "cleanupScripts": [
       "test:scaffold",

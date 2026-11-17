@@ -228,6 +228,16 @@ Some directives (`frame-ancestors`, `report-uri`) are ignored in a `<meta>` CSP.
 
 ---
 
+## Releasing
+
+Releases are cut from pull requests. Add one label to the PR: `release: patch`, `release: minor` or `release: major`. The Release workflow (`.github/workflows/release.yml`) then:
+
+1. Commits the version bump (`package.json`, `velocity-manifest.json`) and the upgrade note to the PR, so you review them with the change. The note is the PR's **Upgrade note** section, or "Nothing needs doing." if it's empty.
+2. When the PR merges, tags the merge commit `v<version>` and publishes the GitHub release. The release notes come from the PR's **Release notes** section. `create-velocity-astro upgrade` picks it up from there.
+3. Comments on the PR with what's left: the docs changelog, and the marketing site.
+
+PRs without a label merge without a release, so small changes can wait on `main` for the next one.
+
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
