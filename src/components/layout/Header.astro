@@ -192,6 +192,7 @@ const buttonId = `${menuId}-button`;
   data-header-shape={shape}
   data-header-variant={variant}
   data-header-color-scheme={colorScheme}
+  data-breakpoint={{ md: '48rem', lg: '64rem', xl: '80rem' }[breakpoint]}
   {...attrs}
 >
   <div class={innerClasses}>
@@ -425,6 +426,16 @@ const buttonId = `${menuId}-button`;
       let isOpen = false;
       let isAnimating = false;
 
+      function setPageInert(on: boolean) {
+        const main = document.querySelector<HTMLElement>('main');
+        const footer = Array.from(document.querySelectorAll<HTMLElement>('footer')).find((el) => !el.closest('main, header'));
+        [main, footer].forEach((el) => {
+          if (!el) return;
+          el.classList.toggle('mobile-menu-blur', on);
+          el.inert = on;
+        });
+      }
+
       function open() {
         if (isOpen || isAnimating) return;
         isAnimating = true;
@@ -443,11 +454,9 @@ const buttonId = `${menuId}-button`;
           header.classList.add('!bg-background');
         }
 
-        // Fade out and blur the page content
-        const mainContent = document.querySelector('main');
-        const footer = document.querySelector('footer');
-        if (mainContent) mainContent.classList.add('mobile-menu-blur');
-        if (footer) footer.classList.add('mobile-menu-blur');
+        // Fade out and blur the page content, and make it inert so keyboard
+        // and screen reader users stay in the menu instead of the blurred page
+        setPageInert(true);
 
         // Show menu and backdrop with animations
         menu!.classList.remove('hidden', 'animate-menu-up', 'opacity-0', 'scale-y-0');
@@ -477,10 +486,7 @@ const buttonId = `${menuId}-button`;
         }
 
         // Restore page content
-        const mainContent = document.querySelector('main');
-        const footer = document.querySelector('footer');
-        if (mainContent) mainContent.classList.remove('mobile-menu-blur');
-        if (footer) footer.classList.remove('mobile-menu-blur');
+        setPageInert(false);
 
         // Wait for animation to complete before hiding
         setTimeout(() => {
@@ -521,11 +527,19 @@ const buttonId = `${menuId}-button`;
         backdrop.addEventListener('click', close);
       }
 
-      // Close on Escape key
+      // Close on Escape key and return focus to the toggle
       document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape' && isOpen) {
           close();
+          button!.focus();
         }
+      });
+
+      // Widening past the breakpoint hides the toggle: close the menu so the
+      // page is not left inert behind a menu nobody can see.
+      const desktop = window.matchMedia(`(min-width: ${header.dataset.breakpoint ?? '48rem'})`);
+      desktop.addEventListener('change', (e) => {
+        if (e.matches && isOpen) close();
       });
 
       // Close when clicking on mobile menu links
@@ -541,45 +555,45 @@ const buttonId = `${menuId}-button`;
 </script>
 
 <script>
+  // The floating header turns solid once the page has scrolled past 60px. A
+  // 1px sentinel at that offset and an IntersectionObserver flip the state,
+  // so nothing runs on every scroll frame. data-scrolled is a discrete state
+  // (the mobile menu also forces it, and other styles key off it), which is
+  // why this isn't a scroll-driven animation.
   const SCROLL_THRESHOLD = 60;
 
   function initScrollWatcher() {
-    document.querySelectorAll<HTMLElement>('header[data-header-shape="floating"]').forEach((header) => {
-      if (header.dataset.scrollInit) return;
-      header.dataset.scrollInit = 'true';
+    const headers = document.querySelectorAll<HTMLElement>('header[data-header-shape="floating"]');
+    if (!headers.length || document.documentElement.dataset.headerScrollInit) return;
+    document.documentElement.dataset.headerScrollInit = 'true';
 
-      let ticking = false;
+    const sentinel = document.createElement('div');
+    sentinel.setAttribute('aria-hidden', 'true');
+    sentinel.dataset.headerSentinel = '';
+    sentinel.style.cssText = `position:absolute;top:${SCROLL_THRESHOLD}px;left:0;width:1px;height:1px;pointer-events:none;visibility:hidden`;
+    document.body.prepend(sentinel);
 
-      function onScroll() {
-        if (ticking) return;
-        ticking = true;
-
-        requestAnimationFrame(() => {
-          if (window.scrollY > SCROLL_THRESHOLD) {
-            header.setAttribute('data-scrolled', '');
-          } else {
-            // Don't remove if mobile menu is open
-            const menuId = header.dataset.menuId;
-            const menu = menuId ? document.getElementById(menuId) : null;
-            const menuOpen = menu && !menu.classList.contains('hidden');
-            if (!menuOpen) {
-              header.removeAttribute('data-scrolled');
-            }
-          }
-          ticking = false;
-        });
-      }
-
-      window.addEventListener('scroll', onScroll, { passive: true });
-
-      // Set initial state
-      onScroll();
-    });
+    new IntersectionObserver(([entry]) => {
+      const scrolled = !entry.isIntersecting && entry.boundingClientRect.top < 0;
+      document.querySelectorAll<HTMLElement>('header[data-header-shape="floating"]').forEach((header) => {
+        if (scrolled) {
+          header.setAttribute('data-scrolled', '');
+          return;
+        }
+        // Don't remove if mobile menu is open
+        const menuId = header.dataset.menuId;
+        const menu = menuId ? document.getElementById(menuId) : null;
+        const menuOpen = menu && !menu.classList.contains('hidden');
+        if (!menuOpen) header.removeAttribute('data-scrolled');
+      });
+    }).observe(sentinel);
   }
 
   initScrollWatcher();
-  document.addEventListener('astro:page-load', initScrollWatcher);
-  document.addEventListener('astro:after-swap', initScrollWatcher);
+  document.addEventListener('astro:after-swap', () => {
+    delete document.documentElement.dataset.headerScrollInit;
+    initScrollWatcher();
+  });
 </script>
 
 <style is:global>

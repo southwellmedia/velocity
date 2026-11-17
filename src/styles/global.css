@@ -76,6 +76,10 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-error: var(--error);
+  /* Themes define --destructive; without these, every *-destructive utility
+     (destructive buttons, field error borders and text) compiled to nothing. */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
 
   /* Inverted/Contrast Sections */
   --color-surface-invert: var(--surface-invert);
@@ -153,6 +157,18 @@
   *::before,
   *::after {
     border-color: var(--color-border);
+  }
+
+  /* Native UI (scrollbars, form controls, <select> popups, autofill) follows
+     the rendered theme. Velocity's colors switch on the .dark class rather than
+     the media query, so color-scheme tracks the class too: `light dark` here
+     would paint dark scrollbars over a light page whenever the visitor or
+     defaultTheme overrides a dark OS. */
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
   }
 
   html {
@@ -695,6 +711,30 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Anchored popovers (Popover, Dropdown) — see src/lib/anchor.ts.
+   Unlayered so it wins over m-0 utilities. Only under @supports: without anchor positioning, inset: auto would strand
+   the panel at the top-left, so the script fallback places it instead.
+   ------------------------------------------------------------------------- */
+@supports (anchor-name: --a) and (position-area: block-end) {
+  [popover][data-anchored] {
+    position: fixed;
+    inset: auto;
+    margin: 0.5rem 0;
+    position-area: block-end span-inline-end;
+    position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
+  }
+  [popover][data-anchored][data-align='end'] {
+    position-area: block-end span-inline-start;
+  }
+  [popover][data-anchored][data-placement='top'] {
+    position-area: block-start span-inline-end;
+  }
+  [popover][data-anchored][data-placement='top'][data-align='end'] {
+    position-area: block-start span-inline-start;
   }
 }
 

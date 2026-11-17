@@ -24,11 +24,35 @@ test.describe('contact form (Astro Action)', () => {
     const form = page.locator('#contact-form');
     await form.getByLabel('Name').fill('Ada');
     await form.getByLabel('Email').fill('ada@example.com');
-    // Passes the browser's `required` check but fails the 10-char server rule
     await form.getByLabel('Message').fill('Too short');
+    // Skip the browser's own checks (minlength) to reach the 10-char server rule
+    await form.evaluate((el: HTMLFormElement) => (el.noValidate = true));
     await form.getByRole('button', { name: 'Send Message' }).click();
 
     await expect(page.locator('#form-message')).toHaveText(/at least 10 characters/);
+  });
+
+  test('shows a field error only after interaction, linked for screen readers', async ({ page }) => {
+    await page.goto('/contact');
+    const form = page.locator('#contact-form');
+    const message = form.getByLabel('Message');
+    const error = form.locator('[data-field-error]').filter({ has: page.locator('[data-field-error-text]') });
+
+    // Nothing on load, even though the empty required field is invalid
+    await expect(message).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(error.first()).toBeHidden();
+
+    await message.fill('Too short');
+    await message.blur();
+    await expect(message).toHaveAttribute('aria-invalid', 'true');
+    const errorId = await message.getAttribute('data-error-id');
+    await expect(message).toHaveAttribute('aria-describedby', new RegExp(`\\b${errorId}\\b`));
+    await expect(page.locator(`#${errorId}`)).toBeVisible();
+
+    // Clears as soon as the value is valid
+    await message.fill('Long enough to pass the check');
+    await expect(message).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator(`#${errorId}`)).toBeHidden();
   });
 });
 

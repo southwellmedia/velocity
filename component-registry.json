@@ -72,6 +72,22 @@
         "clsx",
         "tailwind-merge"
       ]
+    },
+    "anchor": {
+      "name": "anchor utility",
+      "description": "Places a top-layer popover next to its trigger: CSS anchor positioning where supported, a measured script fallback elsewhere",
+      "files": [
+        "src/lib/anchor.ts"
+      ],
+      "npm": []
+    },
+    "field-errors": {
+      "name": "field-errors utility",
+      "description": "Shows a field's validation message after interaction (:user-invalid) and keeps aria-invalid and aria-describedby in sync",
+      "files": [
+        "src/lib/field-errors.ts"
+      ],
+      "npm": []
     }
   },
   "components": {
@@ -117,7 +133,8 @@
       ],
       "dependencies": {
         "utilities": [
-          "cn"
+          "cn",
+          "field-errors"
         ],
         "components": [
           "icon"
@@ -132,7 +149,7 @@
     },
     "textarea": {
       "name": "Textarea",
-      "description": "Multi-line text field with built-in label, hint and error message.",
+      "description": "Multi-line text field with built-in label, hint and error message; grows with its content where supported (autoResize).",
       "category": "ui",
       "subcategory": "form",
       "files": [
@@ -143,9 +160,12 @@
       ],
       "dependencies": {
         "utilities": [
-          "cn"
+          "cn",
+          "field-errors"
         ],
-        "components": []
+        "components": [
+          "icon"
+        ]
       },
       "premium": false,
       "example": "---\nimport Textarea from '@/components/ui/form/Textarea/Textarea.astro';\n---\n\n<Textarea name=\"message\" label=\"Message\" rows={6} error=\"Please enter a message.\" />"
@@ -163,9 +183,12 @@
       ],
       "dependencies": {
         "utilities": [
-          "cn"
+          "cn",
+          "field-errors"
         ],
-        "components": []
+        "components": [
+          "icon"
+        ]
       },
       "premium": false,
       "useInstead": [
@@ -447,7 +470,7 @@
     },
     "carousel": {
       "name": "Carousel",
-      "description": "A sideways-scrolling row of slides on CSS scroll snap (swipe, trackpad, keyboard) with previous / next buttons; 1-4 slides in view.",
+      "description": "A sideways-scrolling row of slides on CSS scroll snap (swipe, trackpad, keyboard) with previous / next buttons, a marker per position and a screen-reader status line; 1-4 slides in view.",
       "category": "ui",
       "subcategory": "data-display",
       "files": [
@@ -563,7 +586,7 @@
     },
     "dialog": {
       "name": "Dialog",
-      "description": "Accessible modal with focus trap, Escape/backdrop close, title, description and a footer slot. Open it with window.openDialog(id).",
+      "description": "Modal on the native <dialog> (showModal): focus containment, Escape, backdrop click and focus return come from the browser. Title, description and a footer slot. Open it with data-dialog-open=\"id\" or window.openDialog(id).",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -581,14 +604,14 @@
       },
       "premium": false,
       "useInstead": [
-        "Inline onclick is blocked by the CSP: open dialogs from a bundled <script> calling window.openDialog(id). Elements with data-dialog-close inside the dialog close it.",
+        "Inline onclick is blocked by the CSP: open dialogs from any button with data-dialog-open=\"id\" (or a bundled <script> calling window.openDialog(id)). Elements with data-dialog-close inside the dialog close it.",
         "Use Tooltip for hints and Alert for in-page messages; reserve Dialog for tasks that need focus."
       ],
-      "example": "---\nimport Dialog from '@/components/ui/overlay/Dialog/Dialog.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Button variant=\"destructive\" id=\"delete-trigger\">Delete project</Button>\n\n<Dialog id=\"delete-dialog\" title=\"Delete project?\" description=\"This can't be undone.\" size=\"sm\">\n  <p class=\"text-sm text-foreground-muted\">All deployments will be removed.</p>\n  <div slot=\"footer\" class=\"flex justify-end gap-3\">\n    <Button variant=\"outline\" data-dialog-close>Cancel</Button>\n    <Button variant=\"destructive\" data-dialog-close>Delete</Button>\n  </div>\n</Dialog>\n\n<script>\n  const w = window as Window & { openDialog?: (id: string) => void };\n  document.getElementById('delete-trigger')?.addEventListener('click', () => w.openDialog?.('delete-dialog'));\n</script>"
+      "example": "---\nimport Dialog from '@/components/ui/overlay/Dialog/Dialog.astro';\nimport Button from '@/components/ui/form/Button/Button.astro';\n---\n\n<Button variant=\"destructive\" data-dialog-open=\"delete-dialog\">Delete project</Button>\n\n<Dialog id=\"delete-dialog\" title=\"Delete project?\" description=\"This can't be undone.\" size=\"sm\">\n  <p class=\"text-sm text-foreground-muted\">All deployments will be removed.</p>\n  <div slot=\"footer\" class=\"flex justify-end gap-3 px-6 pb-6\">\n    <Button variant=\"outline\" data-dialog-close>Cancel</Button>\n    <Button variant=\"destructive\" data-dialog-close>Delete</Button>\n  </div>\n</Dialog>"
     },
     "sheet": {
       "name": "Sheet",
-      "description": "A panel that slides in from the left, right or bottom (filters, cart, menu), on the native <dialog>: focus stays inside and Escape closes it. Opened by any button with data-sheet-open.",
+      "description": "A panel that slides in and out from the left, right or bottom (filters, cart, menu), on the native <dialog>: focus stays inside, Escape or a backdrop click closes it. Opened by any button with data-sheet-open.",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -611,7 +634,7 @@
     },
     "dropdown": {
       "name": "Dropdown",
-      "description": "Menu of links or actions (with icons, separators and disabled items) opened from a trigger slot, with keyboard support.",
+      "description": "Menu of links (with icons, separators and disabled items) opened from a trigger slot. A native popover in the top layer, anchored to its button, with arrow-key navigation.",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -621,7 +644,8 @@
       ],
       "dependencies": {
         "utilities": [
-          "cn"
+          "cn",
+          "anchor"
         ],
         "components": [
           "icon"
@@ -635,7 +659,7 @@
     },
     "popover": {
       "name": "Popover",
-      "description": "A small panel anchored to its button (details, a few actions), on the native popover attribute: Escape and outside clicks close it with no script.",
+      "description": "A small panel anchored to its button (details, a few actions), on the native popover attribute: Escape and outside clicks close it with no script; CSS anchor positioning keeps it beside the button.",
       "category": "ui",
       "subcategory": "overlay",
       "files": [
@@ -644,7 +668,8 @@
       ],
       "dependencies": {
         "utilities": [
-          "cn"
+          "cn",
+          "anchor"
         ],
         "components": []
       },

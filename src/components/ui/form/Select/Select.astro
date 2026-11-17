@@ -2,6 +2,8 @@
 import type { HTMLAttributes } from 'astro/types';
 import { cn } from '@/lib/cn';
 import { generateId } from '@/lib/utils';
+import { getLocale, useTranslations } from '@/i18n';
+import Icon from '../../primitives/Icon/Icon.astro';
 import { selectVariants } from './select.variants';
 
 interface Option {
@@ -31,11 +33,13 @@ const {
   ...attrs
 } = Astro.props;
 
+const t = useTranslations(getLocale(Astro));
 const selectId = id || generateId('select');
 
 const selectStyles = cn(
   selectVariants({ size }),
-  error && 'border-destructive focus-visible:ring-destructive'
+  error && 'border-destructive focus-visible:ring-destructive',
+  'user-invalid:border-destructive user-invalid:focus-visible:ring-destructive'
 );
 ---
 
@@ -54,6 +58,8 @@ const selectStyles = cn(
       class={selectStyles}
       aria-invalid={error ? 'true' : undefined}
       aria-describedby={error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined}
+      data-describedby={!error && hint ? `${selectId}-hint` : undefined}
+      data-error-id={!error ? `${selectId}-client-error` : undefined}
       {...attrs}
     >
       {placeholder && <option value="" disabled selected>{placeholder}</option>}
@@ -90,6 +96,16 @@ const selectStyles = cn(
   }
 
   {
+    !error && (
+      <p id={`${selectId}-client-error`} class="text-destructive flex items-start gap-1.5 text-sm" data-field-error hidden>
+        <Icon name="circle-alert" size="sm" class="mt-0.5 shrink-0" />
+        <span class="sr-only">{t('a11y.error')}: </span>
+        <span data-field-error-text></span>
+      </p>
+    )
+  }
+
+  {
     hint && !error && (
       <p id={`${selectId}-hint`} class="text-sm text-muted-foreground">
         {hint}
@@ -97,3 +113,9 @@ const selectStyles = cn(
     )
   }
 </div>
+
+<script>
+  import { initFieldErrors } from '@/lib/field-errors';
+
+  initFieldErrors();
+</script>
