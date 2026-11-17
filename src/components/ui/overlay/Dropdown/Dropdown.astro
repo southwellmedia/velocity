@@ -51,7 +51,7 @@ const iconMap: Record<string, string> = {
     id={menuId}
     popover="auto"
     class={cn(
-      'velocity-dropdown-menu m-0 min-w-[180px] p-1.5',
+      'velocity-dropdown-menu m-0 min-w-[min(180px,calc(100vw-16px))] p-1.5',
       'bg-background border-border rounded-xl border shadow-xl'
     )}
     data-dropdown-menu
@@ -170,6 +170,13 @@ const iconMap: Record<string, string> = {
         list[i].focus();
       }
 
+      // Opening from the keyboard or assistive technology moves focus into the
+      // menu. Those clicks have detail 0; a mouse or touch click leaves focus on
+      // the trigger (ArrowDown then enters the menu), as native menus do.
+      trigger.addEventListener('click', (e) => {
+        if (e.detail === 0) keyboardOpen = true;
+      });
+
       trigger.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') keyboardOpen = true;
         if (e.key === 'ArrowDown') {
@@ -220,6 +227,9 @@ const iconMap: Record<string, string> = {
             trigger.focus();
             break;
           case 'Tab':
+            // Clear the tab stop first: hiding returns focus to the trigger, and
+            // Tab's default action must move past the (still animating) menu.
+            list.forEach((el) => el.setAttribute('tabindex', '-1'));
             menu.hidePopover();
             break;
         }

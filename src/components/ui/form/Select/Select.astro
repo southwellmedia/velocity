@@ -36,6 +36,11 @@ const {
 
 const t = useTranslations(getLocale(Astro));
 const selectId = id || generateId('select');
+// The caller's aria-describedby (external help text) is kept alongside our own
+// hint or error, and field-errors.ts only ever adds or removes its error id.
+const { 'aria-describedby': callerDescribedBy, ...fieldAttrs } = attrs;
+const describedBy =
+  [error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined, callerDescribedBy].filter(Boolean).join(' ') || undefined;
 
 const selectStyles = cn(
   selectVariants({ size }),
@@ -58,10 +63,9 @@ const selectStyles = cn(
       id={selectId}
       class={selectStyles}
       aria-invalid={error ? 'true' : undefined}
-      aria-describedby={error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined}
-      data-describedby={!error && hint ? `${selectId}-hint` : undefined}
+      aria-describedby={describedBy}
       data-error-id={!error ? `${selectId}-client-error` : undefined}
-      {...attrs}
+      {...fieldAttrs}
     >
       {placeholder && <option value="" disabled selected>{placeholder}</option>}
       {options.map((option) => (

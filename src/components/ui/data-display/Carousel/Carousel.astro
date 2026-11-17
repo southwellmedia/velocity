@@ -46,10 +46,11 @@ const templates = {
 
 <section
   class={cn('flex flex-col gap-4', className)}
-  aria-roledescription="carousel"
+  aria-roledescription={t('a11y.carousel')}
   aria-label={label}
   data-carousel
   data-label-slide={templates.slide}
+  data-roledescription-slide={t('a11y.slide')}
   data-label-status={templates.status}
   data-label-marker={templates.marker}
 >
@@ -129,17 +130,30 @@ const templates = {
       const next = carousel.querySelector<HTMLButtonElement>('[data-carousel-next]');
       const markerGroup = carousel.querySelector<HTMLElement>('[data-carousel-markers]');
       const status = carousel.querySelector<HTMLElement>('[data-carousel-status]');
-      const slides = Array.from(track.children).filter((el): el is HTMLElement => el instanceof HTMLElement);
-      const total = slides.length;
-      const { labelSlide = '{n} / {total}', labelStatus = '{n} / {total}', labelMarker = '{n}' } = carousel.dataset;
+      const { labelSlide = '{n} / {total}', labelStatus = '{n} / {total}', labelMarker = '{n}', roledescriptionSlide = 'slide' } =
+        carousel.dataset;
+      const children = Array.from(track.children).filter((el): el is HTMLElement => el instanceof HTMLElement);
+      const total = children.length;
 
-      slides.forEach((slide, i) => {
-        // A slide that is itself a link or button keeps its own role and name;
-        // role="group" would hide them from assistive technology.
-        if (slide.matches('a[href], button, [role]')) return;
+      // Each slide is a group named by its position. A slide that is a control
+      // or already has a name of its own (a link card, an <img alt>, an element
+      // with a role or label) keeps it: it moves into a wrapper that carries the
+      // slide semantics instead, so neither overrides the other.
+      const NAMED = 'a[href], button, input, select, textarea, img, video, iframe, [role], [aria-label], [aria-labelledby], [tabindex]';
+      const slides = children.map((child, i) => {
+        let slide = child;
+        if (child.matches(NAMED)) {
+          slide = document.createElement('div');
+          // One zero-minimum column, so long unbroken text can't widen the slide.
+          slide.className = 'grid grid-cols-1';
+          slide.dataset.carouselSlide = '';
+          child.before(slide);
+          slide.append(child);
+        }
         slide.setAttribute('role', 'group');
-        slide.setAttribute('aria-roledescription', 'slide');
-        if (!slide.hasAttribute('aria-label')) slide.setAttribute('aria-label', fill(labelSlide, { n: i + 1, total }));
+        slide.setAttribute('aria-roledescription', roledescriptionSlide);
+        slide.setAttribute('aria-label', fill(labelSlide, { n: i + 1, total }));
+        return slide;
       });
 
       const maxScroll = () => track.scrollWidth - track.clientWidth;
@@ -183,6 +197,8 @@ const templates = {
       function buildMarkers() {
         if (!markerGroup) return;
         const list = stops();
+        // Rebuilding removes the markers; keep keyboard focus on the same one.
+        const focusedMarker = markers.indexOf(document.activeElement as HTMLButtonElement);
         markerGroup.replaceChildren();
         markers = list.length > 1 ? list.map((slide, i) => {
           const marker = document.createElement('button');
@@ -192,6 +208,11 @@ const templates = {
           markerGroup.append(marker);
           return marker;
         }) : [];
+        if (focusedMarker !== -1) {
+          const target = markers[Math.min(focusedMarker, markers.length - 1)];
+          if (target) target.focus();
+          else track.focus();
+        }
         setCurrent(nearest(list));
       }
 
@@ -202,9 +223,18 @@ const templates = {
         setCurrent(i);
         const atStart = track.scrollLeft <= 1;
         const atEnd = track.scrollLeft >= maxScroll() - 1;
-        // Don't strand focus on a button that is about to be disabled.
-        if (prev && atStart && document.activeElement === prev) next?.focus();
-        if (next && atEnd && document.activeElement === next) prev?.focus();
+        // Don't strand focus on a button that is about to be disabled: enable
+        // the other one first, since a disabled button can't take focus.
+        const focused = document.activeElement;
+        if (atStart && atEnd && (focused === prev || focused === next)) {
+          // Everything fits: both buttons go, so focus the (focusable) track.
+          track.focus();
+        } else {
+          if (prev) prev.disabled = atStart && focused !== prev;
+          if (next) next.disabled = atEnd && focused !== next;
+          if (prev && atStart && focused === prev) next?.focus();
+          if (next && atEnd && focused === next) prev?.focus();
+        }
         if (prev) prev.disabled = atStart;
         if (next) next.disabled = atEnd;
         if (settled !== -1 && i !== settled && status) {
@@ -240,10 +270,18 @@ const templates = {
         }, { passive: true });
       }
 
-      new ResizeObserver(() => {
-        buildMarkers();
-        settle();
-      }).observe(track);
+      // Rebuild when the track or a slide changes size: crossing a breakpoint
+      // can change how many slides fit without changing the track's own size.
+      let resizeFrame = 0;
+      const resize = new ResizeObserver(() => {
+        cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(() => {
+          buildMarkers();
+          settle();
+        });
+      });
+      resize.observe(track);
+      if (slides[0]) resize.observe(slides[0]);
     });
   }
 

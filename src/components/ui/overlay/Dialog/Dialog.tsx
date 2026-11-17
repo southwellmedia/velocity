@@ -31,6 +31,9 @@ const supportsClosedBy =
   typeof HTMLDialogElement !== 'undefined' && 'closedBy' in HTMLDialogElement.prototype;
 
 function outside(event: PointerEvent, dialog: HTMLDialogElement) {
+  // Only the <dialog> itself is hit outside its box (the backdrop); events from
+  // descendants such as an overflowing popover bubble through and don't count.
+  if (event.target !== dialog) return false;
   const r = dialog.getBoundingClientRect();
   return (
     event.clientX < r.left ||
@@ -81,6 +84,10 @@ export function Dialog({
     const controller = new AbortController();
     const { signal } = controller;
     dialog.addEventListener('close', () => onCloseRef.current(), { signal });
+    // Without native closedby, Escape would still close a closedby="none" dialog.
+    if (closedby === 'none' && !supportsClosedBy) {
+      dialog.addEventListener('cancel', (e) => e.preventDefault(), { signal });
+    }
     if (closedby === 'any' && !supportsClosedBy) {
       let pressedOutside = false;
       dialog.addEventListener('pointerdown', (e) => (pressedOutside = outside(e, dialog)), {

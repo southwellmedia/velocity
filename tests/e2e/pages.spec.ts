@@ -1,3 +1,5 @@
+import nodePath from 'node:path';
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -316,3 +318,28 @@ for (const colorScheme of ['light', 'dark'] as const) {
     expect(seriousOnly(form.violations)).toEqual([]);
   });
 }
+
+test('without native closedby, a backdrop click still closes the dialog', async ({ page }) => {
+  test.skip(!hasRoute('components'), 'no component showcase in this project');
+  // Simulate Safari, which has no closedby yet, so the fallback script runs.
+  await page.addInitScript(() => {
+    delete (HTMLDialogElement.prototype as unknown as Record<string, unknown>).closedBy;
+  });
+  await page.goto('/components');
+  await page.locator('[data-dialog-open="demo-dialog"]').click();
+  const dialog = page.locator('dialog#demo-dialog');
+  await expect(dialog).toBeVisible();
+  // A click inside the panel does not close it
+  await dialog.locator('p').first().click();
+  await expect(dialog).toBeVisible();
+  // A click on the backdrop does
+  await page.mouse.click(5, 5);
+  await expect(dialog).toBeHidden();
+});
+
+test('speculation rules ship only when site.config opts in', async ({ page }) => {
+  const config = readFileSync(nodePath.join(process.cwd(), 'src/config/site.config.ts'), 'utf8');
+  const optedIn = /^\s*speculation:\s*'prerender'/m.test(config);
+  await page.goto('/');
+  await expect(page.locator('script[type="speculationrules"]')).toHaveCount(optedIn ? 1 : 0);
+});

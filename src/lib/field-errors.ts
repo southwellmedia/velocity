@@ -77,25 +77,34 @@ function readMessages(el: HTMLElement): Messages {
   }
 }
 
+/**
+ * The field's aria-describedby with the managed error id added or removed,
+ * keeping every other id (a hint, or help text the caller linked) in order.
+ */
+export function describedByWith(current: string | null, errorId: string, invalid: boolean): string | null {
+  const ids = (current ?? '').split(/\s+/).filter((id) => id && id !== errorId);
+  if (invalid) ids.push(errorId);
+  return ids.length ? ids.join(' ') : null;
+}
+
 function sync(field: Field) {
   const message = document.getElementById(field.dataset.errorId ?? '');
   if (!message) return;
   const text = message.querySelector<HTMLElement>('[data-field-error-text]') ?? message;
-  const base = (field.dataset.describedby ?? '').split(' ').filter(Boolean);
   const invalid = field.matches(':user-invalid');
 
   if (invalid) {
     text.textContent = messageFor(field, readMessages(message));
     message.hidden = false;
     field.setAttribute('aria-invalid', 'true');
-    field.setAttribute('aria-describedby', [...base, message.id].join(' '));
   } else {
     message.hidden = true;
     text.textContent = '';
     field.removeAttribute('aria-invalid');
-    if (base.length) field.setAttribute('aria-describedby', base.join(' '));
-    else field.removeAttribute('aria-describedby');
   }
+  const describedBy = describedByWith(field.getAttribute('aria-describedby'), message.id, invalid);
+  if (describedBy) field.setAttribute('aria-describedby', describedBy);
+  else field.removeAttribute('aria-describedby');
 }
 
 function handle(event: Event) {

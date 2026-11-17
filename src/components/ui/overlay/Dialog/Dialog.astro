@@ -110,12 +110,23 @@ const sizes = {
   // backdrop does not dismiss it.
   const supportsClosedBy = 'closedBy' in HTMLDialogElement.prototype;
   function outside(event: PointerEvent, dialog: HTMLDialogElement) {
+    // Only the <dialog> itself is hit outside its box (that's the backdrop).
+    // Events from a descendant, such as a Popover panel that overflows the
+    // dialog, bubble through it and must not count.
+    if (event.target !== dialog) return false;
     const r = dialog.getBoundingClientRect();
     return event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom;
   }
 
   function initDialogs() {
     if (!supportsClosedBy) {
+      // closedby="none": only your code closes it. Without native support
+      // Escape would still close it, so cancel the close request.
+      document.querySelectorAll<HTMLDialogElement>('dialog[data-dialog][closedby="none"]').forEach((dialog) => {
+        if (dialog.dataset.dialogInit) return;
+        dialog.dataset.dialogInit = 'true';
+        dialog.addEventListener('cancel', (e) => e.preventDefault());
+      });
       document.querySelectorAll<HTMLDialogElement>('dialog[data-dialog][closedby="any"]').forEach((dialog) => {
         if (dialog.dataset.dialogInit) return;
         dialog.dataset.dialogInit = 'true';

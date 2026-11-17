@@ -42,19 +42,38 @@ export function anchorPopover(
   }
 
   const place = () => {
+    const margin = 8;
+    // Clearing the height cap below resets the panel's own scroll; keep it.
+    const scrollTop = panel.scrollTop;
+    // Never wider than the viewport: long unbroken labels scroll sideways.
+    panel.style.maxWidth = `${window.innerWidth - margin * 2}px`;
+    panel.style.overflowX = 'auto';
+    // Measure at natural height: undo a cap from an earlier placement first.
+    panel.style.maxHeight = '';
+    panel.style.overflowY = '';
     const t = trigger.getBoundingClientRect();
-    const p = panel.getBoundingClientRect();
-    const fitsBelow = t.bottom + gap + p.height <= window.innerHeight;
-    const fitsAbove = t.top - gap - p.height >= 0;
+    let p = panel.getBoundingClientRect();
+    const room = window.innerHeight - margin * 2;
+    // Taller than the viewport: cap it and let it scroll inside.
+    if (p.height > room) {
+      panel.style.maxHeight = `${room}px`;
+      panel.style.overflowY = 'auto';
+      p = panel.getBoundingClientRect();
+    }
+    const fitsBelow = t.bottom + gap + p.height <= window.innerHeight - margin;
+    const fitsAbove = t.top - gap - p.height >= margin;
     const above = placement === 'top' ? fitsAbove || !fitsBelow : !fitsBelow && fitsAbove;
-    const top = above ? t.top - p.height - gap : t.bottom + gap;
+    let top = above ? t.top - p.height - gap : t.bottom + gap;
+    // Neither side fits: keep the whole panel on screen, even if it covers the trigger.
+    top = Math.min(Math.max(margin, top), window.innerHeight - p.height - margin);
     let left = align === 'end' ? t.right - p.width : t.left;
-    left = Math.min(Math.max(8, left), window.innerWidth - p.width - 8);
+    left = Math.max(margin, Math.min(left, window.innerWidth - p.width - margin));
     panel.style.position = 'fixed';
     panel.style.margin = '0';
     panel.style.inset = 'auto';
-    panel.style.top = `${Math.max(8, top)}px`;
+    panel.style.top = `${top}px`;
     panel.style.left = `${left}px`;
+    panel.scrollTop = scrollTop;
   };
 
   place();
