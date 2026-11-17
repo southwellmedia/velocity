@@ -1537,7 +1537,7 @@ type IconName = LucideIconName | BrandIconName;
 
 ### Icon names
 
-Any Lucide icon by its kebab-case name, aliases included: https://lucide.dev/icons. Don't draw your own SVG or add another icon set. Brand marks Lucide doesn't ship: `github`, `twitter`, `linkedin`, `brand-astro`, `brand-tailwind`, `brand-typescript`, `brand-react`. An unknown name renders the `x` icon and warns during the build.
+Any Lucide icon by its kebab-case name, aliases included: https://lucide.dev/icons. Don't draw your own SVG or add another icon set. Brand marks Lucide doesn't ship: `github`, `twitter`, `linkedin`, `brand-astro`, `brand-tailwind`, `brand-typescript`, `brand-react`, `brand-x`. For the X (Twitter) logo use `brand-x`: `x` is Lucide's close icon. An unknown name renders the `x` icon and warns during the build.
 
 ### Example
 
@@ -2282,7 +2282,7 @@ interface FooterLinkGroup {
   links: NavItem[];
 }
 interface SocialLink {
-  platform: 'github' | 'twitter' | 'linkedin' | string;
+  platform: 'github' | 'x' | 'twitter' | 'linkedin' | string;
   href: string;
   label?: string;
 }

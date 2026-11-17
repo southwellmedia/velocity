@@ -37,7 +37,7 @@ export interface FooterLinkGroup {
 }
 
 export interface SocialLink {
-  platform: 'github' | 'twitter' | 'linkedin' | string;
+  platform: 'github' | 'x' | 'twitter' | 'linkedin' | string;
   href: string;
   label?: string;
 }
@@ -124,6 +124,7 @@ const footerClasses = cn(footerVariants({ background }), className);
 const socialIcons: Record<string, string> = {
   github: 'github',
   twitter: 'twitter',
+  x: 'brand-x',
   linkedin: 'linkedin',
 };
 
