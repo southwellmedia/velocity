@@ -60,6 +60,8 @@ if (includeOrgSchema) {
 // Read loosely: projects created before defaultTheme existed have no such field in their SiteConfig type.
 const configuredTheme = (siteConfig as { defaultTheme?: string }).defaultTheme;
 const defaultTheme = configuredTheme === 'light' || configuredTheme === 'dark' ? configuredTheme : 'system';
+// Opt-in: projects created before speculation existed have no such field, so read loosely.
+const prerenderLinks = (siteConfig as { speculation?: string }).speculation === 'prerender';
 ---
 
 <!doctype html>
@@ -108,11 +110,11 @@ const defaultTheme = configuredTheme === 'light' || configuredTheme === 'dark' ?
     <!-- Theme script (runs before render to prevent flash) -->
     <InlineScript code={themeScript} />
 
-    <!-- Speculation rules: Chromium prerenders a same-site page when a link is
-         hovered or pressed, so the next page appears instantly. Other browsers
-         ignore this and keep Astro's hover prefetch. Mark a link with
-         data-no-prerender to leave it out. -->
-    <InlineScript type="speculationrules" code={speculationRules.trim()} />
+    <!-- Speculation rules (opt-in: speculation: 'prerender' in site.config.ts):
+         Chromium prerenders a same-site page when a link is hovered or pressed,
+         so it opens instantly. Other browsers ignore this and keep Astro's hover
+         prefetch. Mark a link with data-no-prerender to leave it out. -->
+    {prerenderLinks && <InlineScript type="speculationrules" code={speculationRules.trim()} />}
   </head>
 
   <body class="min-h-screen bg-background text-foreground antialiased">

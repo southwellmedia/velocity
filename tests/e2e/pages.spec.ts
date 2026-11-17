@@ -1,3 +1,5 @@
+import nodePath from 'node:path';
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
@@ -333,4 +335,11 @@ test('without native closedby, a backdrop click still closes the dialog', async 
   // A click on the backdrop does
   await page.mouse.click(5, 5);
   await expect(dialog).toBeHidden();
+});
+
+test('speculation rules ship only when site.config opts in', async ({ page }) => {
+  const config = readFileSync(nodePath.join(process.cwd(), 'src/config/site.config.ts'), 'utf8');
+  const optedIn = /^\s*speculation:\s*'prerender'/m.test(config);
+  await page.goto('/');
+  await expect(page.locator('script[type="speculationrules"]')).toHaveCount(optedIn ? 1 : 0);
 });

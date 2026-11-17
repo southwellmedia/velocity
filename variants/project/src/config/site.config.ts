@@ -38,6 +38,17 @@ export interface SiteConfig {
    * their operating system (the default), 'light' or 'dark' fixes it.
    */
   defaultTheme?: 'system' | 'light' | 'dark';
+  /**
+   * Prerender a same-site page in Chromium when a visitor hovers or presses a
+   * link to it (speculation rules), so it opens instantly. Off by default:
+   * prerendered pages run their scripts before anyone sees them. Google
+   * Analytics and Tag Manager wait until the page is shown, but other
+   * analytics, ad pixels and call-tracking tags may count a visit that never
+   * happened. Check the tags your site loads before turning this on. Astro's
+   * hover prefetch stays on either way. Mark a link with data-no-prerender to
+   * leave it out.
+   */
+  speculation?: 'off' | 'prerender';
   branding: {
     /** Logo alt text for accessibility */
     logo: {
