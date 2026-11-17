@@ -55,6 +55,24 @@ test.describe('contact form (Astro Action)', () => {
     await expect(message).not.toHaveAttribute('aria-invalid', 'true');
     await expect(page.locator(`#${errorId}`)).toBeHidden();
   });
+
+  test('keeps help text the page linked itself while the error comes and goes', async ({ page }) => {
+    await page.goto('/contact');
+    const email = page.locator('#contact-form').getByLabel('Email');
+    await email.evaluate((el) => {
+      const help = document.createElement('p');
+      help.id = 'external-help';
+      help.textContent = 'We reply within a day.';
+      el.closest('form')!.prepend(help);
+      el.setAttribute('aria-describedby', 'external-help');
+    });
+    const errorId = await email.getAttribute('data-error-id');
+    await email.fill('not-an-email');
+    await email.blur();
+    await expect(email).toHaveAttribute('aria-describedby', `external-help ${errorId}`);
+    await email.fill('ada@example.com');
+    await expect(email).toHaveAttribute('aria-describedby', 'external-help');
+  });
 });
 
 test.describe('without JavaScript', () => {

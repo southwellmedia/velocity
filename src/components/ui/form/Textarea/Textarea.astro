@@ -31,6 +31,11 @@ const {
 
 const t = useTranslations(getLocale(Astro));
 const textareaId = id || generateId('textarea');
+// The caller's aria-describedby (external help text) is kept alongside our own
+// hint or error, and field-errors.ts only ever adds or removes its error id.
+const { 'aria-describedby': callerDescribedBy, ...fieldAttrs } = attrs;
+const describedBy =
+  [error ? `${textareaId}-error` : hint ? `${textareaId}-hint` : undefined, callerDescribedBy].filter(Boolean).join(' ') || undefined;
 
 const textareaStyles = cn(
   textareaVariants({ size }),
@@ -56,10 +61,9 @@ const textareaStyles = cn(
     rows={rows}
     style={autoResize ? `min-height: calc(${rows}lh + 1.5rem)` : undefined}
     aria-invalid={error ? 'true' : undefined}
-    aria-describedby={error ? `${textareaId}-error` : hint ? `${textareaId}-hint` : undefined}
-    data-describedby={!error && hint ? `${textareaId}-hint` : undefined}
+    aria-describedby={describedBy}
     data-error-id={!error ? `${textareaId}-client-error` : undefined}
-    {...attrs}
+    {...fieldAttrs}
   />
 
   {

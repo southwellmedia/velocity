@@ -128,6 +128,10 @@ const placement = {
   // (a text selection dragged onto the backdrop does not).
   const supportsClosedBy = 'closedBy' in HTMLDialogElement.prototype;
   function outside(event: PointerEvent, dialog: HTMLDialogElement) {
+    // Only the <dialog> itself is hit outside its box (that's the backdrop).
+    // Events from a descendant, such as a Popover panel that overflows the
+    // dialog, bubble through it and must not count.
+    if (event.target !== dialog) return false;
     const r = dialog.getBoundingClientRect();
     return event.clientX < r.left || event.clientX > r.right || event.clientY < r.top || event.clientY > r.bottom;
   }

@@ -21,6 +21,11 @@ const { label, error, hint, size = 'md', leadingIcon, trailingIcon, class: class
 
 const t = useTranslations(getLocale(Astro));
 const inputId = id || generateId('input');
+// The caller's aria-describedby (external help text) is kept alongside our own
+// hint or error, and field-errors.ts only ever adds or removes its error id.
+const { 'aria-describedby': callerDescribedBy, ...fieldAttrs } = attrs;
+const describedBy =
+  [error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined, callerDescribedBy].filter(Boolean).join(' ') || undefined;
 const config = inputSizeConfig[size];
 
 const inputStyles = cn(
@@ -63,10 +68,9 @@ import Icon from '../../primitives/Icon/Icon.astro';
       id={inputId}
       class={inputStyles}
       aria-invalid={error ? 'true' : undefined}
-      aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
-      data-describedby={!error && hint ? `${inputId}-hint` : undefined}
+      aria-describedby={describedBy}
       data-error-id={!error ? `${inputId}-client-error` : undefined}
-      {...attrs}
+      {...fieldAttrs}
     />
 
     {

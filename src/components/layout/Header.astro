@@ -573,7 +573,9 @@ const buttonId = `${menuId}-button`;
     sentinel.style.cssText = `position:absolute;top:${SCROLL_THRESHOLD}px;left:0;width:1px;height:1px;pointer-events:none;visibility:hidden`;
     document.body.prepend(sentinel);
 
-    new IntersectionObserver(([entry]) => {
+    new IntersectionObserver((entries) => {
+      // Notifications can be batched; the last entry is the current position.
+      const entry = entries[entries.length - 1];
       const scrolled = !entry.isIntersecting && entry.boundingClientRect.top < 0;
       document.querySelectorAll<HTMLElement>('header[data-header-shape="floating"]').forEach((header) => {
         if (scrolled) {

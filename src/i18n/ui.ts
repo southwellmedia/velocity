@@ -43,6 +43,8 @@ const en = {
     slideStatus: 'Slide {n} of {total}',
     goToSlide: 'Go to slide {n}',
     slides: 'Slides',
+    carousel: 'carousel',
+    slide: 'slide',
   },
   nav: {
     home: 'Home',
@@ -180,6 +182,8 @@ const es: DeepPartial<UIStrings> = {
     slideStatus: 'Diapositiva {n} de {total}',
     goToSlide: 'Ir a la diapositiva {n}',
     slides: 'Diapositivas',
+    carousel: 'carrusel',
+    slide: 'diapositiva',
   },
   nav: {
     home: 'Inicio',
@@ -313,6 +317,8 @@ const fr: DeepPartial<UIStrings> = {
     slideStatus: 'Diapositive {n} sur {total}',
     goToSlide: 'Aller à la diapositive {n}',
     slides: 'Diapositives',
+    carousel: 'carrousel',
+    slide: 'diapositive',
   },
   nav: {
     home: 'Accueil',

@@ -67,20 +67,27 @@ const t = useTranslations(getLocale(Astro));
   const root = document.documentElement;
   const media = window.matchMedia('(prefers-color-scheme: dark)');
 
+  // Used when storage is blocked, so the choice still holds for this page.
+  let memory: string | null = null;
+  let storageWorks = true;
+
   function read(): string | null {
+    if (!storageWorks) return memory;
     try {
       return localStorage.getItem(KEY);
     } catch {
-      return null;
+      storageWorks = false;
+      return memory;
     }
   }
 
   function write(value: string | null) {
+    memory = value;
     try {
       if (value) localStorage.setItem(KEY, value);
       else localStorage.removeItem(KEY);
     } catch {
-      /* site data blocked: the theme still changes for this page */
+      storageWorks = false;
     }
   }
 
