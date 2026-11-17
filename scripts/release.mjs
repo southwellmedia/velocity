@@ -30,11 +30,19 @@ export function nextVersion(current, level) {
   return `${major}.${minor}.${patch + 1}`;
 }
 
+/** Whether a line is the `## <heading>` line (case and surrounding spaces ignored) */
+const isHeading = (line, heading) => line.trim().toLowerCase() === `## ${heading}`.toLowerCase();
+
+/** Whether a PR description has a `## <heading>` line */
+export function hasSection(body, heading) {
+  return (body ?? '').replace(/\r\n/g, '\n').split('\n').some((line) => isHeading(line, heading));
+}
+
 /** The text under `## <heading>` in a PR description, without HTML comments, or '' */
 export function section(body, heading) {
   const text = (body ?? '').replace(/\r\n/g, '\n').replace(/<!--[\s\S]*?-->/g, '');
   const lines = text.split('\n');
-  const start = lines.findIndex((line) => line.trim().toLowerCase() === `## ${heading}`.toLowerCase());
+  const start = lines.findIndex((line) => isHeading(line, heading));
   if (start === -1) return '';
   const end = lines.findIndex((line, i) => i > start && /^##\s/.test(line));
   return lines
@@ -131,10 +139,9 @@ export function prepare({ root = '.', from, level, title, body }) {
  */
 export function notes(body) {
   const text = (body ?? '').replace(/\r\n/g, '\n');
-  const hasHeading = /^## release notes\s*$/im.test(text);
   const fromSection = section(text, 'Release notes');
   if (fromSection) return fromSection;
-  if (hasHeading) throw new Error('The "Release notes" section of the PR description is empty. Fill it in, or remove the heading to use the whole description.');
+  if (hasSection(text, 'Release notes')) throw new Error('The "Release notes" section of the PR description is empty. Fill it in, or remove the heading to use the whole description.');
   return text.replace(/<!--[\s\S]*?-->/g, '').trim();
 }
 

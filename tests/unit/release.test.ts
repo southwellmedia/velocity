@@ -119,6 +119,9 @@ describe('release helper', () => {
   it('refuses an empty Release notes section instead of publishing the whole description', () => {
     const empty = BODY.replace('- **Icon:** `brand-x` draws the X logo.', '<!-- template comment -->');
     expect(() => notes(empty)).toThrow(/empty/);
+    // The same heading check as section(): leading spaces and case don't matter
+    expect(() => notes(empty.replace('## Release notes', '   ## release notes  '))).toThrow(/empty/);
+    expect(notes(BODY.replace('## Release notes', '  ## Release notes'))).toBe('- **Icon:** `brand-x` draws the X logo.');
     withFixture((dir) => {
       expect(() => prepare({ root: dir, from: current, level: 'patch', title: 't', body: empty })).toThrow(/empty/);
     });
