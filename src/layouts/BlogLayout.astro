@@ -4,10 +4,12 @@ import BaseLayout from './BaseLayout.astro';
 import SiteHeader from '@/components/site/SiteHeader.astro';
 import SiteFooter from '@/components/site/SiteFooter.astro';
 import Breadcrumbs from '@/components/seo/Breadcrumbs.astro';
+import JsonLd from '@/components/seo/JsonLd.astro';
 import ArticleHero from '@/components/blog/ArticleHero.astro';
 import ShareButtons from '@/components/blog/ShareButtons.astro';
 import RelatedPosts from '@/components/blog/RelatedPosts.astro';
 import { getLocale, localizeRoute, useTranslations, type Locale } from '@/i18n';
+import { createBlogPostSchema } from '@/lib/schema';
 
 interface Props {
   title: string;
@@ -53,6 +55,19 @@ const breadcrumbs = [
 
 // Get full URL for sharing
 const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
+
+// The post as structured data. Its image is the post's own, or the share card
+// generated for this page (the same address SEO.astro uses for og:image).
+const sharePath = Astro.url.pathname.replace(/^\/|\/$/g, '');
+const postSchema = createBlogPostSchema({
+  title,
+  description,
+  url: fullUrl,
+  image: new URL(ogImage ?? `/og/${sharePath}.png`, Astro.site).toString(),
+  datePublished: publishedAt,
+  dateModified: updatedAt,
+  author: { name: author },
+});
 ---
 
 <BaseLayout
@@ -69,6 +84,8 @@ const fullUrl = new URL(Astro.url.pathname, Astro.site).toString();
   }}
 >
   <SiteHeader slot="header" alternates={alternates} />
+
+  <JsonLd schema={postSchema} />
 
   <!-- Article Hero -->
   <ArticleHero

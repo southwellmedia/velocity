@@ -31,6 +31,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 - `src/i18n/` — locales (`locales.mjs`), built-in UI strings (`ui.ts`, Velocity-owned), site copy (`translations/<locale>.ts`, user-owned), helpers (`useTranslations`, `getLocale`, `localizeRoute`, `localizePath`).
 - `src/config/nav.config.ts` — routes (with translated slugs), nav items, header/footer defaults (CTA, actions, extra links).
 - `src/lib/blog.ts` — the only place that maps posts to URLs (`getPosts`, `getPostUrl`).
+- `src/lib/schema.ts` — structured data (schema.org JSON-LD): one helper per kind of thing (website, organization, local business, product, blog post, breadcrumbs, FAQ), rendered with `<JsonLd schema={...} />` from `src/components/seo/`.
 - `src/actions/index.ts` — Astro Actions. Form schemas live in `src/lib/forms.ts` and endpoint delivery in `src/lib/form-delivery.ts`, so tests can import them.
 - `src/content.config.ts` — content collections (Content Layer, `glob()` loaders, Zod from `astro/zod`). Project-specific collections (`siteCollections`) and extra blog frontmatter fields (`blogFields`) go in `src/config/collections.ts`, which upgrades leave alone.
 - `src/styles/tokens/` and `src/styles/themes/` — design tokens (OKLCH). Use semantic Tailwind classes (`bg-background`, `text-foreground-muted`, `bg-brand-600`), never raw colors. `src/styles/theme.css` picks the active theme and upgrades leave it alone.
@@ -55,6 +56,7 @@ When Astro 7 detects an agent it switches `astro dev` to JSON logs and, on suppo
 - **Motion:** respect `prefers-reduced-motion`. The global rule in `global.css` finishes all animations instantly.
 - **Share images:** every prerendered page gets a card from `integrations/og-images.mjs`, using the project's logo and `branding.colors.themeColor`. A custom `image` must exist, or the build fails.
 - **Search:** only content inside `data-pagefind-body` is indexed. Mark new content layouts accordingly.
+- **Structured data** comes from `src/lib/schema.ts`. Don't hand-write a JSON-LD object in a view or component: use a helper, and add one there (with a test in `tests/unit/schema.test.ts`) when a kind is missing. Helpers default to the site config and leave out what they aren't given, so they never state a fact the project didn't supply. No ratings or reviews unless the page shows real ones.
 - **Fonts:** register families in `fonts` (astro.config.mjs). `BaseLayout` renders every registered family and preloads the first. Don't `@import` font CSS.
 - **Accessibility is tested.** Every page in `tests/e2e/pages.spec.ts` must pass axe WCAG 2 A/AA with no serious or critical violations. Add new routes to that list.
 - **Secrets** go through `astro:env` (`env.schema` in astro.config.mjs), never `import.meta.env` directly.

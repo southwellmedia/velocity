@@ -1,5 +1,5 @@
 {
-  "version": "2.7.1",
+  "version": "2.7.2",
   "minCliVersion": "2.0.0",
   "files": {
     "safe": [
@@ -548,6 +548,12 @@
       "toVersion": "2.7.1",
       "title": "No CSP violation on the 404 page of multi-language sites",
       "description": "With several languages the 404 page renders on demand, and its Content Security Policy is sent before the layout renders, so the theme script (and the analytics scripts) were blocked there. integrations/layout-csp.mjs now adds the hashes of the scripts BaseLayout renders inline to the policy in your config, through integrations/localized-404.mjs, so this works without changing astro.config.mjs. It also covers any page you mark prerender = false. Nothing needs doing."
+    },
+    {
+      "fromVersion": "1.0.0",
+      "toVersion": "2.7.2",
+      "title": "Structured data: local business and product helpers, BlogPosting on posts",
+      "description": "Blog posts gain `BlogPosting` structured data, and schema logos now use your favicon instead of `/logo.png`. If you added your own `BlogPosting` JSON-LD to posts, remove it so each post has one. Nothing else needs doing."
     }
   ],
   "scaffold": {
