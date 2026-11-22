@@ -184,6 +184,8 @@ describe.each(combos)('scaffold demo=$demo i18n=$i18n components=$components', (
         .filter((ref) => !/[<*…]|pricing|\/Name/i.test(ref) && ref !== '.agents/site.md')
         // Created when the first photo is added (see MediaSlot)
         .filter((ref) => ref !== 'src/assets/photos/')
+        // Written by `velocity-cms init` when a site adds Velocity CMS
+        .filter((ref) => ref !== '.agents/cms.md')
         // Demo files are named as signals of a demo project; minimal projects don't have them.
         .filter((ref) => options.demo || !demoPaths.includes(ref));
       for (const rel of paths) expect(fs.existsSync(path.join(dir, rel)), `${doc}: ${rel}`).toBe(true);

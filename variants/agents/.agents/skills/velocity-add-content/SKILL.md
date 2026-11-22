@@ -7,6 +7,8 @@ description: Add content to this Velocity site, either a blog post with valid fr
 
 **First, read the Project notes in `AGENTS.md`.** They describe this site's own conventions and take priority over the examples here.
 
+**If this site uses Velocity CMS** (`.agents/cms.md` exists, or `package.json` lists `@velocity-astro/cms-astro`) and the content belongs in the editor, use the `cms-add-content-type` skill for a new kind of content and `cms-import-content` to bring posts in, instead of the steps below. Markdown files stay right for content the site keeps in code.
+
 Decide what's needed:
 
 - **A blog post:** follow "Add a blog post". The blog already has its pages, feed, search and share images.
