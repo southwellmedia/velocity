@@ -59,7 +59,7 @@ New files you add inside Velocity's folders stay in place. Only files Velocity s
 
 ## If this site uses Velocity CMS
 
-If `.agents/cms.md` exists or `package.json` lists `@velocity-astro/cms-astro`, the site's content, pages, menus and forms live in Velocity CMS. Read `.agents/cms.md` and use the `cms-*` skills for those, and follow them where they differ from this file: pages that read the CMS say `export const prerender = false`, and a page is sections of data drawn by one component per block. Everything else here still applies. A site without the CMS can ignore this section.
+If `.agents/cms.md` exists or `package.json` lists `@velocity-astro/cms-astro`, the site's content, pages, menus and forms live in Velocity CMS. Read `.agents/cms.md` (if it is missing, `npx velocity-cms agents` writes it, or `npx velocity-cms init` on an older CMS) and use the `cms-*` skills for those, and follow them where they differ from this file: pages that read the CMS say `export const prerender = false`, and a page is sections of data drawn by one component per block. Everything else here still applies. A site without the CMS can ignore this section.
 
 ## Before you say you're done
 
