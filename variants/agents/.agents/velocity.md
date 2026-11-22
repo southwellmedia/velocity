@@ -57,6 +57,10 @@ If `.agents/site.md` exists, read it before changing pages, copy or styles: it r
 
 New files you add inside Velocity's folders stay in place. Only files Velocity ships are replaced. The same applies to skills: `velocity-*` skills are replaced on upgrade, so add project-specific skills under a different name. If a task requires editing a Velocity-owned file, tell the user that upgrades will replace the edit.
 
+## If this site uses Velocity CMS
+
+If `.agents/cms.md` exists or `package.json` lists `@velocity-astro/cms-astro`, the site's content, pages, menus and forms live in Velocity CMS. Read `.agents/cms.md` and use the `cms-*` skills for those, and follow them where they differ from this file: pages that read the CMS say `export const prerender = false`, and a page is sections of data drawn by one component per block. Everything else here still applies. A site without the CMS can ignore this section.
+
 ## Before you say you're done
 
 If the site has a brief, every placeholder `check:agent` lists must be in its Placeholders section. Run `npm run validate`, which ends with `check:agent`, then `npm run build && npm run test:e2e` for accessibility and CSP in a real browser. `check:agent` scans the source and the build for raw translation keys, inline scripts and handlers that CSP blocks, broken internal links and anchors, pages that exist in only one language on a multilingual site, forms still on their stubs, edits to Velocity-owned files, hardcoded user-facing text, remaining placeholders, the scaffold's default identity, and pages with more than one `<h1>`. Each finding prints the file, the rule below that it breaks, and the fix. Errors fail; warnings are worth fixing or explaining to the user, and notices are information only. A file that is deliberately single-language can opt out of the hardcoded-text warning with a `velocity-allow-hardcoded` comment, and a page in `src/pages/` can opt out of the one-language-only warning with a `velocity-single-language` comment.

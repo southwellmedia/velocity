@@ -7,6 +7,8 @@ description: Connect this Velocity site's contact and newsletter forms to a real
 
 **First, read the Project notes in `AGENTS.md`.** They describe this site's own conventions and take priority over the examples here.
 
+**If this site uses Velocity CMS** (`.agents/cms.md` exists, or `package.json` lists `@velocity-astro/cms-astro`), its forms are made in the CMS, feed its built-in contacts and email whoever the form names. Use the `cms-add-form` skill instead of the steps below, and come back here only for a form the user wants kept outside the CMS.
+
 `ContactForm` and `NewsletterForm` submit to the `contact` and `newsletter` Actions in `src/actions/index.ts`. Each Action forwards submissions as JSON to `CONTACT_FORM_ENDPOINT` or `NEWSLETTER_ENDPOINT` when that variable is set (with `NEWSLETTER_API_KEY` as a Bearer token), through `postJson` in `src/lib/form-delivery.ts`. With neither, it reports success, discards the submission and logs a warning. That discard path carries a marker line, `// @velocity-stub contact` or `// @velocity-stub newsletter`, and `npm run check:agent` reports it while the endpoint isn't set.
 
 **If the user already has a webhook or form service** (Zapier, Make, Formspree, a serverless function), the endpoint route needs no code: set the variable in `.env` and on the host, then skip to step 6. On Vercel, Netlify and Cloudflare, set it in the platform's environment settings. A self-hosted Node server doesn't load `.env` by itself, so start it with `node --env-file=.env dist/server/entry.mjs`. Otherwise, wire a provider as below.
