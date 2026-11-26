@@ -55,7 +55,7 @@ This file lists every component Velocity ships. Read it before reading component
 | [AnnouncementBar](#announcementbar) | `@/components/ui/marketing/AnnouncementBar/AnnouncementBar.astro` | A strip above the header for a launch or notice: message, optional link and close button; a dismissed bar stays closed per id. |
 | [ContactForm](#contactform) | `@/components/patterns/ContactForm.astro` | Complete contact form (name, email, subject, message) submitting to the `contact` Astro Action or an external endpoint, with localized labels, validation and status. |
 | [NewsletterForm](#newsletterform) | `@/components/patterns/NewsletterForm.astro` | Inline email signup form submitting to the `newsletter` Astro Action or an external endpoint, with localized status messages. |
-| [FormField](#formfield) | `@/components/patterns/FormField.astro` | Label, hint, error and required marker around a custom control passed in the input slot. |
+| [FormField](#formfield) | `@/components/patterns/FormField.astro` | Label, hint, error and required marker around a custom control passed in the input slot. Give FormField an id and the control the same id, so the label points at it. |
 | [SearchInput](#searchinput) | `@/components/patterns/SearchInput.astro` | Search field (type="search") built from Input with a leading search icon; used by the Pagefind search page. |
 | [PasswordInput](#passwordinput) | `@/components/patterns/PasswordInput.astro` | Password field built from Input with a show/hide toggle button. |
 | [StatCard](#statcard) | `@/components/patterns/StatCard.astro` | Metric card with label, value, optional icon and an up/down/neutral trend line. |
@@ -1929,7 +1929,7 @@ import NewsletterForm from '@/components/patterns/NewsletterForm.astro';
 
 ## FormField
 
-Label, hint, error and required marker around a custom control passed in the input slot.
+Label, hint, error and required marker around a custom control passed in the input slot. Give FormField an id and the control the same id, so the label points at it.
 
 - **Import:** `import FormField from '@/components/patterns/FormField.astro';`
 - **Registry id:** `form-field` · **Category:** Patterns
@@ -1939,6 +1939,7 @@ Label, hint, error and required marker around a custom control passed in the inp
 
 | Prop | Type | Default | Required | Notes |
 |------|------|---------|----------|-------|
+| `id` | `string` |  |  | The id of the field in the input slot, so the label points at it. Give the field the same id: Astro can't set one on slotted content. |
 | `label` | `string` |  |  |  |
 | `error` | `string` |  |  |  |
 | `hint` | `string` |  |  |  |
@@ -1954,8 +1955,8 @@ Label, hint, error and required marker around a custom control passed in the inp
 import FormField from '@/components/patterns/FormField.astro';
 ---
 
-<FormField label="Favorite color" hint="Pick any color." required>
-  <input slot="input" type="color" name="color" class="h-10 w-16 rounded-md border border-border" />
+<FormField id="color" label="Favorite color" hint="Pick any color." required>
+  <input slot="input" id="color" type="color" name="color" class="h-10 w-16 rounded-md border border-border" />
 </FormField>
 ```
 
