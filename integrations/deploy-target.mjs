@@ -59,7 +59,9 @@ export async function resolveDeployTarget(env = process.env) {
     case 'cloudflare': {
       const { default: cloudflare } = await importAdapter('@astrojs/cloudflare', name);
       const { cacheCloudflare } = await import('@astrojs/cloudflare/cache');
-      return { name, adapter: cloudflare(), cacheProvider: cacheCloudflare() };
+      // Pages built ahead of time are built in Node, not in the Workers runtime: share images are
+      // drawn with sharp, a native library a Worker cannot load. Actions still run as a Worker.
+      return { name, adapter: cloudflare({ prerenderEnvironment: 'node' }), cacheProvider: cacheCloudflare() };
     }
     default: {
       const { default: node } = await importAdapter('@astrojs/node', name);
