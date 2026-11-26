@@ -198,6 +198,8 @@ Every page is prerendered. A server adapter is still included because Astro Acti
 
 Force a target with `DEPLOY_TARGET=node|vercel|netlify|cloudflare`. With the Node adapter, run the server with `node dist/server/entry.mjs`.
 
+**Cloudflare Workers:** `pnpm add @astrojs/cloudflare` and `pnpm add -D wrangler`, name the Worker in `wrangler.toml`, then `DEPLOY_TARGET=cloudflare pnpm build` and `pnpm wrangler deploy`. Pages are built in Node and served as static files; only the form Actions run as a Worker.
+
 To add caching to an on-demand route, use `Astro.cache.set({ maxAge: 300, swr: 60, tags: ['products'] })` or add a pattern to `routeRules` in `astro.config.mjs`.
 
 ---
