@@ -136,6 +136,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {/* Toast container */}
       <div
         className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2 max-w-[420px] w-full pointer-events-none"
+        role="region"
         aria-live="polite"
         aria-label="Notifications"
       >
