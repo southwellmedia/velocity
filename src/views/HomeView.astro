@@ -18,6 +18,8 @@ import WhatsNew from '@/components/landing/WhatsNew.astro';
 import SpecimenWall from '@/components/landing/SpecimenWall.astro';
 import GetStarted from '@/components/landing/GetStarted.astro';
 import { getReceipt } from '@/components/landing/receipt';
+import TiltScreen from '@/components/fx/TiltScreen.astro';
+import screen from '@/assets/fx/screen.webp';
 import { useTranslations, type Locale } from '@/i18n';
 
 interface Props {
@@ -51,6 +53,8 @@ const receipt = getReceipt();
         {t('home.hero.whatsNew')}
       </Button>
     </Fragment>
+
+    <TiltScreen src={screen} alt={t('home.hero.screenAlt')} class="mt-16" />
   </Hero>
 
   <BuildReceipt receipt={receipt} />

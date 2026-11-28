@@ -1,0 +1,86 @@
+---
+/**
+ * Spotlight
+ *
+ * A soft light that follows the pointer inside any element marked
+ * `data-spot`, and a thin lit edge where the pointer is. The script writes
+ * the pointer's position as --spot-x / --spot-y on the element under it;
+ * the light itself is CSS.
+ *
+ * Only with a mouse (hover: hover) and without reduced motion; elsewhere
+ * the elements look as they would without it. Put it once in a layout.
+ */
+---
+
+<style is:global>
+  [data-spot] {
+    position: relative;
+    isolation: isolate;
+    --spot-x: 50%;
+    --spot-y: -40%;
+  }
+  [data-spot]::before,
+  [data-spot]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  /* The light on the surface. */
+  [data-spot]::before {
+    z-index: -1;
+    background: radial-gradient(
+      420px circle at var(--spot-x) var(--spot-y),
+      color-mix(in oklch, var(--brand-500) 16%, transparent),
+      transparent 60%
+    );
+  }
+  /* The lit edge: a border drawn only near the pointer. */
+  [data-spot]::after {
+    padding: 1px;
+    background: radial-gradient(
+      260px circle at var(--spot-x) var(--spot-y),
+      color-mix(in oklch, var(--brand-300) 70%, transparent),
+      transparent 70%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    [data-spot]:hover::before,
+    [data-spot]:hover::after {
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  function initSpotlight() {
+    if (document.documentElement.dataset.spotReady) return;
+    document.documentElement.dataset.spotReady = 'true';
+    const ok = matchMedia('(hover: hover)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!ok) return;
+    addEventListener(
+      'pointermove',
+      (e) => {
+        const el = (e.target as Element | null)?.closest<HTMLElement>('[data-spot]');
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        el.style.setProperty('--spot-x', `${e.clientX - r.left}px`);
+        el.style.setProperty('--spot-y', `${e.clientY - r.top}px`);
+      },
+      { passive: true }
+    );
+  }
+
+  initSpotlight();
+  document.addEventListener('astro:after-swap', initSpotlight);
+</script>

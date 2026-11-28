@@ -39,6 +39,7 @@ const en = {
       leadBefore: 'Every figure below is counted or measured when this page builds. Create a project with',
       leadAfter: 'and this becomes your home page, with your own numbers.',
       whatsNew: 'What 2.x changed',
+      screenAlt: 'The components page in dark mode: the hero component in a split layout, with a badge, a large headline and two buttons',
       copied: 'Copied',
     },
     receipt: {

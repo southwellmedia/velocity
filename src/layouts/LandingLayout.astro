@@ -10,6 +10,8 @@
 import BaseLayout from './BaseLayout.astro';
 import SiteHeader from '@/components/site/SiteHeader.astro';
 import SiteFooter from '@/components/site/SiteFooter.astro';
+import LightField from '@/components/fx/LightField.astro';
+import Spotlight from '@/components/fx/Spotlight.astro';
 
 interface Props {
   title?: string;
@@ -42,6 +44,10 @@ const {
   includeOrgSchema={includeOrgSchema}
 >
   <SiteHeader slot="header" />
+
+  {/* The moving light behind the page, and the pointer light on cards. */}
+  <LightField />
+  <Spotlight />
 
   <slot />
 

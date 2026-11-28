@@ -44,14 +44,14 @@ const code = 'bg-background border-border text-foreground-muted rounded border p
     </div>
 
     <div class="grid gap-4 md:grid-cols-2">
-      <article class={card}>
+      <article class={card} data-spot>
         <Badge class="self-start">{t('home.whatsNew.changed')}</Badge>
         <h3 class={title}>{t('home.whatsNew.astro.title')}</h3>
         <p class="text-foreground-secondary">{t('home.whatsNew.astro.text')}</p>
         <code class={`${code} mt-auto self-start`}>astro build</code>
       </article>
 
-      <article class={card}>
+      <article class={card} data-spot>
         <Badge class="self-start">{t('home.whatsNew.new')}</Badge>
         <h3 class={title}>{t('home.whatsNew.agents.title')}</h3>
         <p class="text-foreground-secondary">{t('home.whatsNew.agents.text')}</p>
@@ -64,7 +64,7 @@ const code = 'bg-background border-border text-foreground-muted rounded border p
         )}
       </article>
 
-      <article class={card}>
+      <article class={card} data-spot>
         <Badge class="self-start">{t('home.whatsNew.new')}</Badge>
         <h3 class={title}>{t('home.whatsNew.hue.title')}</h3>
         <p class="text-foreground-secondary">
@@ -75,7 +75,7 @@ const code = 'bg-background border-border text-foreground-muted rounded border p
         </div>
       </article>
 
-      <article class={card}>
+      <article class={card} data-spot>
         <Badge class="self-start">{t('home.whatsNew.new')}</Badge>
         <h3 class={title}>{t('home.whatsNew.blocks.title')}</h3>
         <p class="text-foreground-secondary">{t('home.whatsNew.blocks.text')}</p>
