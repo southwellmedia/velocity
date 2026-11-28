@@ -19,6 +19,8 @@
  * The colours come from the theme's brand scale (--brand-*), read once and
  * again when dark mode changes, so the light follows --brand-hue.
  *
+ * Over the light lies a fine dot pattern that fades out from the top.
+ *
  * Put it once in a layout, before the page's content. Sections that should
  * show the light have no background of their own (see `.fx-clear`).
  */
@@ -27,6 +29,7 @@
 <div class="fx-light" aria-hidden="true">
   <div class="fx-light__still"></div>
   <canvas class="fx-light__canvas" data-light-canvas></canvas>
+  <div class="fx-light__dots"></div>
 </div>
 
 <style is:global>
@@ -61,11 +64,32 @@
   .fx-light__canvas.is-on {
     opacity: 1;
   }
+  /* A fine dot pattern over the light, strongest at the top of the screen
+     and fading out to the sides and the bottom. Decoration only. */
+  .fx-light__dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at center, color-mix(in oklch, var(--foreground) 22%, transparent) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(70% 60% at 50% 20%, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 85%);
+    mask-image: radial-gradient(70% 60% at 50% 20%, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 85%);
+  }
+  :root:not(.dark) .fx-light__dots {
+    background-image: radial-gradient(circle at center, color-mix(in oklch, var(--foreground) 16%, transparent) 1px, transparent 1.4px);
+  }
   /* The page lets the light through: the body and the sections on the
      plain page ground have no background of their own. Sections on the
      second ground keep theirs, as bands across the light. */
   html:has(.fx-light) {
     background-color: var(--background);
+  }
+  /* Cards over the light are glass: a little see-through, with the light
+     behind them blurred. The text on them stays on a dark (or light)
+     enough ground: the card keeps 78% of its colour. */
+  html:has(.fx-light) [data-spot] {
+    background-color: color-mix(in oklch, var(--color-card) 78%, transparent) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    backdrop-filter: blur(18px) saturate(1.25);
   }
   html:has(.fx-light) body,
   html:has(.fx-light) #main-content > section.bg-background,
