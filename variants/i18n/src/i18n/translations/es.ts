@@ -36,6 +36,7 @@ const es: SiteStrings = {
       leadBefore: 'Cada cifra de esta página se cuenta o se mide al compilarla. Crea un proyecto con',
       leadAfter: 'y esta será tu página de inicio, con tus propias cifras.',
       whatsNew: 'Qué cambió en 2.x',
+      screenAlt: 'La página de componentes en modo oscuro: el componente hero en diseño dividido, con una insignia, un titular grande y dos botones',
       copied: 'Copiado',
     },
     receipt: {
@@ -107,6 +108,39 @@ const es: SiteStrings = {
       badgeWarning: 'Aviso',
       badgeInfo: 'Info',
       kbdText: 'Abrir búsqueda',
+    },
+    ticker: {
+      p1: 'Astro 7 por debajo',
+      p2: 'CSP estricta por defecto',
+      p3: 'Skills para agentes en cada proyecto',
+      p4: 'Un tono de marca, toda una escala',
+      p5: 'Búsqueda sin servidor',
+      p6: 'Modo oscuro y claro',
+      p7: 'Páginas prerenderizadas en HTML',
+    },
+    demos: {
+      eyebrow: 'Pruébalo',
+      heading: 'Míralo funcionar antes de instalarlo.',
+      hue: {
+        title: 'Un tono, toda la marca',
+        textBefore: 'Cambia',
+        textAfter: 'y los diez tonos de la marca lo siguen, con cada botón, insignia y enlace que los usa.',
+        button: 'Botón',
+        badge: 'Insignia',
+      },
+      search: {
+        title: 'Búsqueda sin servidor',
+        text: 'Pagefind indexa cada página al compilar el sitio, y la búsqueda se ejecuta en el navegador.',
+        query: 'modo oscuro',
+        doc1: 'El modo oscuro y el selector de tema',
+        doc2: 'Formularios que envían con Astro Actions',
+        doc3: 'Configurar los colores del modo oscuro',
+        doc4: 'Añadir un idioma',
+      },
+      theme: {
+        title: 'Oscuro y claro, ambos diseñados',
+        text: 'Cada componente tiene una versión oscura y una clara, y los visitantes cambian con un botón.',
+      },
     },
     start: {
       eyebrow: 'Empezar',

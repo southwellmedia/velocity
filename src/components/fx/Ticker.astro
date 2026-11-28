@@ -1,0 +1,174 @@
+---
+/**
+ * Ticker
+ *
+ * A row of short phrases that runs across the page without end, faded out at
+ * both edges. It pauses while the pointer or keyboard focus is on it, and a
+ * button stops and starts it (WCAG 2.2.2: motion that lasts longer than five
+ * seconds needs a way to stop it). Under reduced motion it doesn't move: the
+ * phrases wrap onto as many lines as they need.
+ *
+ * The list is in the page once for screen readers; the copy that makes the
+ * loop seamless is hidden from them.
+ */
+import Icon from '@/components/ui/primitives/Icon/Icon.astro';
+import { getLocale, useTranslations } from '@/i18n';
+
+interface Props {
+  items: string[];
+  /** Seconds for one full loop. */
+  duration?: number;
+  class?: string;
+}
+
+const { items, duration = 48, class: className } = Astro.props;
+const t = useTranslations(getLocale(Astro));
+---
+
+<div class:list={['fx-ticker', className]} style={`--ticker-duration: ${duration}s`} data-ticker>
+  <div class="fx-ticker__window">
+    <div class="fx-ticker__track">
+      <ul class="fx-ticker__list">
+        {items.map((item) => <li>{item}</li>)}
+      </ul>
+      <ul class="fx-ticker__list fx-ticker__copy" aria-hidden="true">
+        {items.map((item) => <li>{item}</li>)}
+      </ul>
+    </div>
+  </div>
+  <button
+    type="button"
+    class="fx-ticker__toggle"
+    data-ticker-toggle
+    data-label-pause={t('a11y.pauseMotion')}
+    data-label-play={t('a11y.playMotion')}
+    aria-label={t('a11y.pauseMotion')}
+  >
+    <Icon name="pause" size="sm" class="fx-ticker__icon-pause" />
+    <Icon name="play" size="sm" class="fx-ticker__icon-play" />
+  </button>
+</div>
+
+<style>
+  .fx-ticker {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 72rem;
+    margin-inline: auto;
+    padding-inline: 1.5rem;
+  }
+  .fx-ticker__window {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  }
+  .fx-ticker__track {
+    display: flex;
+    width: max-content;
+    animation: fx-ticker var(--ticker-duration) linear infinite;
+  }
+  .fx-ticker:hover .fx-ticker__track,
+  .fx-ticker:focus-within .fx-ticker__track,
+  .fx-ticker[data-paused] .fx-ticker__track {
+    animation-play-state: paused;
+  }
+  .fx-ticker__list {
+    display: flex;
+    flex: none;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .fx-ticker__list li {
+    display: flex;
+    align-items: center;
+    padding-right: 2.5rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 0.9rem + 1.2vw, 1.75rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    color: var(--color-foreground);
+  }
+  /* A small violet dot between the phrases. */
+  .fx-ticker__list li::after {
+    content: '';
+    width: 7px;
+    height: 7px;
+    margin-left: 2.5rem;
+    border-radius: 50%;
+    background: var(--brand-500);
+    box-shadow: 0 0 14px var(--brand-500);
+  }
+  @keyframes fx-ticker {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .fx-ticker__toggle {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 50%;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    cursor: pointer;
+  }
+  .fx-ticker__toggle:focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+  .fx-ticker__toggle :global(.fx-ticker__icon-play),
+  .fx-ticker[data-paused] .fx-ticker__toggle :global(.fx-ticker__icon-pause) {
+    display: none;
+  }
+  .fx-ticker[data-paused] .fx-ticker__toggle :global(.fx-ticker__icon-play) {
+    display: block;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fx-ticker__window {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+    .fx-ticker__track {
+      width: auto;
+      animation: none;
+    }
+    .fx-ticker__list {
+      flex-wrap: wrap;
+      row-gap: 0.75rem;
+    }
+    .fx-ticker__copy,
+    .fx-ticker__toggle {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  function initTickers() {
+    document.querySelectorAll<HTMLElement>('[data-ticker]').forEach((root) => {
+      if (root.dataset.tickerReady) return;
+      root.dataset.tickerReady = 'true';
+      const btn = root.querySelector<HTMLButtonElement>('[data-ticker-toggle]');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        const paused = !root.hasAttribute('data-paused');
+        root.toggleAttribute('data-paused', paused);
+        btn.setAttribute('aria-label', (paused ? btn.dataset.labelPlay : btn.dataset.labelPause) ?? '');
+      });
+    });
+  }
+
+  initTickers();
+  document.addEventListener('astro:after-swap', initTickers);
+</script>

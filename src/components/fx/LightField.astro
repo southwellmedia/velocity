@@ -1,0 +1,296 @@
+---
+/**
+ * LightField
+ *
+ * A slow, moving light behind the whole page: two bands of violet light,
+ * drawn on one <canvas> with a small WebGL shader. The bands drift on their
+ * own; scrolling moves where the light is brightest, and a soft glow
+ * follows the pointer.
+ *
+ * Kept light:
+ *   - it runs only on a device with a graphics chip (scripts/gpu.ts). Without
+ *     one, and in Lighthouse, the page keeps the still CSS light below and
+ *     nothing is drawn;
+ *   - it draws at half the screen's resolution, at most 30 frames a second,
+ *     and only while the tab is visible;
+ *   - under prefers-reduced-motion it draws one still frame and redraws only
+ *     when the page scrolls.
+ *
+ * The colours come from the theme's brand scale (--brand-*), read once and
+ * again when dark mode changes, so the light follows --brand-hue.
+ *
+ * Over the light lies a fine dot pattern that fades out from the top.
+ *
+ * Put it once in a layout, before the page's content. Sections that should
+ * show the light have no background of their own (see `.fx-clear`).
+ */
+---
+
+<div class="fx-light" aria-hidden="true">
+  <div class="fx-light__still"></div>
+  <canvas class="fx-light__canvas" data-light-canvas></canvas>
+  <div class="fx-light__dots"></div>
+</div>
+
+<style is:global>
+  .fx-light {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: var(--background);
+  }
+  /* The still light: what a device without a graphics chip sees, and what
+     shows under the canvas while it starts. */
+  .fx-light__still {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(60% 45% at 72% 18%, color-mix(in oklch, var(--brand-500) 34%, transparent), transparent 70%),
+      radial-gradient(55% 40% at 18% 62%, color-mix(in oklch, var(--brand-700) 30%, transparent), transparent 72%);
+    opacity: 0.55;
+  }
+  :root:not(.dark) .fx-light__still {
+    opacity: 0.35;
+  }
+  .fx-light__canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1.2s ease;
+  }
+  .fx-light__canvas.is-on {
+    opacity: 1;
+  }
+  /* A fine dot pattern over the light, strongest at the top of the screen
+     and fading out to the sides and the bottom. Decoration only. */
+  .fx-light__dots {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at center, color-mix(in oklch, var(--foreground) 22%, transparent) 1px, transparent 1.4px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(70% 60% at 50% 20%, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 85%);
+    mask-image: radial-gradient(70% 60% at 50% 20%, #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 85%);
+  }
+  :root:not(.dark) .fx-light__dots {
+    background-image: radial-gradient(circle at center, color-mix(in oklch, var(--foreground) 16%, transparent) 1px, transparent 1.4px);
+  }
+  /* The page lets the light through: the body and the sections on the
+     plain page ground have no background of their own. Sections on the
+     second ground keep theirs, as bands across the light. */
+  html:has(.fx-light) {
+    background-color: var(--background);
+  }
+  /* Cards over the light are glass: a little see-through, with the light
+     behind them blurred. The text on them stays on a dark (or light)
+     enough ground: the card keeps 78% of its colour. */
+  html:has(.fx-light) [data-spot] {
+    background-color: color-mix(in oklch, var(--color-card) 78%, transparent) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    backdrop-filter: blur(18px) saturate(1.25);
+  }
+  html:has(.fx-light) body,
+  html:has(.fx-light) #main-content > section.bg-background,
+  .fx-clear {
+    background-color: transparent !important;
+  }
+</style>
+
+<script>
+  import { canRunScenes } from '@/scripts/gpu';
+
+  const SCALE = 0.5;
+  const FRAME_MS = 33;
+  /** The brightest the light may get in dark mode (relative luminance). With
+   *  --foreground-subtle at oklch(72%) that keeps text at 4.5:1 or more. */
+  const MAX_LUM = '0.035';
+
+  const VERT = 'attribute vec2 a; void main(){ gl_Position = vec4(a, 0.0, 1.0); }';
+
+  // Two bands of light along slow curves, bent by warped noise. u_scroll
+  // turns them and moves the bright spot; u_pointer adds a soft glow.
+  const FRAG = `
+precision highp float;
+uniform vec2 u_res; uniform float u_time; uniform float u_scroll; uniform vec2 u_pointer;
+uniform float u_dark; uniform vec3 u_base; uniform vec3 u_deep; uniform vec3 u_main; uniform vec3 u_high;
+
+float h(vec2 p){ p = fract(p * vec2(234.34, 435.345)); p += dot(p, p + 34.23); return fract(p.x * p.y); }
+float n(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f*f*(3.0-2.0*f);
+  return mix(mix(h(i), h(i+vec2(1.0,0.0)), u.x), mix(h(i+vec2(0.0,1.0)), h(i+vec2(1.0,1.0)), u.x), u.y); }
+float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int k = 0; k < 5; k++){ v += a*n(p); p = mat2(1.6,1.2,-1.2,1.6)*p; a *= 0.5; } return v; }
+
+float band(vec2 p, float lift, float width, float speed, float seed){
+  vec2 w = vec2(fbm(p*1.1 + vec2(seed, u_time*speed)), fbm(p*1.1 + vec2(u_time*speed*0.7, seed*1.7)));
+  float curve = lift + 0.22*sin(p.x*1.3 + u_scroll*3.0 + seed) + 0.45*(w.y - 0.5);
+  float d = (p.y - curve) / width;
+  float core = exp(-d*d);
+  float grain = 0.55 + 0.45*fbm(vec2(p.x*3.0 - u_time*speed*2.0, p.y*1.5 + seed));
+  return core * grain;
+}
+
+void main(){
+  vec2 uv = gl_FragCoord.xy / u_res;
+  float aspect = u_res.x / u_res.y;
+  vec2 p = (uv - 0.5) * vec2(aspect, 1.0);
+
+  float turn = 0.35 - 0.7*u_scroll;
+  p = mat2(cos(turn), -sin(turn), sin(turn), cos(turn)) * p;
+
+  vec3 light = vec3(0.0);
+  light += u_deep * band(p, -0.05, 0.42, 0.020, 2.0) * 0.75;
+  light += u_main * band(p,  0.08, 0.16, 0.035, 7.0) * 0.95;
+  light += u_high * band(p,  0.13, 0.045, 0.050, 13.0) * 0.7;
+
+  vec2 spot = vec2(0.42*aspect*cos(u_scroll*6.0 + 0.6), 0.18*sin(u_scroll*4.0) + 0.08);
+  vec2 q = (uv - 0.5) * vec2(aspect, 1.0);
+  light *= smoothstep(1.25, 0.1, length((q - spot) * vec2(0.75, 1.0)));
+
+  vec2 pm = q - (u_pointer - 0.5) * vec2(aspect, 1.0);
+  light += u_main * 0.12 * exp(-dot(pm, pm) * 7.0);
+
+  light = 1.0 - exp(-light * 1.3);
+
+  vec3 col = u_dark > 0.5
+    ? u_base + light * 0.85
+    : mix(u_base, u_base * 0.86 + u_main * 0.14, clamp(light * 1.1, 0.0, 1.0));
+
+  // Text stays readable over the light: in dark mode the light keeps its
+  // colour but never gets brighter than a relative luminance of MAX_LUM,
+  // where the theme's lightest grey text still has 4.5:1 (WCAG AA).
+  if (u_dark > 0.5) {
+    vec3 lin = pow(max(col, 0.0), vec3(2.2));
+    float lum = dot(lin, vec3(0.2126, 0.7152, 0.0722));
+    if (lum > ${MAX_LUM}) col *= pow(${MAX_LUM} / lum, 1.0 / 2.2);
+  }
+
+  col += (h(gl_FragCoord.xy + fract(u_time) * 71.0) - 0.5) / 255.0 * 2.0;
+  gl_FragColor = vec4(col, 1.0);
+}`;
+
+  /** A theme colour (a custom property) as RGB in 0..1: resolved by the
+   *  browser on a hidden element, then read back through a 1px canvas, which
+   *  understands oklch and the rest. */
+  function rgb(prop: string): [number, number, number] {
+    const probe = document.createElement('span');
+    probe.style.cssText = `position:absolute;visibility:hidden;color:var(${prop})`;
+    document.body.append(probe);
+    const css = getComputedStyle(probe).color;
+    probe.remove();
+    const c = document.createElement('canvas');
+    c.width = c.height = 1;
+    const x = c.getContext('2d');
+    if (!x) return [0, 0, 0];
+    x.fillStyle = css;
+    x.fillRect(0, 0, 1, 1);
+    const d = x.getImageData(0, 0, 1, 1).data;
+    return [d[0] / 255, d[1] / 255, d[2] / 255];
+  }
+
+  function initLight() {
+    const canvas = document.querySelector<HTMLCanvasElement>('[data-light-canvas]');
+    if (!canvas || canvas.dataset.ready) return;
+    canvas.dataset.ready = 'true';
+    if (!canRunScenes()) return;
+
+    const gl = canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' });
+    if (!gl) return;
+    const shader = (type: number, src: string) => {
+      const s = gl.createShader(type)!;
+      gl.shaderSource(s, src);
+      gl.compileShader(s);
+      return s;
+    };
+    const prog = gl.createProgram()!;
+    gl.attachShader(prog, shader(gl.VERTEX_SHADER, VERT));
+    gl.attachShader(prog, shader(gl.FRAGMENT_SHADER, FRAG));
+    gl.linkProgram(prog);
+    if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) return;
+    gl.useProgram(prog);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    const loc = gl.getAttribLocation(prog, 'a');
+    gl.enableVertexAttribArray(loc);
+    gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+    const u = (name: string) => gl.getUniformLocation(prog, name);
+    const U = {
+      res: u('u_res'), time: u('u_time'), scroll: u('u_scroll'), pointer: u('u_pointer'),
+      dark: u('u_dark'), base: u('u_base'), deep: u('u_deep'), main: u('u_main'), high: u('u_high'),
+    };
+
+    const root = document.documentElement;
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const readColours = () => {
+      gl.uniform1f(U.dark, root.classList.contains('dark') ? 1 : 0);
+      gl.uniform3fv(U.base, rgb('--background'));
+      gl.uniform3fv(U.deep, rgb('--brand-800'));
+      gl.uniform3fv(U.main, rgb('--brand-500'));
+      gl.uniform3fv(U.high, rgb('--brand-200'));
+    };
+    readColours();
+
+    const start = performance.now();
+    let raf = 0;
+    let last = 0;
+    let scrollTarget = 0;
+    let scroll = 0;
+    let px = 0.7, py = 0.7, tx = 0.7, ty = 0.7;
+
+    const frame = (now: number) => {
+      raf = 0;
+      if (document.hidden) return;
+      if (now - last >= FRAME_MS) {
+        last = now;
+        const w = Math.max(2, Math.round(innerWidth * SCALE));
+        const hgt = Math.max(2, Math.round(innerHeight * SCALE));
+        if (canvas.width !== w || canvas.height !== hgt) {
+          canvas.width = w;
+          canvas.height = hgt;
+          gl.viewport(0, 0, w, hgt);
+        }
+        scroll += (scrollTarget - scroll) * 0.08;
+        px += (tx - px) * 0.06;
+        py += (ty - py) * 0.06;
+        gl.uniform2f(U.res, w, hgt);
+        gl.uniform1f(U.time, still ? 20 : (now - start) / 1000 + 20);
+        gl.uniform1f(U.scroll, scroll);
+        gl.uniform2f(U.pointer, px, py);
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        canvas.classList.add('is-on');
+      }
+      const settling = Math.abs(scrollTarget - scroll) > 0.0005 || Math.abs(tx - px) > 0.001;
+      if (!still || settling) raf = requestAnimationFrame(frame);
+    };
+    const wake = () => {
+      if (!raf) raf = requestAnimationFrame(frame);
+    };
+
+    const onScroll = () => {
+      const max = root.scrollHeight - innerHeight;
+      scrollTarget = max > 0 ? scrollY / max : 0;
+      wake();
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', wake);
+    addEventListener(
+      'pointermove',
+      (e) => {
+        tx = e.clientX / innerWidth;
+        ty = 1 - e.clientY / innerHeight;
+        if (!still) wake();
+      },
+      { passive: true }
+    );
+    document.addEventListener('visibilitychange', wake);
+    new MutationObserver(() => {
+      readColours();
+      wake();
+    }).observe(root, { attributes: true, attributeFilter: ['class'] });
+    onScroll();
+  }
+
+  initLight();
+  document.addEventListener('astro:after-swap', initLight);
+</script>

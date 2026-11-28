@@ -37,7 +37,7 @@ const columns = [stack, counts].filter((rows) => rows.length);
 ---
 
 <section id="receipt" aria-labelledby="receipt-heading" class="px-6 pb-[var(--space-section)]">
-  <div class="receipt-card bg-card border-card-border mx-auto max-w-5xl overflow-hidden rounded-[10px] border">
+  <div class="receipt-card bg-card border-card-border mx-auto max-w-5xl overflow-hidden rounded-[10px] border" data-spot>
     <div class="text-foreground-muted flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-dashed border-border-strong px-5 py-3.5 font-mono text-xs">
       <h2 id="receipt-heading" class="text-foreground text-xs font-semibold tracking-[0.1em] uppercase">
         {t('home.receipt.title')}

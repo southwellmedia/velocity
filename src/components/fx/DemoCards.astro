@@ -1,0 +1,484 @@
+---
+/**
+ * DemoCards
+ *
+ * Three cards, each with a small demo of something Velocity does, played
+ * where you can see it:
+ *
+ *   hue     one --brand-hue recolours the whole brand scale
+ *   search  a search that runs in the browser (Pagefind), filtering as you type
+ *   theme   the same page in dark and light mode
+ *
+ * With a mouse a demo plays while the pointer is on its card; without one it
+ * plays once as the card scrolls into view. Under reduced motion every demo
+ * shows its end state and nothing moves. The demos are pictures of the
+ * feature (aria-hidden); each card's text says what it shows.
+ *
+ * The cards rise into view one after another, and carry the spotlight
+ * (data-spot, fx/Spotlight).
+ */
+import { getLocale, useTranslations } from '@/i18n';
+
+const t = useTranslations(getLocale(Astro));
+const hues = [295, 200, 150, 30];
+const docs = [
+  t('home.demos.search.doc1'),
+  t('home.demos.search.doc2'),
+  t('home.demos.search.doc3'),
+  t('home.demos.search.doc4'),
+];
+---
+
+<section id="demos" aria-labelledby="demos-heading" class="bg-background border-border border-t">
+  <div class="mx-auto max-w-6xl px-6 py-[var(--space-section)]">
+    <div class="mb-12 max-w-2xl">
+      <p class="text-foreground-muted text-xs font-semibold tracking-[0.1em] uppercase">{t('home.demos.eyebrow')}</p>
+      <h2 id="demos-heading" class="font-display text-foreground mt-3 text-4xl leading-tight font-bold tracking-[-0.02em] text-balance md:text-5xl">
+        {t('home.demos.heading')}
+      </h2>
+    </div>
+
+    <div class="fx-demos" data-demos>
+      {/* Brand hue */}
+      <article class="fx-demo" data-spot data-demo="hue">
+        <div class="fx-demo__stage" aria-hidden="true">
+          <div class="fx-hue" data-hue-stage style={`--demo-hue: ${hues[0]}`}>
+            <div class="fx-hue__scale">
+              {[97, 92, 85, 76, 67, 60, 52, 44, 36, 27].map((l) => (
+                <span style={`--l: ${l}%`} />
+              ))}
+            </div>
+            <div class="fx-hue__ui">
+              <span class="fx-hue__btn">{t('home.demos.hue.button')}</span>
+              <span class="fx-hue__badge">{t('home.demos.hue.badge')}</span>
+              <span class="fx-hue__value" data-hue-value>--brand-hue: {hues[0]}</span>
+            </div>
+          </div>
+        </div>
+        <h3 class="fx-demo__title">{t('home.demos.hue.title')}</h3>
+        <p class="fx-demo__text">
+          {t('home.demos.hue.textBefore')} <code class="fx-demo__code">--brand-hue</code> {t('home.demos.hue.textAfter')}
+        </p>
+        <script type="application/json" data-hues set:html={JSON.stringify(hues)} />
+      </article>
+
+      {/* Search */}
+      <article class="fx-demo" data-spot data-demo="search">
+        <div class="fx-demo__stage" aria-hidden="true">
+          <div class="fx-search">
+            <div class="fx-search__field">
+              <span class="fx-search__icon" />
+              <span data-search-query>{t('home.demos.search.query')}</span><span class="fx-search__caret" />
+            </div>
+            <ul class="fx-search__docs">
+              {docs.map((d) => <li data-search-doc>{d}</li>)}
+            </ul>
+          </div>
+        </div>
+        <h3 class="fx-demo__title">{t('home.demos.search.title')}</h3>
+        <p class="fx-demo__text">{t('home.demos.search.text')}</p>
+        <span hidden data-search-final>{t('home.demos.search.query')}</span>
+      </article>
+
+      {/* Theme */}
+      <article class="fx-demo" data-spot data-demo="theme">
+        <div class="fx-demo__stage" aria-hidden="true">
+          <div class="fx-theme" data-theme-stage data-mode="dark">
+            <div class="fx-theme__bar"><i /><i /><i /></div>
+            <div class="fx-theme__body">
+              <span class="fx-theme__h" />
+              <span class="fx-theme__p" />
+              <span class="fx-theme__p fx-theme__p--short" />
+              <span class="fx-theme__cta" />
+            </div>
+            <span class="fx-theme__switch"><span /></span>
+          </div>
+        </div>
+        <h3 class="fx-demo__title">{t('home.demos.theme.title')}</h3>
+        <p class="fx-demo__text">{t('home.demos.theme.text')}</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<style>
+  .fx-demos {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .fx-demo {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 14px 24px;
+    border: 1px solid var(--color-card-border);
+    border-radius: 14px;
+    background: var(--color-card);
+  }
+  .fx-demo__stage {
+    display: grid;
+    place-items: center;
+    height: 210px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background:
+      radial-gradient(circle at center, color-mix(in oklch, var(--color-foreground) 14%, transparent) 1px, transparent 1.4px) 0 0 / 16px 16px,
+      radial-gradient(80% 90% at 50% 0%, color-mix(in oklch, var(--brand-500) 12%, transparent), transparent 70%),
+      var(--color-background);
+  }
+  .fx-demo__title,
+  .fx-demo__text {
+    margin: 0;
+    padding-inline: 10px;
+  }
+  .fx-demo__title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--color-foreground);
+  }
+  .fx-demo__code {
+    padding: 0.1em 0.4em;
+    border-radius: 5px;
+    background: var(--color-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--color-foreground-secondary);
+  }
+  .fx-demo__text {
+    font-size: 0.95rem;
+    line-height: 1.55;
+    color: var(--color-foreground-muted);
+  }
+
+  /* Rise into view, one after another (the script adds .is-in). */
+  .fx-demo[data-rise] {
+    opacity: 0;
+    translate: 0 18px;
+  }
+  .fx-demo[data-rise].is-in {
+    opacity: 1;
+    translate: 0 0;
+    transition:
+      opacity 0.6s ease var(--rise-delay, 0s),
+      translate 0.7s cubic-bezier(0.22, 1, 0.36, 1) var(--rise-delay, 0s);
+  }
+
+  /* Hue */
+  .fx-hue {
+    display: grid;
+    gap: 18px;
+    width: 86%;
+  }
+  .fx-hue__scale {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+  }
+  .fx-hue__scale span {
+    height: 34px;
+    border-radius: 6px;
+    background: oklch(var(--l) 0.16 var(--demo-hue));
+    transition: background-color 0.6s ease;
+  }
+  .fx-hue__ui {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+  .fx-hue__btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    background: oklch(50% 0.2 var(--demo-hue));
+    color: #fff;
+    font-weight: 600;
+    transition: background-color 0.6s ease;
+  }
+  .fx-hue__badge {
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid oklch(60% 0.18 var(--demo-hue));
+    color: oklch(75% 0.14 var(--demo-hue));
+    transition: color 0.6s ease, border-color 0.6s ease;
+  }
+  .fx-hue__value {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-foreground-muted);
+  }
+
+  /* Search */
+  .fx-search {
+    width: 84%;
+    display: grid;
+    gap: 10px;
+  }
+  .fx-search__field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: 9px;
+    background: var(--color-card);
+    font-size: 14px;
+    color: var(--color-foreground);
+  }
+  .fx-search__icon {
+    width: 13px;
+    height: 13px;
+    border: 2px solid var(--color-foreground-muted);
+    border-radius: 50%;
+  }
+  .fx-search__caret {
+    width: 1.5px;
+    height: 16px;
+    margin-left: -6px;
+    background: var(--brand-400);
+    animation: fx-blink 1s steps(1) infinite;
+  }
+  @keyframes fx-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  .fx-search__docs {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .fx-search__docs li {
+    padding: 7px 11px;
+    border-radius: 7px;
+    background: color-mix(in oklch, var(--color-foreground) 5%, transparent);
+    font-size: 12.5px;
+    color: var(--color-foreground-secondary);
+    transition: opacity 0.25s ease;
+  }
+  .fx-search__docs li[data-dim] {
+    opacity: 0.18;
+  }
+
+  /* Theme */
+  .fx-theme {
+    position: relative;
+    width: 78%;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--fx-t-line);
+    background: var(--fx-t-bg);
+    transition: background-color 0.5s ease, border-color 0.5s ease;
+    --fx-t-bg: #0e0b18;
+    --fx-t-line: rgb(255 255 255 / 0.12);
+    --fx-t-ink: rgb(255 255 255 / 0.85);
+    --fx-t-soft: rgb(255 255 255 / 0.25);
+  }
+  .fx-theme[data-mode='light'] {
+    --fx-t-bg: #f6f4fb;
+    --fx-t-line: rgb(20 10 40 / 0.12);
+    --fx-t-ink: rgb(20 10 40 / 0.85);
+    --fx-t-soft: rgb(20 10 40 / 0.2);
+  }
+  .fx-theme__bar {
+    display: flex;
+    gap: 5px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--fx-t-line);
+  }
+  .fx-theme__bar i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--fx-t-soft);
+  }
+  .fx-theme__body {
+    display: grid;
+    gap: 8px;
+    padding: 16px 16px 20px;
+  }
+  .fx-theme__body span {
+    display: block;
+    border-radius: 4px;
+    transition: background-color 0.5s ease;
+  }
+  .fx-theme__h {
+    width: 70%;
+    height: 14px;
+    background: var(--fx-t-ink);
+  }
+  .fx-theme__p {
+    width: 92%;
+    height: 7px;
+    background: var(--fx-t-soft);
+  }
+  .fx-theme__p--short {
+    width: 60%;
+  }
+  .fx-theme__cta {
+    width: 34%;
+    height: 18px;
+    margin-top: 6px;
+    background: var(--brand-600);
+  }
+  .fx-theme__switch {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 30px;
+    height: 16px;
+    border-radius: 999px;
+    background: var(--fx-t-soft);
+  }
+  .fx-theme__switch span {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--brand-400);
+    transition: translate 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .fx-theme[data-mode='light'] .fx-theme__switch span {
+    translate: 14px 0;
+  }
+
+  @media (max-width: 900px) {
+    .fx-demos {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fx-search__caret {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  type Demo = { play: (signal: AbortSignal) => Promise<void>; reset: () => void };
+
+  const wait = (ms: number, signal: AbortSignal) =>
+    new Promise<void>((resolve, reject) => {
+      if (signal.aborted) return reject(signal.reason);
+      const id = setTimeout(resolve, ms);
+      signal.addEventListener('abort', () => (clearTimeout(id), reject(signal.reason)), { once: true });
+    });
+
+  function hueDemo(card: HTMLElement): Demo {
+    const stage = card.querySelector<HTMLElement>('[data-hue-stage]')!;
+    const value = card.querySelector<HTMLElement>('[data-hue-value]')!;
+    const hues: number[] = JSON.parse(card.querySelector('[data-hues]')?.textContent ?? '[295]');
+    const set = (h: number) => {
+      stage.style.setProperty('--demo-hue', String(h));
+      value.textContent = `--brand-hue: ${h}`;
+    };
+    return {
+      async play(signal) {
+        for (const h of [...hues.slice(1), hues[0]]) {
+          await wait(900, signal);
+          set(h);
+        }
+      },
+      reset: () => set(hues[0]),
+    };
+  }
+
+  function searchDemo(card: HTMLElement): Demo {
+    const query = card.querySelector<HTMLElement>('[data-search-query]')!;
+    const docs = [...card.querySelectorAll<HTMLElement>('[data-search-doc]')];
+    const final = card.querySelector<HTMLElement>('[data-search-final]')?.textContent ?? '';
+    const filter = (q: string) => {
+      query.textContent = q;
+      const words = q.toLowerCase().split(/\s+/).filter(Boolean);
+      docs.forEach((d) => {
+        const text = (d.textContent ?? '').toLowerCase();
+        d.toggleAttribute('data-dim', words.length > 0 && !words.every((w) => text.includes(w)));
+      });
+    };
+    return {
+      async play(signal) {
+        filter('');
+        for (let i = 1; i <= final.length; i++) {
+          await wait(85, signal);
+          filter(final.slice(0, i));
+        }
+      },
+      reset: () => filter(final),
+    };
+  }
+
+  function themeDemo(card: HTMLElement): Demo {
+    const stage = card.querySelector<HTMLElement>('[data-theme-stage]')!;
+    const set = (m: string) => (stage.dataset.mode = m);
+    return {
+      async play(signal) {
+        for (const m of ['light', 'dark', 'light', 'dark']) {
+          await wait(1000, signal);
+          set(m);
+        }
+      },
+      reset: () => set('dark'),
+    };
+  }
+
+  const makers: Record<string, (c: HTMLElement) => Demo> = { hue: hueDemo, search: searchDemo, theme: themeDemo };
+
+  function initDemos() {
+    const root = document.querySelector<HTMLElement>('[data-demos]');
+    if (!root || root.dataset.ready) return;
+    root.dataset.ready = 'true';
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const hover = matchMedia('(hover: hover)').matches;
+    const cards = [...root.querySelectorAll<HTMLElement>('[data-demo]')];
+
+    cards.forEach((card, i) => {
+      const demo = makers[card.dataset.demo ?? '']?.(card);
+      if (!demo) return;
+      demo.reset();
+      if (still) return;
+
+      let run: AbortController | null = null;
+      const start = () => {
+        run?.abort();
+        run = new AbortController();
+        demo.play(run.signal).catch(() => {});
+      };
+      const stop = () => {
+        run?.abort();
+        run = null;
+        demo.reset();
+      };
+
+      card.style.setProperty('--rise-delay', `${(i % 3) * 90}ms`);
+      card.setAttribute('data-rise', '');
+      const io = new IntersectionObserver(
+        ([entry]) => {
+          if (!entry?.isIntersecting) return;
+          io.disconnect();
+          card.classList.add('is-in');
+          if (!hover) start();
+        },
+        { threshold: 0.4 }
+      );
+      io.observe(card);
+
+      if (hover) {
+        card.addEventListener('pointerenter', (e) => e.pointerType === 'mouse' && start());
+        card.addEventListener('pointerleave', (e) => e.pointerType === 'mouse' && stop());
+      }
+    });
+  }
+
+  initDemos();
+  document.addEventListener('astro:after-swap', initDemos);
+</script>

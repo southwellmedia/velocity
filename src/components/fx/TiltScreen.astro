@@ -1,0 +1,105 @@
+---
+/**
+ * TiltScreen
+ *
+ * A picture of the product in a screen that leans back, with a violet glow
+ * behind it. As it scrolls into view it straightens up, through CSS
+ * scroll-driven animation (animation-timeline: view()), with no script.
+ * Browsers without it, and reduced motion, show it straight.
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  class?: string;
+}
+
+const { src, alt, class: className } = Astro.props;
+---
+
+<div class:list={['fx-tilt', className]}>
+  <div class="fx-tilt__glow" aria-hidden="true"></div>
+  <div class="fx-tilt__screen">
+    <div class="fx-tilt__bar" aria-hidden="true"><i></i><i></i><i></i></div>
+    <Image
+      src={src}
+      alt={alt}
+      widths={[640, 960, 1280, 1920, 2560]}
+      sizes="(max-width: 1200px) 94vw, 1152px"
+      loading="eager"
+      class="fx-tilt__img"
+    />
+  </div>
+</div>
+
+<style>
+  .fx-tilt {
+    position: relative;
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+    perspective: 2200px;
+  }
+  .fx-tilt__glow {
+    position: absolute;
+    inset: -3rem 6% auto;
+    height: 72%;
+    z-index: -1;
+    background: radial-gradient(ellipse 50% 60% at 50% 40%, color-mix(in oklch, var(--brand-500) 55%, transparent), transparent 70%);
+    filter: blur(44px);
+  }
+  .fx-tilt__screen {
+    overflow: hidden;
+    border: 1px solid color-mix(in oklch, var(--foreground) 14%, transparent);
+    border-radius: 14px;
+    background: var(--background-elevated);
+    box-shadow:
+      0 0 0 1px color-mix(in oklch, white 4%, transparent),
+      inset 0 1px 0 color-mix(in oklch, white 16%, transparent),
+      0 40px 120px -30px color-mix(in oklch, var(--brand-500) 55%, transparent);
+    transform-origin: 50% 0;
+    transform: rotateX(16deg) scale(0.95);
+  }
+  .fx-tilt__bar {
+    display: flex;
+    gap: 6px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .fx-tilt__bar i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--border-strong);
+  }
+  .fx-tilt__img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  @supports (animation-timeline: view()) {
+    .fx-tilt__screen {
+      animation: fx-straighten linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 42%;
+    }
+  }
+  @keyframes fx-straighten {
+    to {
+      transform: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fx-tilt__screen {
+      animation: none;
+      transform: none;
+    }
+  }
+  @supports not (animation-timeline: view()) {
+    .fx-tilt__screen {
+      transform: none;
+    }
+  }
+</style>
