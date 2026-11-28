@@ -1041,7 +1041,7 @@
     },
     "form-field": {
       "name": "FormField",
-      "description": "Label, hint, error and required marker around a custom control passed in the input slot.",
+      "description": "Label, hint, error and required marker around a custom control passed in the input slot. Give FormField an id and the control the same id, so the label points at it.",
       "category": "patterns",
       "files": [
         "src/components/patterns/FormField.astro"
@@ -1056,7 +1056,7 @@
       "useInstead": [
         "Input, Textarea, Select, Checkbox and Switch have label/hint/error built in; use FormField only for custom controls."
       ],
-      "example": "---\nimport FormField from '@/components/patterns/FormField.astro';\n---\n\n<FormField label=\"Favorite color\" hint=\"Pick any color.\" required>\n  <input slot=\"input\" type=\"color\" name=\"color\" class=\"h-10 w-16 rounded-md border border-border\" />\n</FormField>"
+      "example": "---\nimport FormField from '@/components/patterns/FormField.astro';\n---\n\n<FormField id=\"color\" label=\"Favorite color\" hint=\"Pick any color.\" required>\n  <input slot=\"input\" id=\"color\" type=\"color\" name=\"color\" class=\"h-10 w-16 rounded-md border border-border\" />\n</FormField>"
     },
     "search-input": {
       "name": "SearchInput",

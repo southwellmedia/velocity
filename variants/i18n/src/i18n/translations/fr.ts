@@ -36,6 +36,7 @@ const fr: SiteStrings = {
       leadBefore: 'Chaque chiffre de cette page est compté ou mesuré à la compilation. Créez un projet avec',
       leadAfter: 'et elle devient votre page d’accueil, avec vos propres chiffres.',
       whatsNew: 'Ce qui change en 2.x',
+      screenAlt: 'La page des composants en mode sombre : le composant hero en mise en page scindée, avec un badge, un grand titre et deux boutons',
       copied: 'Copié',
     },
     receipt: {
@@ -107,6 +108,39 @@ const fr: SiteStrings = {
       badgeWarning: 'Avertissement',
       badgeInfo: 'Info',
       kbdText: 'Ouvrir la recherche',
+    },
+    ticker: {
+      p1: 'Astro 7 en dessous',
+      p2: 'CSP stricte par défaut',
+      p3: 'Des skills d\'agent dans chaque projet',
+      p4: 'Une teinte de marque, toute une gamme',
+      p5: 'Recherche sans serveur',
+      p6: 'Mode sombre et clair',
+      p7: 'Pages prérendues en HTML',
+    },
+    demos: {
+      eyebrow: 'Essayez',
+      heading: 'Voyez-le fonctionner avant de l\'installer.',
+      hue: {
+        title: 'Une teinte, toute la marque',
+        textBefore: 'Changez',
+        textAfter: 'et les dix nuances de la marque suivent, avec chaque bouton, badge et lien qui les utilise.',
+        button: 'Bouton',
+        badge: 'Badge',
+      },
+      search: {
+        title: 'Recherche sans serveur',
+        text: 'Pagefind indexe chaque page à la compilation du site, et la recherche se fait dans le navigateur.',
+        query: 'mode sombre',
+        doc1: 'Le mode sombre et le sélecteur de thème',
+        doc2: 'Des formulaires qui envoient avec Astro Actions',
+        doc3: 'Régler les couleurs du mode sombre',
+        doc4: 'Ajouter une langue',
+      },
+      theme: {
+        title: 'Sombre et clair, tous deux soignés',
+        text: 'Chaque composant a une version sombre et une claire, et les visiteurs passent de l’une à l’autre avec un bouton.',
+      },
     },
     start: {
       eyebrow: 'Démarrer',

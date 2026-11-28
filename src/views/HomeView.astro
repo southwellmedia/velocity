@@ -18,6 +18,11 @@ import WhatsNew from '@/components/landing/WhatsNew.astro';
 import SpecimenWall from '@/components/landing/SpecimenWall.astro';
 import GetStarted from '@/components/landing/GetStarted.astro';
 import { getReceipt } from '@/components/landing/receipt';
+import TiltScreen from '@/components/fx/TiltScreen.astro';
+import Ticker from '@/components/fx/Ticker.astro';
+import DemoCards from '@/components/fx/DemoCards.astro';
+import ClosingBand from '@/components/fx/ClosingBand.astro';
+import screen from '@/assets/fx/screen.webp';
 import { useTranslations, type Locale } from '@/i18n';
 
 interface Props {
@@ -27,6 +32,7 @@ interface Props {
 const { locale } = Astro.props;
 const t = useTranslations(locale);
 const receipt = getReceipt();
+const ticker = (['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7'] as const).map((k) => t(`home.ticker.${k}`));
 ---
 
 <LandingLayout title={t('meta.home.title')} description={t('meta.home.description')}>
@@ -51,12 +57,18 @@ const receipt = getReceipt();
         {t('home.hero.whatsNew')}
       </Button>
     </Fragment>
+
+    <TiltScreen src={screen} alt={t('home.hero.screenAlt')} class="mt-16" />
   </Hero>
 
+  <Ticker items={ticker} class="mb-[var(--space-section)]" />
   <BuildReceipt receipt={receipt} />
   <WhatsNew skills={receipt.agentSkills} />
+  <DemoCards />
   <SpecimenWall count={receipt.components} />
-  <GetStarted />
+  <ClosingBand>
+    <GetStarted />
+  </ClosingBand>
 </LandingLayout>
 
 <style>

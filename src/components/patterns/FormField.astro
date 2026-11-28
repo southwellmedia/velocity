@@ -3,6 +3,9 @@ import { cn } from '@/lib/cn';
 import { generateId } from '@/lib/utils';
 
 interface Props {
+  /** The id of the field in the input slot, so the label points at it.
+   *  Give the field the same id: Astro can't set one on slotted content. */
+  id?: string;
   label?: string;
   error?: string;
   hint?: string;
@@ -10,9 +13,9 @@ interface Props {
   class?: string;
 }
 
-const { label, error, hint, required = false, class: className } = Astro.props;
+const { id, label, error, hint, required = false, class: className } = Astro.props;
 
-const fieldId = generateId('field');
+const fieldId = id ?? generateId('field');
 ---
 
 <div class={cn('space-y-1.5', className)}>

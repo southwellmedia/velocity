@@ -39,6 +39,7 @@ const en = {
       leadBefore: 'Every figure below is counted or measured when this page builds. Create a project with',
       leadAfter: 'and this becomes your home page, with your own numbers.',
       whatsNew: 'What 2.x changed',
+      screenAlt: 'The components page in dark mode: the hero component in a split layout, with a badge, a large headline and two buttons',
       copied: 'Copied',
     },
     receipt: {
@@ -110,6 +111,39 @@ const en = {
       badgeWarning: 'Warning',
       badgeInfo: 'Info',
       kbdText: 'Open search',
+    },
+    ticker: {
+      p1: 'Astro 7 underneath',
+      p2: 'Strict CSP by default',
+      p3: 'Agent skills in every project',
+      p4: 'One brand hue, a whole scale',
+      p5: 'Search with no server',
+      p6: 'Dark and light mode',
+      p7: 'Pages prerendered as HTML',
+    },
+    demos: {
+      eyebrow: 'Try it',
+      heading: 'See it work before you install it.',
+      hue: {
+        title: 'One hue, the whole brand',
+        textBefore: 'Change',
+        textAfter: 'and all ten brand steps follow, with every button, badge and link that uses them.',
+        button: 'Button',
+        badge: 'Badge',
+      },
+      search: {
+        title: 'Search with no server',
+        text: 'Pagefind indexes every page when the site builds, and the search runs in the browser.',
+        query: 'dark mode',
+        doc1: 'Dark mode and the theme toggle',
+        doc2: 'Forms that send with Astro Actions',
+        doc3: 'Setting up dark mode colours',
+        doc4: 'Adding a language',
+      },
+      theme: {
+        title: 'Dark and light, both designed',
+        text: 'Every component has a dark and a light version, and visitors switch with one button.',
+      },
     },
     start: {
       eyebrow: 'Get started',

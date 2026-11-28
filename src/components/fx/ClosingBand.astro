@@ -1,0 +1,84 @@
+---
+/**
+ * ClosingBand
+ *
+ * The last section before the footer, on a deep violet panel: two glows of
+ * the brand colour, a faint grid that fades out, and grain. Whatever goes
+ * in the slot reads white on it: the band remaps the --color-* tokens the
+ * way .invert-section does (styles/global.css), so the components inside
+ * need no changes. A section in the slot drops its own background.
+ *
+ * Contrast: the lightest the panel gets is the brand's 600 step, where the
+ * muted text (--band-muted) still has 4.5:1 or more.
+ */
+---
+
+<div class="fx-band">
+  <div class="fx-band__grid" aria-hidden="true"></div>
+  <div class="fx-band__grain" aria-hidden="true"></div>
+  <div class="fx-band__content">
+    <slot />
+  </div>
+</div>
+
+<style>
+  .fx-band {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    color: var(--color-foreground);
+    background:
+      radial-gradient(70% 90% at 88% 8%, var(--brand-600) 0%, transparent 62%),
+      radial-gradient(80% 90% at 6% 100%, var(--brand-700) 0%, transparent 66%),
+      var(--brand-900);
+
+    --band-muted: oklch(88% 0.04 295);
+    --color-background: var(--brand-900);
+    --color-foreground: #fff;
+    --color-foreground-secondary: oklch(93% 0.025 295);
+    --color-foreground-muted: var(--band-muted);
+    --color-foreground-subtle: var(--band-muted);
+    --color-border: rgb(255 255 255 / 0.16);
+    --color-border-strong: rgb(255 255 255 / 0.3);
+    --color-card: oklch(18% 0.08 295 / 0.55);
+    --color-card-border: rgb(255 255 255 / 0.16);
+    --color-secondary: rgb(255 255 255 / 0.1);
+    --color-secondary-foreground: #fff;
+    --color-secondary-hover: rgb(255 255 255 / 0.18);
+    --color-muted: rgb(255 255 255 / 0.08);
+    --color-muted-foreground: var(--band-muted);
+    --color-ring: #fff;
+    --color-primary: #fff;
+    --color-primary-hover: oklch(94% 0.03 295);
+    --color-primary-foreground: var(--brand-900);
+  }
+  .fx-band__grid,
+  .fx-band__grain {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  }
+  .fx-band__grid {
+    background-image:
+      linear-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.07) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(75% 85% at 72% 40%, #000 15%, transparent 75%);
+    mask-image: radial-gradient(75% 85% at 72% 40%, #000 15%, transparent 75%);
+  }
+  .fx-band__grain {
+    opacity: 0.4;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+  /* The copy icon on the white npm button takes the brand colour. */
+  .fx-band__content :global([data-copy-icon]) {
+    color: var(--brand-700);
+  }
+  .fx-band__content :global(section) {
+    background: transparent;
+    border-color: transparent;
+  }
+</style>

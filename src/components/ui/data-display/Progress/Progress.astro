@@ -25,6 +25,8 @@ const {
   size = 'md',
   showLabel = false,
   class: className,
+  'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledby,
   ...attrs
 } = Astro.props;
 
@@ -42,6 +44,8 @@ const percentage = isIndeterminate || max <= 0 ? 0 : Math.min(100, Math.max(0, (
   <div
     class={cn(progressTrackVariants({ size }))}
     role="progressbar"
+    aria-label={ariaLabel}
+    aria-labelledby={ariaLabelledby}
     aria-valuenow={isIndeterminate ? undefined : Math.round(percentage)}
     aria-valuemin={0}
     aria-valuemax={max}
